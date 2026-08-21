@@ -2,7 +2,7 @@ import React from 'react';
 import { SlidersHorizontal, ChevronDown } from 'lucide-react';
 import './Sorting.css';
 
-const Sorting = ({ toggleFilters }) => {
+const Sorting = ({ toggleFilters, sortType, setSortType, totalResults }) => {
     return (
         <div className="sorting-section">
             <button className="mobile-filter-btn" onClick={toggleFilters}>
@@ -11,13 +11,17 @@ const Sorting = ({ toggleFilters }) => {
             </button>
 
             <div className="results-count">
-                Showing 1–6 of 24 results
+                Showing {totalResults} {totalResults === 1 ? 'result' : 'results'}
             </div>
 
             <div className="sort-dropdown">
                 <span className="sort-label">Sort by:</span>
                 <div className="sort-select-wrapper">
-                    <select className="sort-select">
+                    <select
+                        className="sort-select"
+                        value={sortType}
+                        onChange={(e) => setSortType(e.target.value)}
+                    >
                         <option value="popularity">Popularity</option>
                         <option value="newest">Newest Arrivals</option>
                         <option value="price-low">Price: Low to High</option>
