@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Star, Heart, Share2, Plus, Minus, ShieldCheck, Truck } from 'lucide-react';
 import { mockProducts } from '../../data/mockProducts';
 import ProductGrid from '../../components/ProductGrid/ProductGrid';
+import { useCart } from '../../context/CartContext';
 import './ProductDetails.css';
 
 const ProductDetails = () => {
     const { id } = useParams();
+    const navigate = useNavigate();
+    const { dispatch } = useCart();
     const [product, setProduct] = useState(null);
     const [selectedSize, setSelectedSize] = useState('');
     const [quantity, setQuantity] = useState(1);
@@ -46,10 +49,11 @@ const ProductDetails = () => {
             size: selectedSize,
             quantity: quantity,
             price: currentPrice,
-            total: currentPrice * quantity
+            total: currentPrice * quantity,
+            image: product.imageUrl
         };
-        console.log("Added to cart:", cartItem);
-        alert(`Added ${quantity}x ${product.name} (${selectedSize}) to cart!`);
+        dispatch({ type: 'ADD_TO_CART', payload: cartItem });
+        navigate('/cart');
     };
 
     const relatedProducts = mockProducts.filter(p => p.id !== product.id).slice(0, 3);

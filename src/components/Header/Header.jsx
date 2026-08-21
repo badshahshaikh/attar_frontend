@@ -1,8 +1,12 @@
 import React from 'react';
 import { Search, Heart, ShoppingBag, Menu } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { useCart } from '../../context/CartContext';
 import './Header.css';
 
 const Header = ({ toggleMobileMenu }) => {
+    const { cartCount } = useCart();
+
     return (
         <header className="header">
             <div className="container header-inner">
@@ -13,12 +17,12 @@ const Header = ({ toggleMobileMenu }) => {
 
                 {/* Brand Logo */}
                 <div className="logo">
-                    <a href="/">RoohAttars</a>
+                    <Link to="/">RoohAttars</Link>
                 </div>
 
                 {/* Navigation */}
                 <nav className="nav-links">
-                    <a href="#" className="active">Shop</a>
+                    <Link to="/" className="active">Shop</Link>
                     <a href="#">Collections</a>
                     <a href="#">About Us</a>
                     <a href="#">Journal</a>
@@ -32,10 +36,10 @@ const Header = ({ toggleMobileMenu }) => {
                     <button className="action-btn" aria-label="Wishlist">
                         <Heart size={20} strokeWidth={1.5} />
                     </button>
-                    <button className="action-btn cart-btn" aria-label="Cart">
+                    <Link to="/cart" className="action-btn cart-btn" aria-label="Cart">
                         <ShoppingBag size={20} strokeWidth={1.5} />
-                        <span className="cart-count">2</span>
-                    </button>
+                        {cartCount > 0 && <span className="cart-count">{cartCount}</span>}
+                    </Link>
                 </div>
             </div>
         </header>
