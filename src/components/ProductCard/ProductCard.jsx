@@ -1,11 +1,12 @@
 import React from 'react';
 import { Heart, Eye, Star } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import './ProductCard.css';
 
 const ProductCard = ({ product }) => {
     return (
         <div className="product-card group">
-            <div className="product-image-container">
+            <Link to={`/product/${product.id}`} className="product-image-container" style={{ display: 'block' }}>
                 {product.isNew && <span className="product-badge new">New</span>}
                 {product.originalPrice && <span className="product-badge sale">Sale</span>}
 
@@ -17,7 +18,7 @@ const ProductCard = ({ product }) => {
                 />
 
                 {/* Hover Actions */}
-                <div className="product-actions">
+                <div className="product-actions" onClick={(e) => e.preventDefault()}>
                     <button className="btn-icon" title="Quick View">
                         <Eye size={18} strokeWidth={1.5} />
                     </button>
@@ -25,7 +26,7 @@ const ProductCard = ({ product }) => {
                         <Heart size={18} strokeWidth={1.5} />
                     </button>
                 </div>
-            </div>
+            </Link>
 
             <div className="product-info">
                 <div className="product-meta">
@@ -37,7 +38,7 @@ const ProductCard = ({ product }) => {
                 </div>
 
                 <h3 className="product-title">
-                    <a href="#">{product.name}</a>
+                    <Link to={`/product/${product.id}`}>{product.name}</Link>
                 </h3>
 
                 <p className="product-desc">{product.description}</p>
