@@ -139,9 +139,9 @@ const Cart = () => {
                             <span>₹{finalTotal.toLocaleString()}</span>
                         </div>
 
-                        <button className="btn btn-primary checkout-btn btn-lg w-100">
+                        <Link to="/checkout" className="btn btn-primary checkout-btn btn-lg w-100" style={{ display: 'flex', justifyContent: 'center' }}>
                             Proceed to Checkout
-                        </button>
+                        </Link>
 
                         <div className="secure-checkout">
                             <span>Secured & Encrypted checkout</span>

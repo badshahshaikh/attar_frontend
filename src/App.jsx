@@ -4,6 +4,7 @@ import Header from './components/Header/Header';
 import Shop from './pages/Shop';
 import ProductDetails from './pages/ProductDetails/ProductDetails';
 import Cart from './pages/Cart/Cart';
+import Checkout from './pages/Checkout/Checkout';
 import { CartProvider } from './context/CartContext';
 import './App.css';
 
@@ -24,6 +25,7 @@ function App() {
             <Route path="/" element={<Shop />} />
             <Route path="/product/:id" element={<ProductDetails />} />
             <Route path="/cart" element={<Cart />} />
+            <Route path="/checkout" element={<Checkout />} />
           </Routes>
 
           <footer className="footer container">
