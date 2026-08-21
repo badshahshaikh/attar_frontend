@@ -4,12 +4,14 @@ import { Star, Heart, Share2, Plus, Minus, ShieldCheck, Truck } from 'lucide-rea
 import { mockProducts } from '../../data/mockProducts';
 import ProductGrid from '../../components/ProductGrid/ProductGrid';
 import { useCart } from '../../context/CartContext';
+import { useWishlist } from '../../context/WishlistContext';
 import './ProductDetails.css';
 
 const ProductDetails = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const { dispatch } = useCart();
+    const { toggleWishlist, isInWishlist } = useWishlist();
     const [product, setProduct] = useState(null);
     const [selectedSize, setSelectedSize] = useState('');
     const [quantity, setQuantity] = useState(1);
@@ -129,8 +131,17 @@ const ProductDetails = () => {
                         >
                             {product.inStock ? `Add to Cart - ₹${(currentPrice * quantity).toLocaleString()}` : 'Out of Stock'}
                         </button>
-                        <button className="btn-icon wishlist-btn-lg" title="Wishlist">
-                            <Heart size={20} strokeWidth={1.5} />
+                        <button
+                            className="btn-icon wishlist-btn-lg"
+                            title="Toggle Wishlist"
+                            onClick={() => toggleWishlist(product.id)}
+                        >
+                            <Heart
+                                size={20}
+                                strokeWidth={1.5}
+                                fill={isInWishlist(product.id) ? 'currentColor' : 'none'}
+                                color={isInWishlist(product.id) ? '#ff4d4f' : 'currentColor'}
+                            />
                         </button>
                     </div>
 

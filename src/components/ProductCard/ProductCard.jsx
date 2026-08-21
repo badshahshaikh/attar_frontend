@@ -1,9 +1,13 @@
 import React from 'react';
 import { Heart, Eye, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useWishlist } from '../../context/WishlistContext';
 import './ProductCard.css';
 
 const ProductCard = ({ product }) => {
+    const { toggleWishlist, isInWishlist } = useWishlist();
+    const inWishlist = isInWishlist(product.id);
+
     return (
         <div className="product-card group">
             <Link to={`/product/${product.id}`} className="product-image-container" style={{ display: 'block' }}>
@@ -19,11 +23,20 @@ const ProductCard = ({ product }) => {
 
                 {/* Hover Actions */}
                 <div className="product-actions" onClick={(e) => e.preventDefault()}>
-                    <button className="btn-icon" title="Quick View">
+                    <Link to={`/product/${product.id}`} className="btn-icon" title="Quick View">
                         <Eye size={18} strokeWidth={1.5} />
-                    </button>
-                    <button className="btn-icon" title="Add to Wishlist">
-                        <Heart size={18} strokeWidth={1.5} />
+                    </Link>
+                    <button
+                        className="btn-icon"
+                        title="Toggle Wishlist"
+                        onClick={() => toggleWishlist(product.id)}
+                    >
+                        <Heart
+                            size={18}
+                            strokeWidth={1.5}
+                            fill={inWishlist ? 'currentColor' : 'none'}
+                            color={inWishlist ? '#ff4d4f' : 'currentColor'}
+                        />
                     </button>
                 </div>
             </Link>
@@ -58,9 +71,9 @@ const ProductCard = ({ product }) => {
                     ))}
                 </div>
 
-                <button className="btn btn-outline add-to-cart-btn">
-                    Add to Cart
-                </button>
+                <Link to={`/product/${product.id}`} className="btn btn-outline add-to-cart-btn" style={{ display: 'flex', justifyContent: 'center' }}>
+                    Choose Options
+                </Link>
             </div>
         </div>
     );

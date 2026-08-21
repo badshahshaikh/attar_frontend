@@ -110,3 +110,119 @@
 
     /* On mobile, logo should be centered usually, but flex-between handles it if we have 3 items. */
 }
+
+/* Header Search Styles */
+.search-container {
+    position: relative;
+    display: flex;
+}
+
+.search-overlay {
+    position: absolute;
+    top: calc(100% + 20px);
+    right: -10px;
+    width: 320px;
+    background-color: var(--color-bg-primary, #fff);
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--color-border);
+    overflow: hidden;
+    z-index: 200;
+}
+
+@media (max-width: 768px) {
+    .search-overlay {
+        position: fixed;
+        top: 80px;
+        left: 0;
+        right: 0;
+        width: 100%;
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+    }
+}
+
+.search-form {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.header-search-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 0.95rem;
+    font-family: var(--font-sans);
+    background: transparent;
+    padding: 8px 0;
+}
+
+.close-search-btn {
+    background: none;
+    border: none;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+}
+
+.close-search-btn:hover {
+    color: var(--color-text-primary);
+}
+
+.search-results {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.search-result-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: background-color var(--transition-fast);
+}
+
+.search-result-item:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+.search-result-item img {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.search-result-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.search-result-info h4 {
+    font-size: 0.9rem;
+    margin: 0 0 2px 0;
+    color: var(--color-text-primary);
+}
+
+.search-result-info span {
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+}
+
+.search-no-results {
+    padding: 24px 16px;
+    text-align: center;
+    color: var(--color-text-secondary);
+    font-size: 0.9rem;
+}
+
+.wishlist-count {
+    background-color: #ff4d4f;
+}

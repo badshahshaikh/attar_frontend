@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import Breadcrumb from '../components/Breadcrumb/Breadcrumb';
 import PageHeader from '../components/PageHeader/PageHeader';
 import Filters from '../components/Filters/Filters';
@@ -8,9 +9,10 @@ import { mockProducts } from '../data/mockProducts';
 
 const Shop = () => {
     const [isFilterOpen, setIsFilterOpen] = useState(false);
+    const [searchParams, setSearchParams] = useSearchParams();
 
     // Search & Filter State
-    const [searchTerm, setSearchTerm] = useState('');
+    const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
     const [filters, setFilters] = useState({
         categories: [],
         priceRanges: [],
@@ -18,6 +20,13 @@ const Shop = () => {
         inStockOnly: false
     });
     const [sortType, setSortType] = useState('popularity');
+
+    useEffect(() => {
+        const query = searchParams.get('search');
+        if (query !== null && query !== searchTerm) {
+            setSearchTerm(query);
+        }
+    }, [searchParams]);
 
     const toggleFilters = () => setIsFilterOpen(!isFilterOpen);
 
@@ -40,6 +49,10 @@ const Shop = () => {
 
     const resetFilters = () => {
         setSearchTerm('');
+        if (searchParams.has('search')) {
+            searchParams.delete('search');
+            setSearchParams(searchParams);
+        }
         setFilters({
             categories: [],
             priceRanges: [],

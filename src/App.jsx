@@ -5,7 +5,9 @@ import Shop from './pages/Shop';
 import ProductDetails from './pages/ProductDetails/ProductDetails';
 import Cart from './pages/Cart/Cart';
 import Checkout from './pages/Checkout/Checkout';
+import Wishlist from './pages/Wishlist/Wishlist';
 import { CartProvider } from './context/CartContext';
+import { WishlistProvider } from './context/WishlistContext';
 import './App.css';
 
 function App() {
@@ -18,20 +20,23 @@ function App() {
   return (
     <Router>
       <CartProvider>
-        <div className="app">
-          <Header toggleMobileMenu={toggleMobileMenu} />
+        <WishlistProvider>
+          <div className="app">
+            <Header toggleMobileMenu={toggleMobileMenu} />
 
-          <Routes>
-            <Route path="/" element={<Shop />} />
-            <Route path="/product/:id" element={<ProductDetails />} />
-            <Route path="/cart" element={<Cart />} />
-            <Route path="/checkout" element={<Checkout />} />
-          </Routes>
+            <Routes>
+              <Route path="/" element={<Shop />} />
+              <Route path="/product/:id" element={<ProductDetails />} />
+              <Route path="/cart" element={<Cart />} />
+              <Route path="/checkout" element={<Checkout />} />
+              <Route path="/wishlist" element={<Wishlist />} />
+            </Routes>
 
-          <footer className="footer container">
-            <p>© 2026 RoohAttars. Premium Fragrances. All rights reserved.</p>
-          </footer>
-        </div>
+            <footer className="footer container">
+              <p>© 2026 RoohAttars. Premium Fragrances. All rights reserved.</p>
+            </footer>
+          </div>
+        </WishlistProvider>
       </CartProvider>
     </Router>
   );
