@@ -9,6 +9,7 @@ import Wishlist from './pages/Wishlist/Wishlist';
 import Collections from './pages/Collections/Collections';
 import About from './pages/About/About';
 import Footer from './components/Footer/Footer';
+import ScrollToTop from './components/ScrollToTop/ScrollToTop';
 import { CartProvider } from './context/CartContext';
 import { WishlistProvider } from './context/WishlistContext';
 import './App.css';
@@ -16,6 +17,7 @@ import './App.css';
 function App() {
   return (
     <Router>
+      <ScrollToTop />
       <CartProvider>
         <WishlistProvider>
           <div className="app">
