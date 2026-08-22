@@ -1,20 +1,27 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Search, Heart, ShoppingBag, Menu, X } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
 import { useWishlist } from '../../context/WishlistContext';
 import { mockProducts } from '../../data/mockProducts';
 import './Header.css';
 
-const Header = ({ toggleMobileMenu }) => {
+const Header = () => {
     const { cartCount } = useCart();
     const { wishlistItems } = useWishlist();
     const navigate = useNavigate();
+    const location = useLocation();
 
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState([]);
     const searchRef = useRef(null);
+
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+    useEffect(() => {
+        setIsMobileMenuOpen(false);
+    }, [location.pathname]);
 
     useEffect(() => {
         if (!searchQuery.trim()) {
@@ -62,21 +69,25 @@ const Header = ({ toggleMobileMenu }) => {
         <header className="header">
             <div className="container header-inner">
                 {/* Mobile menu toggle */}
-                <button className="mobile-menu-btn" onClick={toggleMobileMenu}>
+                <button className="mobile-menu-btn" onClick={() => setIsMobileMenuOpen(true)}>
                     <Menu size={20} />
                 </button>
 
                 {/* Brand Logo */}
                 <div className="logo">
-                    <Link to="/">RoohAttars</Link>
+                    <Link to="/">
+                        <img
+                            src="/ms-fragrance.png"
+                            alt="MS Fragrance"
+                        />
+                    </Link>
                 </div>
 
                 {/* Navigation */}
                 <nav className="nav-links">
-                    <Link to="/" className="active">Shop</Link>
-                    <a href="#">Collections</a>
-                    <a href="#">About Us</a>
-                    <a href="#">Journal</a>
+                    <Link to="/" className={location.pathname === '/' ? 'active' : ''}>Shop</Link>
+                    <Link to="/collections" className={location.pathname === '/collections' ? 'active' : ''}>Collections</Link>
+                    <Link to="/about" className={location.pathname === '/about' ? 'active' : ''}>About</Link>
                 </nav>
 
                 {/* Right Actions */}
@@ -141,6 +152,28 @@ const Header = ({ toggleMobileMenu }) => {
                     </Link>
                 </div>
             </div>
+
+            {/* Mobile Nav Drawer */}
+            <div className={`mobile-nav-drawer ${isMobileMenuOpen ? 'open' : ''}`}>
+                <div className="mobile-nav-header">
+                    <span className="mobile-nav-title">Menu</span>
+                    <button className="close-mobile-nav" onClick={() => setIsMobileMenuOpen(false)}>
+                        <X size={24} />
+                    </button>
+                </div>
+                <nav className="mobile-nav-links">
+                    <Link to="/" onClick={() => setIsMobileMenuOpen(false)}>Shop</Link>
+                    <Link to="/collections" onClick={() => setIsMobileMenuOpen(false)}>Collections</Link>
+                    <Link to="/about" onClick={() => setIsMobileMenuOpen(false)}>About Us</Link>
+                    <Link to="/wishlist" onClick={() => setIsMobileMenuOpen(false)}>Wishlist</Link>
+                    <Link to="/cart" onClick={() => setIsMobileMenuOpen(false)}>Cart</Link>
+                </nav>
+            </div>
+
+            {/* Backdrop for the Mobile Drawer */}
+            {isMobileMenuOpen && (
+                <div className="mobile-nav-backdrop" onClick={() => setIsMobileMenuOpen(false)}></div>
+            )}
         </header>
     );
 };
