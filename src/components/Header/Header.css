@@ -99,9 +99,15 @@
 }
 
 .logo img {
-    height: 100px;
-    width: auto;
     display: block;
+    width: 150px;
+    height: auto;
+}
+
+@media (max-width: 767px) {
+    .logo img {
+        width: 155px;
+    }
 }
 
 .mobile-menu-btn {

@@ -76,10 +76,17 @@ const Header = () => {
                 {/* Brand Logo */}
                 <div className="logo">
                     <Link to="/">
-                        <img
-                            src="/ms-fragrance.png"
-                            alt="MS Fragrance"
-                        />
+                        <picture>
+                            <source
+                                media="(max-width: 767px)"
+                                srcSet="/ms-fragrance-horizontal.jpg"
+                            />
+
+                            <img
+                                src="/ms-fragrance.png"
+                                alt="MS Fragrance"
+                            />
+                        </picture>
                     </Link>
                 </div>
 
