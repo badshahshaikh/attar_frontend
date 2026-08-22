@@ -8,6 +8,7 @@ import Checkout from './pages/Checkout/Checkout';
 import Wishlist from './pages/Wishlist/Wishlist';
 import Collections from './pages/Collections/Collections';
 import About from './pages/About/About';
+import Footer from './components/Footer/Footer';
 import { CartProvider } from './context/CartContext';
 import { WishlistProvider } from './context/WishlistContext';
 import './App.css';
@@ -30,9 +31,7 @@ function App() {
               <Route path="/about" element={<About />} />
             </Routes>
 
-            <footer className="footer container">
-              <p>© 2026 RoohAttars. Premium Fragrances. All rights reserved.</p>
-            </footer>
+            <Footer />
           </div>
         </WishlistProvider>
       </CartProvider>
