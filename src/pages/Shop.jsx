@@ -13,11 +13,14 @@ const Shop = () => {
 
     // Search & Filter State
     const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
-    const [filters, setFilters] = useState({
-        categories: [],
-        priceRanges: [],
-        sizes: [],
-        inStockOnly: false
+    const [filters, setFilters] = useState(() => {
+        const collection = searchParams.get('collection');
+        return {
+            categories: collection ? [collection] : [],
+            priceRanges: [],
+            sizes: [],
+            inStockOnly: false
+        };
     });
     const [sortType, setSortType] = useState('popularity');
 
@@ -26,6 +29,15 @@ const Shop = () => {
         if (query !== null && query !== searchTerm) {
             setSearchTerm(query);
         }
+
+        const collection = searchParams.get('collection');
+        setFilters(prev => {
+            const nextCategories = collection ? [collection] : [];
+            if (JSON.stringify(prev.categories) === JSON.stringify(nextCategories)) {
+                return prev;
+            }
+            return { ...prev, categories: nextCategories };
+        });
     }, [searchParams]);
 
     const toggleFilters = () => setIsFilterOpen(!isFilterOpen);
@@ -49,10 +61,10 @@ const Shop = () => {
 
     const resetFilters = () => {
         setSearchTerm('');
-        if (searchParams.has('search')) {
-            searchParams.delete('search');
-            setSearchParams(searchParams);
-        }
+        const params = new URLSearchParams(searchParams.toString());
+        params.delete('search');
+        params.delete('collection');
+        setSearchParams(params);
         setFilters({
             categories: [],
             priceRanges: [],

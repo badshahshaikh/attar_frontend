@@ -53,7 +53,7 @@ const Header = () => {
     const handleSearchSubmit = (e) => {
         e.preventDefault();
         if (searchQuery.trim()) {
-            navigate(`/?search=${encodeURIComponent(searchQuery)}`);
+            navigate(`/shop?search=${encodeURIComponent(searchQuery)}`);
             setIsSearchOpen(false);
             setSearchQuery('');
         }
@@ -91,8 +91,9 @@ const Header = () => {
                 </div>
 
                 {/* Navigation */}
-                <nav className="nav-links">
-                    <Link to="/" className={location.pathname === '/' ? 'active' : ''}>Shop</Link>
+                <nav className="nav-links" aria-label="Main navigation">
+                    <Link to="/" className={location.pathname === '/' ? 'active' : ''}>Home</Link>
+                    <Link to="/shop" className={location.pathname.startsWith('/shop') ? 'active' : ''}>Shop</Link>
                     <Link to="/collections" className={location.pathname === '/collections' ? 'active' : ''}>Collections</Link>
                     <Link to="/about" className={location.pathname === '/about' ? 'active' : ''}>About</Link>
                 </nav>
@@ -168,10 +169,11 @@ const Header = () => {
                         <X size={24} />
                     </button>
                 </div>
-                <nav className="mobile-nav-links">
-                    <Link to="/" onClick={() => setIsMobileMenuOpen(false)}>Shop</Link>
+                <nav className="mobile-nav-links" aria-label="Mobile navigation">
+                    <Link to="/" onClick={() => setIsMobileMenuOpen(false)}>Home</Link>
+                    <Link to="/shop" onClick={() => setIsMobileMenuOpen(false)}>Shop</Link>
                     <Link to="/collections" onClick={() => setIsMobileMenuOpen(false)}>Collections</Link>
-                    <Link to="/about" onClick={() => setIsMobileMenuOpen(false)}>About Us</Link>
+                    <Link to="/about" onClick={() => setIsMobileMenuOpen(false)}>About</Link>
                     <Link to="/wishlist" onClick={() => setIsMobileMenuOpen(false)}>Wishlist</Link>
                     <Link to="/cart" onClick={() => setIsMobileMenuOpen(false)}>Cart</Link>
                 </nav>

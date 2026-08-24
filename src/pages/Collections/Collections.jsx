@@ -13,7 +13,7 @@ const Collections = () => {
     };
 
     const handleCollectionClick = (category) => {
-        navigate(`/?collection=${encodeURIComponent(category)}`);
+        navigate(`/shop?collection=${encodeURIComponent(category)}`);
     };
 
     return (
