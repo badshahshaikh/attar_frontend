@@ -15,8 +15,10 @@ const Shop = () => {
     const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
     const [filters, setFilters] = useState(() => {
         const collection = searchParams.get('collection');
+        const brand = searchParams.get('brand');
         return {
             categories: collection ? [collection] : [],
+            brand: brand || '',
             priceRanges: [],
             sizes: [],
             inStockOnly: false
@@ -31,12 +33,14 @@ const Shop = () => {
         }
 
         const collection = searchParams.get('collection');
+        const brand = searchParams.get('brand');
         setFilters(prev => {
             const nextCategories = collection ? [collection] : [];
-            if (JSON.stringify(prev.categories) === JSON.stringify(nextCategories)) {
+            const nextBrand = brand || '';
+            if (JSON.stringify(prev.categories) === JSON.stringify(nextCategories) && prev.brand === nextBrand) {
                 return prev;
             }
-            return { ...prev, categories: nextCategories };
+            return { ...prev, categories: nextCategories, brand: nextBrand };
         });
     }, [searchParams]);
 
@@ -46,6 +50,10 @@ const Shop = () => {
         setFilters(prev => {
             if (filterType === 'inStockOnly') {
                 return { ...prev, inStockOnly: value };
+            }
+
+            if (filterType === 'brand') {
+                return { ...prev, brand: value };
             }
 
             const currentSelected = prev[filterType];
@@ -64,9 +72,11 @@ const Shop = () => {
         const params = new URLSearchParams(searchParams.toString());
         params.delete('search');
         params.delete('collection');
+        params.delete('brand');
         setSearchParams(params);
         setFilters({
             categories: [],
+            brand: '',
             priceRanges: [],
             sizes: [],
             inStockOnly: false
@@ -93,7 +103,19 @@ const Shop = () => {
 
         // 2. Categories
         if (filters.categories.length > 0) {
-            result = result.filter(p => filters.categories.includes(p.fragranceType));
+            // Handle special collections
+            if (filters.categories.includes('best-sellers')) {
+                result = result.filter(p => p.isBestSeller);
+            } else if (filters.categories.includes('exclusive')) {
+                result = result.filter(p => p.isExclusive);
+            } else {
+                result = result.filter(p => filters.categories.includes(p.fragranceType));
+            }
+        }
+
+        // 2.5. Brand
+        if (filters.brand) {
+            result = result.filter(p => p.brand === filters.brand);
         }
 
         // 3. Sizes

@@ -21,6 +21,9 @@ export const mockProducts = [
         longevity: "5-7 Hours",
         inStock: true,
         isNew: true,
+        brand: "MS Fragrance",
+        isBestSeller: false,
+        isExclusive: false,
         imageUrl: "https://images.unsplash.com/photo-1594035910387-fea47794261f?q=80&w=800&auto=format&fit=crop"
     },
     {
@@ -45,6 +48,9 @@ export const mockProducts = [
         longevity: "5-7 Hours",
         inStock: true,
         isNew: false,
+        brand: "MS Fragrance",
+        isBestSeller: true,
+        isExclusive: false,
         imageUrl: "https://images.unsplash.com/photo-1590736704728-f4730bb30770?q=80&w=800&auto=format&fit=crop"
     },
     {
@@ -69,6 +75,9 @@ export const mockProducts = [
         longevity: "5-7 Hours",
         inStock: true,
         isNew: false,
+        brand: "MS Fragrance",
+        isBestSeller: false,
+        isExclusive: false,
         imageUrl: "https://images.unsplash.com/photo-1629198688000-71f23e745b6e?q=80&w=800&auto=format&fit=crop"
     },
     {
@@ -93,6 +102,9 @@ export const mockProducts = [
         longevity: "6-8 Hours",
         inStock: true,
         isNew: false,
+        brand: "MS Fragrance",
+        isBestSeller: true,
+        isExclusive: false,
         imageUrl: "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?q=80&w=800&auto=format&fit=crop"
     },
     {
@@ -117,6 +129,9 @@ export const mockProducts = [
         longevity: "6-8 Hours",
         inStock: true,
         isNew: true,
+        brand: "MS Fragrance",
+        isBestSeller: true,
+        isExclusive: false,
         imageUrl: "https://images.unsplash.com/photo-1588405748880-12d1d2a59f75?q=80&w=800&auto=format&fit=crop"
     },
     {
@@ -141,6 +156,9 @@ export const mockProducts = [
         longevity: "5-7 Hours",
         inStock: true,
         isNew: false,
+        brand: "MS Fragrance",
+        isBestSeller: false,
+        isExclusive: false,
         imageUrl: "https://images.unsplash.com/photo-1615529182904-14819c35db37?q=80&w=800&auto=format&fit=crop"
     },
     {
@@ -165,6 +183,9 @@ export const mockProducts = [
         longevity: "6-8 Hours",
         inStock: true,
         isNew: false,
+        brand: "MS Fragrance",
+        isBestSeller: true,
+        isExclusive: false,
         imageUrl: "https://images.unsplash.com/photo-1594035910387-fea47794261f?q=80&w=800&auto=format&fit=crop"
     },
     {
@@ -189,6 +210,9 @@ export const mockProducts = [
         longevity: "5-7 Hours",
         inStock: true,
         isNew: false,
+        brand: "MS Fragrance",
+        isBestSeller: false,
+        isExclusive: false,
         imageUrl: "https://images.unsplash.com/photo-1629198688000-71f23e745b6e?q=80&w=800&auto=format&fit=crop"
     },
     {
@@ -213,6 +237,9 @@ export const mockProducts = [
         longevity: "7-9 Hours",
         inStock: true,
         isNew: true,
+        brand: "MS Fragrance",
+        isBestSeller: true,
+        isExclusive: false,
         imageUrl: "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?q=80&w=800&auto=format&fit=crop"
     },
     {
@@ -237,6 +264,9 @@ export const mockProducts = [
         longevity: "7-9 Hours",
         inStock: true,
         isNew: false,
+        brand: "MS Fragrance",
+        isBestSeller: true,
+        isExclusive: false,
         imageUrl: "https://images.unsplash.com/photo-1588405748880-12d1d2a59f75?q=80&w=800&auto=format&fit=crop"
     }
 ];

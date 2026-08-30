@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, Heart, ShoppingBag, Menu, X } from 'lucide-react';
+import { Search, Heart, ShoppingBag, Menu, X, ChevronDown } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
 import { useWishlist } from '../../context/WishlistContext';
@@ -18,6 +18,35 @@ const Header = () => {
     const searchRef = useRef(null);
 
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [isBrandsDropdownOpen, setIsBrandsDropdownOpen] = useState(false);
+    const [isMobileBrandsOpen, setIsMobileBrandsOpen] = useState(false);
+    const [isFragranceDropdownOpen, setIsFragranceDropdownOpen] = useState(false);
+    const [isMobileFragranceOpen, setIsMobileFragranceOpen] = useState(false);
+    const brandsDropdownRef = useRef(null);
+    const fragranceDropdownRef = useRef(null);
+
+    const brands = [
+        { name: "MS Fragrance Exclusive", value: "MS Fragrance", exclusive: true },
+        { name: "Inspired Fragrances", value: "Inspired Fragrances", exclusive: false },
+        { name: "Surrati", value: "Surrati", exclusive: false },
+        { name: "Anfar", value: "Anfar", exclusive: false },
+        { name: "SMD Ayyub MD Yaqub", value: "SMD Ayyub MD Yaqub", exclusive: false },
+        { name: "Al Haramain", value: "Al Haramain", exclusive: false },
+        { name: "Swiss Arabian", value: "Swiss Arabian", exclusive: false },
+        { name: "Nemat", value: "Nemat", exclusive: false },
+        { name: "S.H. Kelkar", value: "S.H. Kelkar", exclusive: false }
+    ];
+
+    const fragranceFamilies = [
+        { name: "Oud", value: "oud" },
+        { name: "Musk", value: "musk" },
+        { name: "Amber", value: "amber" },
+        { name: "Shamama", value: "shamama" },
+        { name: "Floral", value: "floral" },
+        { name: "French", value: "french" },
+        { name: "Khas", value: "khas" },
+        { name: "Dehn Al Oud", value: "dehn-al-oud" }
+    ];
 
     useEffect(() => {
         setIsMobileMenuOpen(false);
@@ -45,6 +74,12 @@ const Header = () => {
             if (searchRef.current && !searchRef.current.contains(e.target)) {
                 setIsSearchOpen(false);
             }
+            if (brandsDropdownRef.current && !brandsDropdownRef.current.contains(e.target)) {
+                setIsBrandsDropdownOpen(false);
+            }
+            if (fragranceDropdownRef.current && !fragranceDropdownRef.current.contains(e.target)) {
+                setIsFragranceDropdownOpen(false);
+            }
         };
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -65,6 +100,46 @@ const Header = () => {
         setSearchQuery('');
     };
 
+    const handleNavClick = (collection, brand = null) => {
+        const params = new URLSearchParams();
+        if (collection) {
+            params.set('collection', collection);
+        }
+        if (brand) {
+            params.set('brand', brand);
+        }
+        navigate(`/shop?${params.toString()}`);
+        setIsBrandsDropdownOpen(false);
+    };
+
+    const handleBrandClick = (brandValue, isExclusive = false) => {
+        const params = new URLSearchParams();
+        params.set('brand', brandValue);
+        if (isExclusive) {
+            params.set('collection', 'exclusive');
+        }
+        navigate(`/shop?${params.toString()}`);
+        setIsBrandsDropdownOpen(false);
+    };
+
+    const handleFragranceClick = (fragranceValue) => {
+        const params = new URLSearchParams();
+        params.set('collection', fragranceValue);
+        navigate(`/shop?${params.toString()}`);
+        setIsFragranceDropdownOpen(false);
+    };
+
+    const isActiveNav = (path) => {
+        if (path === '/') return location.pathname === '/';
+        if (path.startsWith('/shop')) return location.pathname.startsWith('/shop');
+        return location.pathname === path;
+    };
+
+    const getActiveClass = (collection) => {
+        const currentCollection = new URLSearchParams(location.search).get('collection');
+        return currentCollection === collection ? 'active' : '';
+    };
+
     return (
         <header className="header">
             <div className="container header-inner">
@@ -79,7 +154,7 @@ const Header = () => {
                         <picture>
                             <source
                                 media="(max-width: 767px)"
-                                srcSet="/ms-fragrance-horizontal.jpg"
+                                srcSet="/ms-fragrance-mobile.png"
                             />
 
                             <img
@@ -92,10 +167,67 @@ const Header = () => {
 
                 {/* Navigation */}
                 <nav className="nav-links" aria-label="Main navigation">
-                    <Link to="/" className={location.pathname === '/' ? 'active' : ''}>Home</Link>
-                    <Link to="/shop" className={location.pathname.startsWith('/shop') ? 'active' : ''}>Shop</Link>
-                    <Link to="/collections" className={location.pathname === '/collections' ? 'active' : ''}>Collections</Link>
-                    <Link to="/about" className={location.pathname === '/about' ? 'active' : ''}>About</Link>
+                    <Link to="/" className={isActiveNav('/') ? 'active' : ''}>Home</Link>
+                    <button 
+                        className={`nav-link-btn ${getActiveClass('best-sellers')}`}
+                        onClick={() => handleNavClick('best-sellers')}
+                    >
+                        Best Sellers
+                    </button>
+                    <div 
+                        className="nav-item-with-dropdown"
+                        ref={brandsDropdownRef}
+                        onMouseEnter={() => setIsBrandsDropdownOpen(true)}
+                        onMouseLeave={() => setIsBrandsDropdownOpen(false)}
+                    >
+                        <button className="nav-link-btn">
+                            Brands
+                            <ChevronDown size={14} className="nav-chevron" />
+                        </button>
+                        {isBrandsDropdownOpen && (
+                            <div className="brands-dropdown">
+                                {brands.map((brand) => (
+                                    <button
+                                        key={brand.value}
+                                        className="brand-dropdown-item"
+                                        onClick={() => handleBrandClick(brand.value, brand.exclusive)}
+                                    >
+                                        {brand.name}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                    <div 
+                        className="nav-item-with-dropdown"
+                        ref={fragranceDropdownRef}
+                        onMouseEnter={() => setIsFragranceDropdownOpen(true)}
+                        onMouseLeave={() => setIsFragranceDropdownOpen(false)}
+                    >
+                        <button className="nav-link-btn">
+                            Fragrance Family
+                            <ChevronDown size={14} className="nav-chevron" />
+                        </button>
+                        {isFragranceDropdownOpen && (
+                            <div className="fragrance-dropdown">
+                                {fragranceFamilies.map((fragrance) => (
+                                    <button
+                                        key={fragrance.value}
+                                        className="fragrance-dropdown-item"
+                                        onClick={() => handleFragranceClick(fragrance.value)}
+                                    >
+                                        {fragrance.name}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                    <button 
+                        className={`nav-link-btn ${getActiveClass('ms-fragrance')}`}
+                        onClick={() => handleNavClick(null, 'MS Fragrance')}
+                    >
+                        MS Fragrance
+                    </button>
                 </nav>
 
                 {/* Right Actions */}
@@ -171,9 +303,80 @@ const Header = () => {
                 </div>
                 <nav className="mobile-nav-links" aria-label="Mobile navigation">
                     <Link to="/" onClick={() => setIsMobileMenuOpen(false)}>Home</Link>
-                    <Link to="/shop" onClick={() => setIsMobileMenuOpen(false)}>Shop</Link>
-                    <Link to="/collections" onClick={() => setIsMobileMenuOpen(false)}>Collections</Link>
-                    <Link to="/about" onClick={() => setIsMobileMenuOpen(false)}>About</Link>
+                    <button 
+                        className="mobile-nav-link-btn"
+                        onClick={() => {
+                            handleNavClick('best-sellers');
+                            setIsMobileMenuOpen(false);
+                        }}
+                    >
+                        Best Sellers
+                    </button>
+                    <div className="mobile-nav-accordion">
+                        <button 
+                            className="mobile-nav-accordion-header"
+                            onClick={() => setIsMobileBrandsOpen(!isMobileBrandsOpen)}
+                        >
+                            Brands
+                            <ChevronDown 
+                                size={16} 
+                                className={`mobile-nav-chevron ${isMobileBrandsOpen ? 'open' : ''}`} 
+                            />
+                        </button>
+                        {isMobileBrandsOpen && (
+                            <div className="mobile-nav-accordion-content">
+                                {brands.map((brand) => (
+                                    <button
+                                        key={brand.value}
+                                        className="mobile-nav-accordion-item"
+                                        onClick={() => {
+                                            handleBrandClick(brand.value, brand.exclusive);
+                                            setIsMobileMenuOpen(false);
+                                        }}
+                                    >
+                                        {brand.name}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                    <div className="mobile-nav-accordion">
+                        <button 
+                            className="mobile-nav-accordion-header"
+                            onClick={() => setIsMobileFragranceOpen(!isMobileFragranceOpen)}
+                        >
+                            Fragrance Family
+                            <ChevronDown 
+                                size={16} 
+                                className={`mobile-nav-chevron ${isMobileFragranceOpen ? 'open' : ''}`} 
+                            />
+                        </button>
+                        {isMobileFragranceOpen && (
+                            <div className="mobile-nav-accordion-content">
+                                {fragranceFamilies.map((fragrance) => (
+                                    <button
+                                        key={fragrance.value}
+                                        className="mobile-nav-accordion-item"
+                                        onClick={() => {
+                                            handleFragranceClick(fragrance.value);
+                                            setIsMobileMenuOpen(false);
+                                        }}
+                                    >
+                                        {fragrance.name}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                    <button 
+                        className="mobile-nav-link-btn"
+                        onClick={() => {
+                            handleNavClick(null, 'MS Fragrance');
+                            setIsMobileMenuOpen(false);
+                        }}
+                    >
+                        MS Fragrance
+                    </button>
                     <Link to="/wishlist" onClick={() => setIsMobileMenuOpen(false)}>Wishlist</Link>
                     <Link to="/cart" onClick={() => setIsMobileMenuOpen(false)}>Cart</Link>
                 </nav>

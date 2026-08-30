@@ -1,6 +1,6 @@
 .header {
-    border-bottom: 1px solid rgba(17, 17, 17, 0.08);
-    background-color: rgba(252, 251, 249, 0.9);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: #3d2914;
     backdrop-filter: blur(10px);
     position: sticky;
     top: 0;
@@ -43,34 +43,44 @@
     }
 }
 
-.nav-links a {
+.nav-links a,
+.nav-link-btn {
     position: relative;
     font-size: 0.72rem;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--color-text-secondary);
+    color: #f5f0e8;
     padding: 10px 0;
     transition: color var(--transition-fast);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: var(--font-sans);
 }
 
 .nav-links a:hover,
-.nav-links a.active {
-    color: var(--color-text-primary);
+.nav-links a.active,
+.nav-link-btn:hover,
+.nav-link-btn.active {
+    color: #ffffff;
 }
 
-.nav-links a::after {
+.nav-links a::after,
+.nav-link-btn::after {
     content: '';
     position: absolute;
     bottom: 3px;
     left: 0;
     width: 0;
     height: 1px;
-    background-color: var(--color-text-primary);
+    background-color: #ffffff;
     transition: width var(--transition-normal);
 }
 
 .nav-links a:hover::after,
-.nav-links a.active::after {
+.nav-links a.active::after,
+.nav-link-btn:hover::after,
+.nav-link-btn.active::after {
     width: 100%;
 }
 
@@ -83,7 +93,7 @@
 }
 
 .action-btn {
-    color: var(--color-text-primary);
+    color: #f5f0e8;
     transition: color var(--transition-fast), transform var(--transition-fast);
     display: flex;
     align-items: center;
@@ -95,7 +105,7 @@
 }
 
 .action-btn:hover {
-    color: var(--color-accent);
+    color: #ffffff;
     transform: translateY(-1px);
 }
 
@@ -121,7 +131,7 @@
 
 .logo img {
     display: block;
-    width: 150px;
+    width: 95px;
     height: auto;
 }
 
@@ -131,9 +141,9 @@
         gap: 8px;
     }
 
-    .logo img {
+    /* .logo img {
         width: 136px;
-    }
+    } */
 
     .header-actions {
         gap: 6px;
@@ -149,7 +159,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--color-text-primary);
+    color: #f5f0e8;
     width: 38px;
     height: 38px;
     border-radius: 50%;
@@ -354,4 +364,182 @@
     height: 100vh;
     background-color: rgba(0, 0, 0, 0.5);
     z-index: 999;
+}
+
+/* Brands Dropdown Styles */
+.nav-item-with-dropdown {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.nav-link-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.nav-chevron {
+    transition: transform var(--transition-fast);
+}
+
+.nav-item-with-dropdown:hover .nav-chevron {
+    transform: rotate(180deg);
+}
+
+.brands-dropdown {
+    position: absolute;
+    top: calc(100% + 15px);
+    left: 50%;
+    transform: translateX(-50%);
+    min-width: 200px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    padding: 8px 0;
+    z-index: 200;
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+.brand-dropdown-item {
+    width: 100%;
+    padding: 12px 20px;
+    text-align: left;
+    background: none;
+    border: none;
+    font-size: 0.85rem;
+    color: #3d2914;
+    cursor: pointer;
+    transition: background-color var(--transition-fast), color var(--transition-fast);
+    font-family: var(--font-sans);
+}
+
+.brand-dropdown-item:hover {
+    background-color: rgba(61, 41, 20, 0.05);
+    color: #3d2914;
+}
+
+/* Fragrance Family Dropdown Styles */
+.fragrance-dropdown {
+    position: absolute;
+    top: calc(100% + 15px);
+    left: 50%;
+    transform: translateX(-50%);
+    min-width: 180px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    padding: 8px 0;
+    z-index: 200;
+    animation: fadeIn 0.2s ease;
+}
+
+.fragrance-dropdown-item {
+    width: 100%;
+    padding: 12px 20px;
+    text-align: left;
+    background: none;
+    border: none;
+    font-size: 0.85rem;
+    color: #3d2914;
+    cursor: pointer;
+    transition: background-color var(--transition-fast), color var(--transition-fast);
+    font-family: var(--font-sans);
+}
+
+.fragrance-dropdown-item:hover {
+    background-color: rgba(61, 41, 20, 0.05);
+    color: #3d2914;
+}
+
+/* Mobile Navigation Accordion Styles */
+.mobile-nav-link-btn {
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    font-size: 0.95rem;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-family: var(--font-sans);
+    padding: 2px 0;
+    cursor: pointer;
+    transition: color var(--transition-fast);
+}
+
+.mobile-nav-link-btn:hover,
+.mobile-nav-link-btn.active {
+    color: var(--color-text-primary);
+}
+
+.mobile-nav-accordion {
+    margin-top: 8px;
+}
+
+.mobile-nav-accordion-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: none;
+    border: none;
+    font-size: 0.95rem;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-family: var(--font-sans);
+    padding: 8px 0;
+    cursor: pointer;
+    transition: color var(--transition-fast);
+}
+
+.mobile-nav-accordion-header:hover {
+    color: var(--color-text-primary);
+}
+
+.mobile-nav-chevron {
+    transition: transform var(--transition-normal);
+}
+
+.mobile-nav-chevron.open {
+    transform: rotate(180deg);
+}
+
+.mobile-nav-accordion-content {
+    padding-left: 16px;
+    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.mobile-nav-accordion-item {
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+    text-transform: none;
+    letter-spacing: normal;
+    font-family: var(--font-sans);
+    padding: 4px 0;
+    cursor: pointer;
+    transition: color var(--transition-fast);
+}
+
+.mobile-nav-accordion-item:hover {
+    color: var(--color-text-primary);
 }
