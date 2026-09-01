@@ -24,13 +24,15 @@ const Header = () => {
     const [isMobileFragranceOpen, setIsMobileFragranceOpen] = useState(false);
     const brandsDropdownRef = useRef(null);
     const fragranceDropdownRef = useRef(null);
+    const desktopSearchRef = useRef(null);
+    const mobileSearchRef = useRef(null);
 
     const [currentAnnouncement, setCurrentAnnouncement] = useState(0);
 
     const announcements = [
         "Discover the Art of Authentic Attars",
         "Premium Fragrances Delivered Across India",
-        "Exclusive Collection of Oud, Musk & Traditional Attars",
+        "Exclusive Collection of Oud, Musk",
         "Free Shipping on Selected Orders"
     ];
 
@@ -87,7 +89,10 @@ const Header = () => {
 
     useEffect(() => {
         const handleClickOutside = (e) => {
-            if (searchRef.current && !searchRef.current.contains(e.target)) {
+            if (desktopSearchRef.current && !desktopSearchRef.current.contains(e.target)) {
+                setIsSearchOpen(false);
+            }
+            if (mobileSearchRef.current && !mobileSearchRef.current.contains(e.target)) {
                 setIsSearchOpen(false);
             }
             if (brandsDropdownRef.current && !brandsDropdownRef.current.contains(e.target)) {
@@ -166,177 +171,233 @@ const Header = () => {
             </div>
 
             <header className="header">
-            <div className="container header-inner">
-                {/* Mobile menu toggle */}
-                <button className="mobile-menu-btn" onClick={() => setIsMobileMenuOpen(true)}>
-                    <Menu size={20} />
-                </button>
-                
-                <button
-                    className="action-btn"
-                    aria-label="Search"
-                    onClick={() => setIsSearchOpen(!isSearchOpen)}
-                >
-                    <Search size={20} strokeWidth={1.5} />
-                </button>
-
-                {/* Brand Logo */}
-                <div className="logo">
-                    <Link to="/">
-                        {/* Desktop Logo */}
-                        <picture className="desktop-logo">
-                            <img
-                                src="/ms-fragrance.png"
-                                alt="MS Fragrance"
-                            />
-                        </picture>
-
-                        {/* Mobile Branding */}
-                        <div className="mobile-branding">
-                            <span className="mobile-brand-text">MS Fragrance</span>
-                            <picture className="mobile-brand-logo">
-                                <source
-                                    media="(max-width: 767px)"
-                                    srcSet="/ms-fragrance-mobile.png"
-                                />
-
+                {/* Desktop Header */}
+                <div className="container desktop-header">
+                    {/* Desktop Logo */}
+                    <div className="logo">
+                        <Link to="/">
+                            <picture className="desktop-logo">
                                 <img
                                     src="/ms-fragrance.png"
                                     alt="MS Fragrance"
                                 />
                             </picture>
-                            <span className="mobile-brand-urdu">سعد عطار والا</span>
+                        </Link>
+                    </div>
+
+                    {/* Desktop Navigation */}
+                    <nav className="nav-links" aria-label="Main navigation">
+                        <Link to="/" className={isActiveNav('/') ? 'active' : ''}>Home</Link>
+                        <button 
+                            className={`nav-link-btn ${getActiveClass('best-sellers')}`}
+                            onClick={() => handleNavClick('best-sellers')}
+                        >
+                            Best Sellers
+                        </button>
+                        <div 
+                            className="nav-item-with-dropdown"
+                            ref={brandsDropdownRef}
+                            onMouseEnter={() => setIsBrandsDropdownOpen(true)}
+                            onMouseLeave={() => setIsBrandsDropdownOpen(false)}
+                        >
+                            <button className="nav-link-btn">
+                                Brands
+                                <ChevronDown size={14} className="nav-chevron" />
+                            </button>
+                            {isBrandsDropdownOpen && (
+                                <div className="brands-dropdown">
+                                    {brands.map((brand) => (
+                                        <button
+                                            key={brand.value}
+                                            className="brand-dropdown-item"
+                                            onClick={() => handleBrandClick(brand.value, brand.exclusive)}
+                                        >
+                                            {brand.name}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
                         </div>
-                    </Link>
+                        <div 
+                            className="nav-item-with-dropdown"
+                            ref={fragranceDropdownRef}
+                            onMouseEnter={() => setIsFragranceDropdownOpen(true)}
+                            onMouseLeave={() => setIsFragranceDropdownOpen(false)}
+                        >
+                            <button className="nav-link-btn">
+                                Fragrance Family
+                                <ChevronDown size={14} className="nav-chevron" />
+                            </button>
+                            {isFragranceDropdownOpen && (
+                                <div className="fragrance-dropdown">
+                                    {fragranceFamilies.map((fragrance) => (
+                                        <button
+                                            key={fragrance.value}
+                                            className="fragrance-dropdown-item"
+                                            onClick={() => handleFragranceClick(fragrance.value)}
+                                        >
+                                            {fragrance.name}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                        <button 
+                            className={`nav-link-btn ${getActiveClass('ms-fragrance')}`}
+                            onClick={() => handleNavClick(null, 'MS Fragrance')}
+                        >
+                            MS Fragrance
+                        </button>
+                    </nav>
+
+                    {/* Desktop Actions */}
+                    <div className="header-actions">
+                        <div ref={desktopSearchRef} className="search-container">
+                            <button
+                                className="action-btn"
+                                aria-label="Search"
+                                onClick={() => setIsSearchOpen(!isSearchOpen)}
+                            >
+                                <Search size={20} strokeWidth={1.5} />
+                            </button>
+
+                            {isSearchOpen && (
+                                <div className="search-overlay">
+                                    <form className="search-form" onSubmit={handleSearchSubmit}>
+                                        <input
+                                            type="text"
+                                            className="header-search-input"
+                                            placeholder="Search premium attars..."
+                                            value={searchQuery}
+                                            onChange={(e) => setSearchQuery(e.target.value)}
+                                            autoFocus
+                                        />
+                                        <button type="button" className="close-search-btn" onClick={() => setIsSearchOpen(false)}>
+                                            <X size={18} />
+                                        </button>
+                                    </form>
+
+                                    {searchQuery.trim() && (
+                                        <div className="search-results">
+                                            {searchResults.length > 0 ? (
+                                                searchResults.map(product => (
+                                                    <div
+                                                        key={product.id}
+                                                        className="search-result-item"
+                                                        onClick={() => handleResultClick(product.id)}
+                                                    >
+                                                        <img src={product.imageUrl} alt={product.name} />
+                                                        <div className="search-result-info">
+                                                            <h4>{product.name}</h4>
+                                                            <span>{product.fragranceType}</span>
+                                                        </div>
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <div className="search-no-results">No products found.</div>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+
+                        <Link to="/wishlist" className="action-btn cart-btn" aria-label="Wishlist">
+                            <Heart size={20} strokeWidth={1.5} />
+                            {wishlistItems.length > 0 && <span className="cart-count wishlist-count">{wishlistItems.length}</span>}
+                        </Link>
+                        <Link to="/cart" className="action-btn cart-btn" aria-label="Cart">
+                            <ShoppingBag size={20} strokeWidth={1.5} />
+                            {cartCount > 0 && <span className="cart-count">{cartCount}</span>}
+                        </Link>
+                    </div>
                 </div>
 
-                {/* Navigation */}
-                <nav className="nav-links" aria-label="Main navigation">
-                    <Link to="/" className={isActiveNav('/') ? 'active' : ''}>Home</Link>
-                    <button 
-                        className={`nav-link-btn ${getActiveClass('best-sellers')}`}
-                        onClick={() => handleNavClick('best-sellers')}
-                    >
-                        Best Sellers
-                    </button>
-                    <div 
-                        className="nav-item-with-dropdown"
-                        ref={brandsDropdownRef}
-                        onMouseEnter={() => setIsBrandsDropdownOpen(true)}
-                        onMouseLeave={() => setIsBrandsDropdownOpen(false)}
-                    >
-                        <button className="nav-link-btn">
-                            Brands
-                            <ChevronDown size={14} className="nav-chevron" />
-                        </button>
-                        {isBrandsDropdownOpen && (
-                            <div className="brands-dropdown">
-                                {brands.map((brand) => (
-                                    <button
-                                        key={brand.value}
-                                        className="brand-dropdown-item"
-                                        onClick={() => handleBrandClick(brand.value, brand.exclusive)}
-                                    >
-                                        {brand.name}
-                                    </button>
-                                ))}
-                            </div>
-                        )}
+                {/* Mobile Header */}
+                <div className="container mobile-header">
+                    {/* Mobile Branding Row */}
+                    <div className="mobile-branding-row">
+                        <Link to="/" className="mobile-branding">
+                            <span className="mobile-brand-text">MS Fragrance</span>
+                            <picture className="mobile-brand-logo">
+                                <img
+                                    src="/ms-fragrance-mobile.png"
+                                    alt="MS Fragrance"
+                                />
+                            </picture>
+                            <span className="mobile-brand-urdu">سعد عطار والا</span>
+                        </Link>
                     </div>
-                    <div 
-                        className="nav-item-with-dropdown"
-                        ref={fragranceDropdownRef}
-                        onMouseEnter={() => setIsFragranceDropdownOpen(true)}
-                        onMouseLeave={() => setIsFragranceDropdownOpen(false)}
-                    >
-                        <button className="nav-link-btn">
-                            Fragrance Family
-                            <ChevronDown size={14} className="nav-chevron" />
-                        </button>
-                        {isFragranceDropdownOpen && (
-                            <div className="fragrance-dropdown">
-                                {fragranceFamilies.map((fragrance) => (
-                                    <button
-                                        key={fragrance.value}
-                                        className="fragrance-dropdown-item"
-                                        onClick={() => handleFragranceClick(fragrance.value)}
-                                    >
-                                        {fragrance.name}
-                                    </button>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                    <button 
-                        className={`nav-link-btn ${getActiveClass('ms-fragrance')}`}
-                        onClick={() => handleNavClick(null, 'MS Fragrance')}
-                    >
-                        MS Fragrance
-                    </button>
-                </nav>
 
-                {/* Right Actions */}
-                <div className="header-actions">
-                    <div ref={searchRef} className="search-container">
-                        {/* <button
-                            className="action-btn"
-                            aria-label="Search"
-                            onClick={() => setIsSearchOpen(!isSearchOpen)}
-                        >
-                            <Search size={20} strokeWidth={1.5} />
-                        </button> */}
+                    {/* Mobile Actions Row */}
+                    <div className="mobile-actions-row">
+                        <div className="mobile-actions-left">
+                            <button className="mobile-menu-btn" onClick={() => setIsMobileMenuOpen(true)}>
+                                <Menu size={20} />
+                            </button>
+                            <div ref={mobileSearchRef} className="search-container">
+                                <button
+                                    className="action-btn"
+                                    aria-label="Search"
+                                    onClick={() => setIsSearchOpen(!isSearchOpen)}
+                                >
+                                    <Search size={20} strokeWidth={1.5} />
+                                </button>
 
-                        {isSearchOpen && (
-                            <div className="search-overlay">
-                                <form className="search-form" onSubmit={handleSearchSubmit}>
-                                    <input
-                                        type="text"
-                                        className="header-search-input"
-                                        placeholder="Search premium attars..."
-                                        value={searchQuery}
-                                        onChange={(e) => setSearchQuery(e.target.value)}
-                                        autoFocus
-                                    />
-                                    <button type="button" className="close-search-btn" onClick={() => setIsSearchOpen(false)}>
-                                        <X size={18} />
-                                    </button>
-                                </form>
+                                {isSearchOpen && (
+                                    <div className="search-overlay">
+                                        <form className="search-form" onSubmit={handleSearchSubmit}>
+                                            <input
+                                                type="text"
+                                                className="header-search-input"
+                                                placeholder="Search premium attars..."
+                                                value={searchQuery}
+                                                onChange={(e) => setSearchQuery(e.target.value)}
+                                                autoFocus
+                                            />
+                                            <button type="button" className="close-search-btn" onClick={() => setIsSearchOpen(false)}>
+                                                <X size={18} />
+                                            </button>
+                                        </form>
 
-                                {searchQuery.trim() && (
-                                    <div className="search-results">
-                                        {searchResults.length > 0 ? (
-                                            searchResults.map(product => (
-                                                <div
-                                                    key={product.id}
-                                                    className="search-result-item"
-                                                    onClick={() => handleResultClick(product.id)}
-                                                >
-                                                    <img src={product.imageUrl} alt={product.name} />
-                                                    <div className="search-result-info">
-                                                        <h4>{product.name}</h4>
-                                                        <span>{product.fragranceType}</span>
-                                                    </div>
-                                                </div>
-                                            ))
-                                        ) : (
-                                            <div className="search-no-results">No products found.</div>
+                                        {searchQuery.trim() && (
+                                            <div className="search-results">
+                                                {searchResults.length > 0 ? (
+                                                    searchResults.map(product => (
+                                                        <div
+                                                            key={product.id}
+                                                            className="search-result-item"
+                                                            onClick={() => handleResultClick(product.id)}
+                                                        >
+                                                            <img src={product.imageUrl} alt={product.name} />
+                                                            <div className="search-result-info">
+                                                                <h4>{product.name}</h4>
+                                                                <span>{product.fragranceType}</span>
+                                                            </div>
+                                                        </div>
+                                                    ))
+                                                ) : (
+                                                    <div className="search-no-results">No products found.</div>
+                                                )}
+                                            </div>
                                         )}
                                     </div>
                                 )}
                             </div>
-                        )}
-                    </div>
+                        </div>
 
-                    <Link to="/wishlist" className="action-btn cart-btn" aria-label="Wishlist">
-                        <Heart size={20} strokeWidth={1.5} />
-                        {wishlistItems.length > 0 && <span className="cart-count wishlist-count">{wishlistItems.length}</span>}
-                    </Link>
-                    <Link to="/cart" className="action-btn cart-btn" aria-label="Cart">
-                        <ShoppingBag size={20} strokeWidth={1.5} />
-                        {cartCount > 0 && <span className="cart-count">{cartCount}</span>}
-                    </Link>
+                        <div className="mobile-actions-right">
+                            <Link to="/wishlist" className="action-btn cart-btn" aria-label="Wishlist">
+                                <Heart size={20} strokeWidth={1.5} />
+                                {wishlistItems.length > 0 && <span className="cart-count wishlist-count">{wishlistItems.length}</span>}
+                            </Link>
+                            <Link to="/cart" className="action-btn cart-btn" aria-label="Cart">
+                                <ShoppingBag size={20} strokeWidth={1.5} />
+                                {cartCount > 0 && <span className="cart-count">{cartCount}</span>}
+                            </Link>
+                        </div>
+                    </div>
                 </div>
-            </div>
 
             {/* Mobile Nav Drawer */}
             <div className={`mobile-nav-drawer ${isMobileMenuOpen ? 'open' : ''}`}>

@@ -35,12 +35,19 @@
     z-index: 100;
 }
 
-.header-inner {
-    display: flex;
+/* Desktop Header */
+.desktop-header {
+    display: none;
     align-items: center;
     justify-content: space-between;
     min-height: 74px;
     gap: 12px;
+}
+
+@media (min-width: 768px) {
+    .desktop-header {
+        display: flex;
+    }
 }
 
 .logo {
@@ -66,16 +73,38 @@
     height: auto;
 }
 
-/* Mobile Branding Layout */
-.mobile-branding {
+/* Mobile Header */
+.mobile-header {
     display: none;
+    flex-direction: column;
+    gap: 8px;
+    padding: 8px 0;
+}
+
+@media (max-width: 767px) {
+    .mobile-header {
+        display: flex;
+    }
+}
+
+/* Mobile Branding Row */
+.mobile-branding-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+.mobile-branding {
+    display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
+    text-decoration: none;
 }
 
 .mobile-brand-text {
-    font-size: 0.7rem;
+    font-size: clamp(0.55rem, 2.5vw, 0.65rem);
     font-weight: 600;
     color: #f5f0e8;
     text-transform: uppercase;
@@ -89,44 +118,36 @@
 }
 
 .mobile-brand-logo img {
-    width: 32px;
+    width: clamp(60px, 8vw, 32px);
     height: auto;
 }
 
 .mobile-brand-urdu {
-    font-size: 0.85rem;
+    font-size: clamp(0.7rem, 3vw, 0.85rem);
     color: #f5f0e8;
     font-family: 'Noto Nastaliq Urdu', 'Arial', sans-serif;
     direction: rtl;
     white-space: nowrap;
 }
 
-@media (max-width: 767px) {
-    .desktop-logo {
-        display: none;
-    }
-
-    .mobile-branding {
-        display: flex;
-    }
-
-    .mobile-brand-text {
-        font-size: clamp(0.55rem, 2.5vw, 0.65rem);
-    }
-
-    .mobile-brand-logo img {
-        width: clamp(28px, 8vw, 32px);
-    }
-
-    .mobile-brand-urdu {
-        font-size: clamp(0.7rem, 3vw, 0.85rem);
-    }
+/* Mobile Actions Row */
+.mobile-actions-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
 }
 
-@media (min-width: 768px) {
-    .mobile-branding {
-        display: none;
-    }
+.mobile-actions-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.mobile-actions-right {
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
 .nav-links {
@@ -141,10 +162,6 @@
 @media (min-width: 768px) {
     .nav-links {
         display: flex;
-    }
-
-    .desktop-logo {
-        display: block;
     }
 }
 
@@ -234,22 +251,6 @@
     justify-content: center;
 }
 
-@media (max-width: 767px) {
-    .header-inner {
-        min-height: 68px;
-        gap: 8px;
-    }
-
-    .header-actions {
-        gap: 6px;
-    }
-
-    .action-btn {
-        width: 34px;
-        height: 34px;
-    }
-}
-
 .mobile-menu-btn {
     display: flex;
     align-items: center;
@@ -263,6 +264,13 @@
 @media (min-width: 768px) {
     .mobile-menu-btn {
         display: none;
+    }
+}
+
+@media (max-width: 767px) {
+    .action-btn {
+        width: 34px;
+        height: 34px;
     }
 }
 
@@ -466,7 +474,6 @@
     position: relative;
     display: flex;
     align-items: center;
-    padding-bottom: 25px;
 }
 
 .nav-item-with-dropdown::before {
