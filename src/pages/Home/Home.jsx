@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import ProductCard from '../../components/ProductCard/ProductCard';
-import { mockProducts } from '../../data/mockProducts';
+import { useProducts } from '../../context/ProductContext';
 import './Home.css';
 
 const heroSlides = [
@@ -36,6 +36,7 @@ const heroSlides = [
 ];
 
 const Home = () => {
+    const { products, loading, error } = useProducts();
     const [currentSlide, setCurrentSlide] = useState(0);
     const [isPaused, setIsPaused] = useState(false);
 
@@ -53,15 +54,15 @@ const Home = () => {
     }, [currentSlide, isPaused]);
 
     const categories = useMemo(() => {
-        const uniqueCategories = [...new Set(mockProducts.map(product => product.fragranceType))];
+        const uniqueCategories = [...new Set(products.map(product => product.fragranceType))];
         return uniqueCategories.slice(0, 6);
-    }, []);
+    }, [products]);
 
     const featuredProducts = useMemo(() => {
-        return [...mockProducts]
+        return [...products]
             .sort((a, b) => Number(b.isNew) - Number(a.isNew) || b.reviews - a.reviews)
             .slice(0, 4);
-    }, []);
+    }, [products]);
 
     const handleSlideChange = (direction) => {
         setCurrentSlide(prev => {
@@ -71,6 +72,26 @@ const Home = () => {
             return (prev - 1 + heroSlides.length) % heroSlides.length;
         });
     };
+
+    if (loading) {
+        return (
+            <main className="home-page">
+                <section className="home-section container" style={{ textAlign: 'center', padding: '60px 20px' }}>
+                    <h2 style={{ fontSize: '1.8rem', fontWeight: 300, marginBottom: '16px', color: 'var(--text-color)' }}>Loading fragrances...</h2>
+                </section>
+            </main>
+        );
+    }
+
+    if (error) {
+        return (
+            <main className="home-page">
+                <section className="home-section container" style={{ textAlign: 'center', padding: '60px 20px' }}>
+                    <h2 style={{ fontSize: '1.8rem', fontWeight: 300, marginBottom: '16px', color: 'var(--text-color)' }}>{error}</h2>
+                </section>
+            </main>
+        );
+    }
 
     return (
         <main className="home-page">
@@ -156,7 +177,7 @@ const Home = () => {
 
                 <div className="category-grid">
                     {categories.map(category => {
-                        const categoryProduct = mockProducts.find(product => product.fragranceType === category) || mockProducts[0];
+                        const categoryProduct = products.find(product => product.fragranceType === category) || products[0];
 
                         return (
                             <Link

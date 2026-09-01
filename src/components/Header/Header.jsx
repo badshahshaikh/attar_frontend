@@ -3,12 +3,13 @@ import { Search, Heart, ShoppingBag, Menu, X, ChevronDown } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
 import { useWishlist } from '../../context/WishlistContext';
-import { mockProducts } from '../../data/mockProducts';
+import { useProducts } from '../../context/ProductContext';
 import './Header.css';
 
 const Header = () => {
     const { cartCount } = useCart();
     const { wishlistItems } = useWishlist();
+    const { products } = useProducts();
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -76,7 +77,7 @@ const Header = () => {
             return;
         }
         const lower = searchQuery.toLowerCase();
-        const results = mockProducts.filter(p =>
+        const results = products.filter(p =>
             p.name.toLowerCase().includes(lower) ||
             p.description.toLowerCase().includes(lower) ||
             p.fragranceType.toLowerCase().includes(lower) ||
@@ -85,7 +86,7 @@ const Header = () => {
             p.baseNotes.some(n => n.toLowerCase().includes(lower))
         ).slice(0, 5); // limit to top 5
         setSearchResults(results);
-    }, [searchQuery]);
+    }, [searchQuery, products]);
 
     useEffect(() => {
         const handleClickOutside = (e) => {

@@ -5,9 +5,10 @@ import PageHeader from '../components/PageHeader/PageHeader';
 import Filters from '../components/Filters/Filters';
 import Sorting from '../components/Sorting/Sorting';
 import ProductGrid from '../components/ProductGrid/ProductGrid';
-import { mockProducts } from '../data/mockProducts';
+import { useProducts } from '../context/ProductContext';
 
 const Shop = () => {
+    const { products, loading, error } = useProducts();
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [searchParams, setSearchParams] = useSearchParams();
 
@@ -85,7 +86,7 @@ const Shop = () => {
     };
 
     const filteredAndSortedProducts = useMemo(() => {
-        let result = [...mockProducts];
+        let result = [...products];
 
         // 1. Search
         if (searchTerm) {
@@ -153,15 +154,47 @@ const Shop = () => {
         }
 
         return result;
-    }, [searchTerm, filters, sortType]);
+    }, [products, searchTerm, filters, sortType]);
 
     const availableCategories = useMemo(() => {
-        return [...new Set(mockProducts.map(p => p.fragranceType))];
-    }, []);
+        return [...new Set(products.map(p => p.fragranceType))];
+    }, [products]);
 
     const availableSizes = useMemo(() => {
-        return [...new Set(mockProducts.flatMap(p => p.sizes))];
-    }, []);
+        return [...new Set(products.flatMap(p => p.sizes))];
+    }, [products]);
+
+    if (loading) {
+        return (
+            <main>
+                <Breadcrumb />
+                <PageHeader />
+                <section className="shop-section container">
+                    <div className="shop-layout">
+                        <div className="shop-content" style={{ textAlign: 'center', padding: '60px 20px' }}>
+                            <h2 style={{ fontSize: '1.8rem', fontWeight: 300, marginBottom: '16px', color: 'var(--text-color)' }}>Loading fragrances...</h2>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        );
+    }
+
+    if (error) {
+        return (
+            <main>
+                <Breadcrumb />
+                <PageHeader />
+                <section className="shop-section container">
+                    <div className="shop-layout">
+                        <div className="shop-content" style={{ textAlign: 'center', padding: '60px 20px' }}>
+                            <h2 style={{ fontSize: '1.8rem', fontWeight: 300, marginBottom: '16px', color: 'var(--text-color)' }}>{error}</h2>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        );
+    }
 
     return (
         <main>

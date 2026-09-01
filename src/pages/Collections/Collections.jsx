@@ -1,20 +1,41 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { mockProducts } from '../../data/mockProducts';
+import { useProducts } from '../../context/ProductContext';
 import './Collections.css';
 
 const Collections = () => {
     const navigate = useNavigate();
-    const categories = [...new Set(mockProducts.map(p => p.fragranceType))];
+    const { products, loading, error } = useProducts();
+    const categories = [...new Set(products.map(p => p.fragranceType))];
 
     const getCategoryImage = (category) => {
-        const product = mockProducts.find(p => p.fragranceType === category);
+        const product = products.find(p => p.fragranceType === category);
         return product ? product.imageUrl : '';
     };
 
     const handleCollectionClick = (category) => {
         navigate(`/shop?collection=${encodeURIComponent(category)}`);
     };
+
+    if (loading) {
+        return (
+            <main className="collections-page container">
+                <div className="text-center" style={{ padding: '60px 20px' }}>
+                    <h2 style={{ fontSize: '1.8rem', fontWeight: 300, marginBottom: '16px', color: 'var(--text-color)' }}>Loading fragrances...</h2>
+                </div>
+            </main>
+        );
+    }
+
+    if (error) {
+        return (
+            <main className="collections-page container">
+                <div className="text-center" style={{ padding: '60px 20px' }}>
+                    <h2 style={{ fontSize: '1.8rem', fontWeight: 300, marginBottom: '16px', color: 'var(--text-color)' }}>{error}</h2>
+                </div>
+            </main>
+        );
+    }
 
     return (
         <main className="collections-page container">

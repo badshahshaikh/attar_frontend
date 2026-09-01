@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { mockProducts } from '../data/mockProducts';
 
 const WishlistContext = createContext();
 
@@ -12,11 +11,8 @@ export const WishlistProvider = ({ children }) => {
             const parsed = JSON.parse(saved);
             if (!Array.isArray(parsed)) return [];
 
-            // Generate a fast lookup set of valid product IDs from the current catalog
-            const validIds = new Set(mockProducts.map(p => p.id));
-
-            // Filter the saved data to remove duplicates and stale IDs
-            const cleanedWishlist = [...new Set(parsed)].filter(id => validIds.has(id));
+            // Remove duplicates
+            const cleanedWishlist = [...new Set(parsed)];
             return cleanedWishlist;
         } catch (error) {
             console.error('Failed to parse wishlist from local storage', error);

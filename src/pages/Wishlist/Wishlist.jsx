@@ -2,14 +2,15 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { useWishlist } from '../../context/WishlistContext';
-import { mockProducts } from '../../data/mockProducts';
+import { useProducts } from '../../context/ProductContext';
 import ProductGrid from '../../components/ProductGrid/ProductGrid';
 import './Wishlist.css';
 
 const Wishlist = () => {
     const { wishlistItems } = useWishlist();
+    const { products } = useProducts();
 
-    const wishlistProducts = mockProducts.filter(product => wishlistItems.includes(product.id));
+    const wishlistProducts = products.filter(product => wishlistItems.includes(product.id));
 
     if (wishlistProducts.length === 0) {
         return (

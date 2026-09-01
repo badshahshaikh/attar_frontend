@@ -58,6 +58,9 @@ function toProduct(row) {
         longevity: row.longevity,
         inStock: row.in_stock === 1,    // SQLite stores booleans as 0/1
         isNew: row.is_new === 1,
+        ...(row.brand ? { brand: row.brand } : {}),
+        isBestSeller: row.is_best_seller === 1,
+        isExclusive: row.is_exclusive === 1,
         imageUrl: row.image_url,
         createdAt: row.created_at,
         updatedAt: row.updated_at,
@@ -95,7 +98,7 @@ router.post('/', async (req, res) => {
         name, category, fragranceType, description, fullDescription,
         rating, reviews, price, originalPrice, sizePricing, sizes,
         topNotes, heartNotes, baseNotes, longevity,
-        inStock, isNew, imageUrl,
+        inStock, isNew, brand, isBestSeller, isExclusive, imageUrl,
     } = req.body;
 
     if (!name || price === undefined) {
@@ -109,8 +112,8 @@ router.post('/', async (req, res) => {
               (name, category, fragrance_type, description, full_description,
                rating, reviews, price, original_price, size_pricing, sizes,
                top_notes, heart_notes, base_notes, longevity,
-               in_stock, is_new, image_url)
-            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+               in_stock, is_new, brand, is_best_seller, is_exclusive, image_url)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
         `, [
             name,
             category || 'Attar',
@@ -129,6 +132,9 @@ router.post('/', async (req, res) => {
             longevity || null,
             inStock !== undefined ? (inStock ? 1 : 0) : 1,
             isNew !== undefined ? (isNew ? 1 : 0) : 0,
+            brand || null,
+            isBestSeller !== undefined ? (isBestSeller ? 1 : 0) : 0,
+            isExclusive !== undefined ? (isExclusive ? 1 : 0) : 0,
             imageUrl || null,
         ]);
 
@@ -146,7 +152,7 @@ router.put('/:id', async (req, res) => {
         name, category, fragranceType, description, fullDescription,
         rating, reviews, price, originalPrice, sizePricing, sizes,
         topNotes, heartNotes, baseNotes, longevity,
-        inStock, isNew, imageUrl,
+        inStock, isNew, brand, isBestSeller, isExclusive, imageUrl,
     } = req.body;
 
     try {
@@ -174,6 +180,9 @@ router.put('/:id', async (req, res) => {
               longevity        = ?,
               in_stock         = ?,
               is_new           = ?,
+              brand            = ?,
+              is_best_seller   = ?,
+              is_exclusive     = ?,
               image_url        = ?,
               updated_at       = datetime('now')
             WHERE id = ?
@@ -195,6 +204,9 @@ router.put('/:id', async (req, res) => {
             longevity || null,
             inStock !== undefined ? (inStock ? 1 : 0) : 1,
             isNew !== undefined ? (isNew ? 1 : 0) : 0,
+            brand || null,
+            isBestSeller !== undefined ? (isBestSeller ? 1 : 0) : 0,
+            isExclusive !== undefined ? (isExclusive ? 1 : 0) : 0,
             imageUrl || null,
             req.params.id,
         ]);

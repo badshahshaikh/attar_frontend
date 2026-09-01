@@ -13,32 +13,35 @@ import Footer from './components/Footer/Footer';
 import ScrollToTop from './components/ScrollToTop/ScrollToTop';
 import { CartProvider } from './context/CartContext';
 import { WishlistProvider } from './context/WishlistContext';
+import { ProductProvider } from './context/ProductContext';
 import './App.css';
 
 function App() {
   return (
     <Router>
       <ScrollToTop />
-      <CartProvider>
-        <WishlistProvider>
-          <div className="app">
-            <Header />
+      <ProductProvider>
+        <CartProvider>
+          <WishlistProvider>
+            <div className="app">
+              <Header />
 
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/shop" element={<Shop />} />
-              <Route path="/product/:id" element={<ProductDetails />} />
-              <Route path="/cart" element={<Cart />} />
-              <Route path="/checkout" element={<Checkout />} />
-              <Route path="/wishlist" element={<Wishlist />} />
-              <Route path="/collections" element={<Collections />} />
-              <Route path="/about" element={<About />} />
-            </Routes>
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/shop" element={<Shop />} />
+                <Route path="/product/:id" element={<ProductDetails />} />
+                <Route path="/cart" element={<Cart />} />
+                <Route path="/checkout" element={<Checkout />} />
+                <Route path="/wishlist" element={<Wishlist />} />
+                <Route path="/collections" element={<Collections />} />
+                <Route path="/about" element={<About />} />
+              </Routes>
 
-            <Footer />
-          </div>
-        </WishlistProvider>
-      </CartProvider>
+              <Footer />
+            </div>
+          </WishlistProvider>
+        </CartProvider>
+      </ProductProvider>
     </Router>
   );
 }

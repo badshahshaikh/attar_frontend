@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Star, Heart, Share2, Plus, Minus, ShieldCheck, Truck } from 'lucide-react';
-import { mockProducts } from '../../data/mockProducts';
 import ProductGrid from '../../components/ProductGrid/ProductGrid';
 import { useCart } from '../../context/CartContext';
 import { useWishlist } from '../../context/WishlistContext';
+import { useProducts } from '../../context/ProductContext';
 import './ProductDetails.css';
 
 const ProductDetails = () => {
@@ -12,23 +12,32 @@ const ProductDetails = () => {
     const navigate = useNavigate();
     const { dispatch } = useCart();
     const { toggleWishlist, isInWishlist } = useWishlist();
+    const { products, loading, error, getProductById } = useProducts();
     const [product, setProduct] = useState(null);
     const [selectedSize, setSelectedSize] = useState('');
     const [quantity, setQuantity] = useState(1);
     const [currentPrice, setCurrentPrice] = useState(0);
 
     useEffect(() => {
-        const foundProduct = mockProducts.find(p => p.id === id);
+        const foundProduct = getProductById(id);
         if (foundProduct) {
             setProduct(foundProduct);
             setSelectedSize(foundProduct.sizes[0]);
             setCurrentPrice(foundProduct.sizePricing[foundProduct.sizes[0]]);
             setQuantity(1);
         }
-    }, [id]);
+    }, [id, getProductById]);
+
+    if (loading) {
+        return <div className="container py-20 text-center">Loading product...</div>;
+    }
+
+    if (error) {
+        return <div className="container py-20 text-center">{error}</div>;
+    }
 
     if (!product) {
-        return <div className="container py-20 text-center">Loading product...</div>;
+        return <div className="container py-20 text-center">Product not found</div>;
     }
 
     const handleSizeChange = (size) => {
@@ -58,7 +67,7 @@ const ProductDetails = () => {
         navigate('/cart');
     };
 
-    const relatedProducts = mockProducts.filter(p => p.id !== product.id).slice(0, 3);
+    const relatedProducts = products.filter(p => p.id !== product.id).slice(0, 3);
 
     return (
         <main className="product-details-page">
