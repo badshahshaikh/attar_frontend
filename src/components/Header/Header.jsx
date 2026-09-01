@@ -25,6 +25,15 @@ const Header = () => {
     const brandsDropdownRef = useRef(null);
     const fragranceDropdownRef = useRef(null);
 
+    const [currentAnnouncement, setCurrentAnnouncement] = useState(0);
+
+    const announcements = [
+        "Discover the Art of Authentic Attars",
+        "Premium Fragrances Delivered Across India",
+        "Exclusive Collection of Oud, Musk & Traditional Attars",
+        "Free Shipping on Selected Orders"
+    ];
+
     const brands = [
         { name: "MS Fragrance Exclusive", value: "MS Fragrance", exclusive: true },
         { name: "Inspired Fragrances", value: "Inspired Fragrances", exclusive: false },
@@ -47,6 +56,13 @@ const Header = () => {
         { name: "Khas", value: "khas" },
         { name: "Dehn Al Oud", value: "dehn-al-oud" }
     ];
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setCurrentAnnouncement((prev) => (prev + 1) % announcements.length);
+        }, 5000);
+        return () => clearInterval(interval);
+    }, [announcements.length]);
 
     useEffect(() => {
         setIsMobileMenuOpen(false);
@@ -141,27 +157,56 @@ const Header = () => {
     };
 
     return (
-        <header className="header">
+        <>
+            {/* Announcement Bar */}
+            <div className="announcement-bar">
+                <div className="announcement-content">
+                    {announcements[currentAnnouncement]}
+                </div>
+            </div>
+
+            <header className="header">
             <div className="container header-inner">
                 {/* Mobile menu toggle */}
                 <button className="mobile-menu-btn" onClick={() => setIsMobileMenuOpen(true)}>
                     <Menu size={20} />
                 </button>
+                
+                <button
+                    className="action-btn"
+                    aria-label="Search"
+                    onClick={() => setIsSearchOpen(!isSearchOpen)}
+                >
+                    <Search size={20} strokeWidth={1.5} />
+                </button>
 
                 {/* Brand Logo */}
                 <div className="logo">
                     <Link to="/">
-                        <picture>
-                            <source
-                                media="(max-width: 767px)"
-                                srcSet="/ms-fragrance-mobile.png"
-                            />
-
+                        {/* Desktop Logo */}
+                        <picture className="desktop-logo">
                             <img
                                 src="/ms-fragrance.png"
                                 alt="MS Fragrance"
                             />
                         </picture>
+
+                        {/* Mobile Branding */}
+                        <div className="mobile-branding">
+                            <span className="mobile-brand-text">MS Fragrance</span>
+                            <picture className="mobile-brand-logo">
+                                <source
+                                    media="(max-width: 767px)"
+                                    srcSet="/ms-fragrance-mobile.png"
+                                />
+
+                                <img
+                                    src="/ms-fragrance.png"
+                                    alt="MS Fragrance"
+                                />
+                            </picture>
+                            <span className="mobile-brand-urdu">سعد عطار والا</span>
+                        </div>
                     </Link>
                 </div>
 
@@ -233,13 +278,13 @@ const Header = () => {
                 {/* Right Actions */}
                 <div className="header-actions">
                     <div ref={searchRef} className="search-container">
-                        <button
+                        {/* <button
                             className="action-btn"
                             aria-label="Search"
                             onClick={() => setIsSearchOpen(!isSearchOpen)}
                         >
                             <Search size={20} strokeWidth={1.5} />
-                        </button>
+                        </button> */}
 
                         {isSearchOpen && (
                             <div className="search-overlay">
@@ -387,6 +432,7 @@ const Header = () => {
                 <div className="mobile-nav-backdrop" onClick={() => setIsMobileMenuOpen(false)}></div>
             )}
         </header>
+        </>
     );
 };
 
