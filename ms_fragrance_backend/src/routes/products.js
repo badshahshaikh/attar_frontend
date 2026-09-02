@@ -3,6 +3,7 @@ const express = require('express');
 const multer = require('multer');
 const { query } = require('../db');
 const { uploadProductImage, removeProductImage, getStoragePath } = require('../config/supabase');
+const authMiddleware = require('../middleware/auth');
 
 const router = express.Router();
 const FRAGRANCE_FAMILIES = ['Oud', 'Musk', 'Amber', 'Shamama', 'Floral', 'French', 'Khas', 'Dehn Al Oud'];
@@ -157,7 +158,7 @@ router.get('/', async (req, res) => {
 router.get('/brands', (req, res) => res.json(BRANDS));
 router.get('/fragrance-families', (req, res) => res.json(FRAGRANCE_FAMILIES));
 
-router.post('/upload-image', upload.single('image'), async (req, res) => {
+router.post('/upload-image', authMiddleware, upload.single('image'), async (req, res) => {
     if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
     try {
         const productId = String(req.body.productId || 'new').replace(/[^a-zA-Z0-9_-]/g, '-');
@@ -181,7 +182,7 @@ router.get('/:id', async (req, res) => {
     } catch (err) { console.error(err); res.status(500).json({ error: 'Failed to fetch product' }); }
 });
 
-router.post('/', async (req, res) => {
+router.post('/', authMiddleware, async (req, res) => {
     let payload;
     try { payload = parseProductPayload(req.body); } catch (err) { return res.status(400).json({ error: err.message }); }
     try {
@@ -191,7 +192,7 @@ router.post('/', async (req, res) => {
     } catch (err) { console.error(err); res.status(500).json({ error: 'Failed to create product' }); }
 });
 
-router.put('/:id', async (req, res) => {
+router.put('/:id', authMiddleware, async (req, res) => {
     const id = parseProductIdParam(req.params.id);
     if (!id) return res.status(400).json({ error: 'Product ID must be a positive integer' });
     let payload;
@@ -208,7 +209,7 @@ router.put('/:id', async (req, res) => {
     } catch (err) { console.error(err); res.status(500).json({ error: 'Failed to update product' }); }
 });
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authMiddleware, async (req, res) => {
     const id = parseProductIdParam(req.params.id);
     if (!id) return res.status(400).json({ error: 'Product ID must be a positive integer' });
     try {

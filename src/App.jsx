@@ -14,6 +14,10 @@ import ScrollToTop from './components/ScrollToTop/ScrollToTop';
 import { CartProvider } from './context/CartContext';
 import { WishlistProvider } from './context/WishlistContext';
 import { ProductProvider } from './context/ProductContext';
+import { AuthProvider } from './context/AuthContext';
+import Login from './pages/Login/Login';
+import Admin from './pages/Admin/Admin';
+import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute';
 import './App.css';
 
 function App() {
@@ -21,26 +25,40 @@ function App() {
     <Router>
       <ScrollToTop />
       <ProductProvider>
-        <CartProvider>
-          <WishlistProvider>
-            <div className="app">
-              <Header />
+        <AuthProvider>
+          <CartProvider>
+            <WishlistProvider>
+              <div className="app">
+                <Header />
 
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/shop" element={<Shop />} />
-                <Route path="/product/:id" element={<ProductDetails />} />
-                <Route path="/cart" element={<Cart />} />
-                <Route path="/checkout" element={<Checkout />} />
-                <Route path="/wishlist" element={<Wishlist />} />
-                <Route path="/collections" element={<Collections />} />
-                <Route path="/about" element={<About />} />
-              </Routes>
+                <Routes>
+                  {/* PUBLIC WEBSITE */}
+                  <Route path="/" element={<Home />} />
+                  <Route path="/shop" element={<Shop />} />
+                  <Route path="/product/:id" element={<ProductDetails />} />
+                  <Route path="/cart" element={<Cart />} />
+                  <Route path="/checkout" element={<Checkout />} />
+                  <Route path="/wishlist" element={<Wishlist />} />
+                  <Route path="/collections" element={<Collections />} />
+                  <Route path="/about" element={<About />} />
 
-              <Footer />
-            </div>
-          </WishlistProvider>
-        </CartProvider>
+                  {/* ADMIN LOGIN */}
+                  <Route path="/admin/login" element={<Login />} />
+
+                  {/* PROTECTED ADMIN AREA */}
+                  <Route element={<ProtectedRoute />}>
+                    <Route path="/admin" element={<Admin />} />
+                    <Route path="/admin/products" element={<Admin />} />
+                    <Route path="/admin/products/new" element={<Admin />} />
+                    <Route path="/admin/products/:id/edit" element={<Admin />} />
+                  </Route>
+                </Routes>
+
+                <Footer />
+              </div>
+            </WishlistProvider>
+          </CartProvider>
+        </AuthProvider>
       </ProductProvider>
     </Router>
   );
