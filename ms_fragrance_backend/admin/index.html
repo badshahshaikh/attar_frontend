@@ -459,7 +459,7 @@
 <div id="toast"></div>
 
 <script>
-  const API = 'http://localhost:5000/api/products';
+  const API = '/api/products';
   let products = [];
   let currentPage = 1;
   let totalPages = 1;
@@ -642,10 +642,12 @@
   async function uploadImage(file) {
     const fd = new FormData();
     fd.append('image', file);
+    const productId = document.getElementById('field-id').value;
+    if (productId) fd.append('productId', productId);
     const res = await fetch(`${API}/upload-image`, { method: 'POST', body: fd });
     if (!res.ok) throw new Error('Image upload failed');
     const data = await res.json();
-    return `http://localhost:5000${data.imageUrl}`;
+    return data.imageUrl;
   }
 
   // ── Submit Form ──────────────────────────────────────────────────────────────

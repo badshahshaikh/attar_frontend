@@ -306,7 +306,7 @@ const Header = () => {
                                     alt="MS Fragrance"
                                 />
                             </picture>
-                            <span className="mobile-brand-urdu">سعد عطار والا</span>
+                            <span className="mobile-brand-urdu">سعد لِلطُورت</span>
                         </Link>
                     </div>
 

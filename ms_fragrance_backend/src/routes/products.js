@@ -1,45 +1,31 @@
+require('dotenv').config();
 const express = require('express');
-const router = express.Router();
-const { getDb } = require('../db');
 const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
+const { query } = require('../db');
+const { uploadProductImage, removeProductImage, getStoragePath } = require('../config/supabase');
 
+const router = express.Router();
 const FRAGRANCE_FAMILIES = ['Oud', 'Musk', 'Amber', 'Shamama', 'Floral', 'French', 'Khas', 'Dehn Al Oud'];
 const BRANDS = ['MS Fragrance Exclusive', 'Inspire Fragrances', 'Surrati', 'Anfar', 'SMD Ayyub MD Yaqub', 'Al Haramain', 'Swiss Arabian', 'Nemat', 'SH Kelkar'];
-
-// ─── Multer: save uploaded images to /uploads/products ───────────────────────
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        const uploadDir = path.join(__dirname, '../../uploads/products');
-        if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
-        cb(null, uploadDir);
-    },
-    filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-        cb(null, uniqueSuffix + path.extname(file.originalname));
-    },
-});
+const PRODUCT_COLUMNS = `
+    id, name, category, fragrance_type, description, full_description,
+    rating, reviews, price, original_price, size_pricing, sizes,
+    top_notes, heart_notes, base_notes, longevity, in_stock, is_new,
+    brand, is_best_seller, is_exclusive, featured, stock_quantity, slug,
+    image_url, created_at, updated_at
+`;
+const JSON_FIELDS = new Set(['size_pricing', 'sizes', 'top_notes', 'heart_notes', 'base_notes']);
 
 const upload = multer({
-    storage,
-    limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 5 * 1024 * 1024 },
     fileFilter: (req, file, cb) => {
-        const allowed = /jpeg|jpg|png|webp|gif/;
-        const ok =
-            allowed.test(path.extname(file.originalname).toLowerCase()) &&
-            allowed.test(file.mimetype);
-        ok ? cb(null, true) : cb(new Error('Only image files are allowed'));
+        const allowed = new Set(['image/jpeg', 'image/png', 'image/webp']);
+        const valid = allowed.has(file.mimetype);
+        valid ? cb(null, true) : cb(new Error('Only image files are allowed'));
     },
 });
 
-// ─── Helper: safely parse JSON text fields from SQLite ────────────────────────
-function parseJson(val, fallback) {
-    if (val === null || val === undefined) return fallback;
-    try { return JSON.parse(val); } catch { return fallback; }
-}
-
-// ─── Helper: map SQLite row → camelCase shape with a single numeric product ID ─
 function toProduct(row) {
     return {
         id: Number(row.id),
@@ -51,19 +37,19 @@ function toProduct(row) {
         rating: Number(row.rating || 0),
         reviews: Number(row.reviews || 0),
         price: Number(row.price),
-        originalPrice: row.original_price !== null && row.original_price !== undefined ? Number(row.original_price) : null,
-        sizePricing: parseJson(row.size_pricing, {}),
-        sizes: parseJson(row.sizes, []),
-        topNotes: parseJson(row.top_notes, []),
-        heartNotes: parseJson(row.heart_notes, []),
-        baseNotes: parseJson(row.base_notes, []),
+        originalPrice: row.original_price === null ? null : Number(row.original_price),
+        sizePricing: row.size_pricing || {},
+        sizes: row.sizes || [],
+        topNotes: row.top_notes || [],
+        heartNotes: row.heart_notes || [],
+        baseNotes: row.base_notes || [],
         longevity: row.longevity || '',
-        inStock: row.in_stock === 1,
-        isNew: row.is_new === 1,
+        inStock: Boolean(row.in_stock),
+        isNew: Boolean(row.is_new),
         brand: row.brand || '',
-        isBestSeller: row.is_best_seller === 1,
-        isExclusive: row.is_exclusive === 1,
-        featured: row.featured === 1,
+        isBestSeller: Boolean(row.is_best_seller),
+        isExclusive: Boolean(row.is_exclusive),
+        featured: Boolean(row.featured),
         stockQuantity: Number(row.stock_quantity || 0),
         slug: row.slug || '',
         imageUrl: row.image_url || '',
@@ -81,70 +67,87 @@ function parseBoolean(value, fieldName) {
 }
 
 function parseProductPayload(body) {
-    const payload = { ...body };
-    payload.fragranceType = payload.fragranceType || payload.fragranceFamily;
+    const payload = { ...body, fragranceType: body.fragranceType || body.fragranceFamily };
     if (!payload.name || !String(payload.name).trim()) throw new Error('Product name is required');
-    if (payload.price === undefined || payload.price === '' || !Number.isFinite(Number(payload.price)) || Number(payload.price) < 0) {
-        throw new Error('Price must be a non-negative number');
-    }
+    if (payload.price === undefined || payload.price === '' || !Number.isFinite(Number(payload.price)) || Number(payload.price) < 0) throw new Error('Price must be a non-negative number');
     if (!payload.brand || !String(payload.brand).trim()) throw new Error('Brand is required');
     if (!payload.fragranceType || !String(payload.fragranceType).trim()) throw new Error('Fragrance family is required');
     for (const field of ['sizes', 'topNotes', 'heartNotes', 'baseNotes']) {
         if (payload[field] !== undefined && !Array.isArray(payload[field])) throw new Error(`${field} must be an array`);
     }
-    if (payload.sizePricing !== undefined && (typeof payload.sizePricing !== 'object' || Array.isArray(payload.sizePricing) || payload.sizePricing === null)) {
-        throw new Error('sizePricing must be an object');
-    }
-    for (const field of ['inStock', 'isNew', 'isBestSeller', 'isExclusive', 'featured']) {
-        payload[field] = parseBoolean(payload[field], field);
-    }
-    if (payload.stockQuantity !== undefined && (!Number.isInteger(Number(payload.stockQuantity)) || Number(payload.stockQuantity) < 0)) {
-        throw new Error('Stock quantity must be a non-negative integer');
-    }
+    if (payload.sizePricing !== undefined && (typeof payload.sizePricing !== 'object' || Array.isArray(payload.sizePricing) || payload.sizePricing === null)) throw new Error('sizePricing must be an object');
+    for (const field of ['inStock', 'isNew', 'isBestSeller', 'isExclusive', 'featured']) payload[field] = parseBoolean(payload[field], field);
+    if (payload.stockQuantity !== undefined && (!Number.isInteger(Number(payload.stockQuantity)) || Number(payload.stockQuantity) < 0)) throw new Error('Stock quantity must be a non-negative integer');
     payload.price = Number(payload.price);
-    if (payload.originalPrice !== undefined && payload.originalPrice !== null && payload.originalPrice !== '' && (!Number.isFinite(Number(payload.originalPrice)) || Number(payload.originalPrice) < 0)) {
-        throw new Error('Original price must be a non-negative number');
-    }
+    if (payload.originalPrice !== undefined && payload.originalPrice !== null && payload.originalPrice !== '' && (!Number.isFinite(Number(payload.originalPrice)) || Number(payload.originalPrice) < 0)) throw new Error('Original price must be a non-negative number');
     return payload;
 }
 
 function parseProductIdParam(rawId) {
-    if (rawId === undefined || rawId === null || rawId === '') {
-        return { valid: false, error: 'Product ID is required' };
-    }
-
-    const trimmed = String(rawId).trim();
-    if (!/^\d+$/.test(trimmed) || Number(trimmed) <= 0) {
-        return { valid: false, error: 'Product ID must be a positive integer' };
-    }
-
-    return { valid: true, value: Number(trimmed) };
+    if (!/^\d+$/.test(String(rawId)) || Number(rawId) <= 0) return null;
+    return Number(rawId);
 }
 
-// ─── GET /api/products ────────────────────────────────────────────────────────
+function productValues(payload, includeId) {
+    const values = [
+        payload.name, payload.category || 'Attar', payload.fragranceType || null,
+        payload.description || null, payload.fullDescription || null,
+        payload.rating || 0, payload.reviews || 0, payload.price,
+        payload.originalPrice || null, payload.sizePricing || {}, payload.sizes || [],
+        payload.topNotes || [], payload.heartNotes || [], payload.baseNotes || [],
+        payload.longevity || null, payload.inStock !== undefined ? payload.inStock : true,
+        payload.isNew !== undefined ? payload.isNew : false, payload.brand || null,
+        payload.isBestSeller !== undefined ? payload.isBestSeller : false,
+        payload.isExclusive !== undefined ? payload.isExclusive : false,
+        payload.featured !== undefined ? payload.featured : false,
+        payload.stockQuantity !== undefined ? Number(payload.stockQuantity) : (payload.inStock === false ? 0 : 1),
+        payload.slug || null, payload.imageUrl || null,
+    ];
+    const serializedValues = values.map((value, index) => {
+        const column = ['name', 'category', 'fragrance_type', 'description', 'full_description', 'rating', 'reviews', 'price', 'original_price', 'size_pricing', 'sizes', 'top_notes', 'heart_notes', 'base_notes', 'longevity', 'in_stock', 'is_new', 'brand', 'is_best_seller', 'is_exclusive', 'featured', 'stock_quantity', 'slug', 'image_url'][index];
+        return JSON_FIELDS.has(column) ? JSON.stringify(value) : value;
+    });
+    return includeId ? [payload.id, ...serializedValues] : serializedValues;
+}
+
+function extensionForMimeType(mimeType) {
+    return { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' }[mimeType];
+}
+
+async function cleanupImage(imageUrl) {
+    if (!getStoragePath(imageUrl)) return;
+    try {
+        await removeProductImage(imageUrl);
+    } catch (error) {
+        console.error('Supabase image cleanup failed');
+    }
+}
+
 router.get('/', async (req, res) => {
     try {
-        const db = await getDb();
         const page = Math.max(1, Number.parseInt(req.query.page, 10) || 1);
         const limit = Math.min(100, Math.max(1, Number.parseInt(req.query.limit, 10) || 50));
         const conditions = [];
         const values = [];
         if (req.query.search) {
             const search = `%${String(req.query.search).trim()}%`;
-            conditions.push('(name LIKE ? OR description LIKE ? OR brand LIKE ? OR fragrance_type LIKE ? OR category LIKE ?)');
-            values.push(search, search, search, search, search);
+            conditions.push('(name ILIKE $1 OR description ILIKE $1 OR brand ILIKE $1 OR fragrance_type ILIKE $1 OR category ILIKE $1)');
+            values.push(search);
         }
-        for (const [queryName, column] of [['brand', 'brand'], ['fragranceFamily', 'fragrance_type']]) {
-            if (req.query[queryName]) { conditions.push(`${column} = ?`); values.push(String(req.query[queryName])); }
+        for (const [queryName, column] of [['brand', 'brand'], ['fragranceFamily', 'fragrance_type'], ['category', 'category']]) {
+            if (req.query[queryName]) { conditions.push(`${column} = $${values.length + 1}`); values.push(String(req.query[queryName])); }
         }
         for (const [queryName, column] of [['isBestSeller', 'is_best_seller'], ['isExclusive', 'is_exclusive'], ['featured', 'featured']]) {
-            if (req.query[queryName] !== undefined) { conditions.push(`${column} = ?`); values.push(parseBoolean(req.query[queryName], queryName) ? 1 : 0); }
+            if (req.query[queryName] !== undefined) { conditions.push(`${column} = $${values.length + 1}`); values.push(parseBoolean(req.query[queryName], queryName)); }
         }
         const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
-        const { total } = await db.get(`SELECT COUNT(*) AS total FROM products ${where}`, values);
-        const rows = await db.all(`SELECT * FROM products ${where} ORDER BY id ASC LIMIT ? OFFSET ?`, [...values, limit, (page - 1) * limit]);
+        const countResult = await query(`SELECT COUNT(*)::int AS total FROM products ${where}`, values);
+        const total = countResult.rows[0].total;
+        const limitIndex = values.length + 1;
+        const offsetIndex = values.length + 2;
+        const result = await query(`SELECT ${PRODUCT_COLUMNS} FROM products ${where} ORDER BY id ASC LIMIT $${limitIndex} OFFSET $${offsetIndex}`, [...values, limit, (page - 1) * limit]);
         const totalPages = Math.ceil(total / limit);
-        res.json({ products: rows.map(toProduct), pagination: { page, limit, totalProducts: total, totalPages, hasNextPage: page < totalPages, hasPreviousPage: page > 1 } });
+        res.json({ products: result.rows.map(toProduct), pagination: { page, limit, totalProducts: total, totalPages, hasNextPage: page < totalPages, hasPreviousPage: page > 1 } });
     } catch (err) {
         console.error(err);
         res.status(400).json({ error: err.message || 'Failed to fetch products' });
@@ -154,191 +157,67 @@ router.get('/', async (req, res) => {
 router.get('/brands', (req, res) => res.json(BRANDS));
 router.get('/fragrance-families', (req, res) => res.json(FRAGRANCE_FAMILIES));
 
-// ─── GET /api/products/:id ────────────────────────────────────────────────────
-router.get('/:id', async (req, res) => {
-    const parsed = parseProductIdParam(req.params.id);
-    if (!parsed.valid) {
-        return res.status(400).json({ error: parsed.error });
-    }
-
+router.post('/upload-image', upload.single('image'), async (req, res) => {
+    if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
     try {
-        const db = await getDb();
-        const row = await db.get('SELECT * FROM products WHERE id = ?', parsed.value);
-        if (!row) return res.status(404).json({ error: 'Product not found' });
-        res.json(toProduct(row));
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Failed to fetch product' });
+        const productId = String(req.body.productId || 'new').replace(/[^a-zA-Z0-9_-]/g, '-');
+        const extension = extensionForMimeType(req.file.mimetype);
+        const objectPath = `products/product-${productId}/image-${Date.now()}.${extension}`;
+        const uploaded = await uploadProductImage(req.file, objectPath);
+        res.json({ imageUrl: uploaded.url, filename: uploaded.path });
+    } catch (error) {
+        console.error('Supabase image upload failed');
+        res.status(502).json({ error: 'Image upload failed' });
     }
 });
 
-// ─── POST /api/products ───────────────────────────────────────────────────────
+router.get('/:id', async (req, res) => {
+    const id = parseProductIdParam(req.params.id);
+    if (!id) return res.status(400).json({ error: 'Product ID must be a positive integer' });
+    try {
+        const result = await query(`SELECT ${PRODUCT_COLUMNS} FROM products WHERE id = $1`, [id]);
+        if (!result.rows[0]) return res.status(404).json({ error: 'Product not found' });
+        res.json(toProduct(result.rows[0]));
+    } catch (err) { console.error(err); res.status(500).json({ error: 'Failed to fetch product' }); }
+});
+
 router.post('/', async (req, res) => {
     let payload;
     try { payload = parseProductPayload(req.body); } catch (err) { return res.status(400).json({ error: err.message }); }
-    const {
-        name, category, fragranceType, description, fullDescription,
-        rating, reviews, price, originalPrice, sizePricing, sizes,
-        topNotes, heartNotes, baseNotes, longevity,
-        inStock, isNew, brand, isBestSeller, isExclusive, featured, stockQuantity, imageUrl, slug,
-    } = payload;
-
     try {
-        const db = await getDb();
-        const result = await db.run(`
-            INSERT INTO products
-              (name, category, fragrance_type, description, full_description,
-               rating, reviews, price, original_price, size_pricing, sizes,
-               top_notes, heart_notes, base_notes, longevity,
-                    in_stock, is_new, brand, is_best_seller, is_exclusive, featured, stock_quantity, slug, image_url)
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-        `, [
-            name,
-            category || 'Attar',
-            fragranceType || null,
-            description || null,
-            fullDescription || null,
-            rating || 0,
-            reviews || 0,
-            price,
-            originalPrice || null,
-            JSON.stringify(sizePricing || {}),
-            JSON.stringify(sizes || []),
-            JSON.stringify(topNotes || []),
-            JSON.stringify(heartNotes || []),
-            JSON.stringify(baseNotes || []),
-            longevity || null,
-            inStock !== undefined ? (inStock ? 1 : 0) : 1,
-            isNew !== undefined ? (isNew ? 1 : 0) : 0,
-            brand || null,
-            isBestSeller !== undefined ? (isBestSeller ? 1 : 0) : 0,
-            isExclusive !== undefined ? (isExclusive ? 1 : 0) : 0,
-            featured !== undefined ? (featured ? 1 : 0) : 0,
-            stockQuantity !== undefined ? Number(stockQuantity) : (inStock === false ? 0 : 1),
-            slug || null,
-            imageUrl || null,
-        ]);
-
-        const newRow = await db.get('SELECT * FROM products WHERE id = ?', result.lastID);
-        res.status(201).json(toProduct(newRow));
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Failed to create product' });
-    }
+        const values = productValues(payload, false);
+        const result = await query(`INSERT INTO products (name, category, fragrance_type, description, full_description, rating, reviews, price, original_price, size_pricing, sizes, top_notes, heart_notes, base_notes, longevity, in_stock, is_new, brand, is_best_seller, is_exclusive, featured, stock_quantity, slug, image_url) VALUES (${values.map((_, index) => `$${index + 1}`).join(', ')}) RETURNING ${PRODUCT_COLUMNS}`, values);
+        res.status(201).json(toProduct(result.rows[0]));
+    } catch (err) { console.error(err); res.status(500).json({ error: 'Failed to create product' }); }
 });
 
-// ─── PUT /api/products/:id ────────────────────────────────────────────────────
 router.put('/:id', async (req, res) => {
+    const id = parseProductIdParam(req.params.id);
+    if (!id) return res.status(400).json({ error: 'Product ID must be a positive integer' });
     let payload;
     try { payload = parseProductPayload(req.body); } catch (err) { return res.status(400).json({ error: err.message }); }
-    const {
-        name, category, fragranceType, description, fullDescription,
-        rating, reviews, price, originalPrice, sizePricing, sizes,
-        topNotes, heartNotes, baseNotes, longevity,
-        inStock, isNew, brand, isBestSeller, isExclusive, featured, stockQuantity, imageUrl, slug,
-    } = payload;
-
-    const parsed = parseProductIdParam(req.params.id);
-    if (!parsed.valid) {
-        return res.status(400).json({ error: parsed.error });
-    }
-
     try {
-        const db = await getDb();
-
-        const existing = await db.get('SELECT id FROM products WHERE id = ?', parsed.value);
-        if (!existing) return res.status(404).json({ error: 'Product not found' });
-
-        await db.run(`
-            UPDATE products SET
-              name             = ?,
-              category         = ?,
-              fragrance_type   = ?,
-              description      = ?,
-              full_description = ?,
-              rating           = ?,
-              reviews          = ?,
-              price            = ?,
-              original_price   = ?,
-              size_pricing     = ?,
-              sizes            = ?,
-              top_notes        = ?,
-              heart_notes      = ?,
-              base_notes       = ?,
-              longevity        = ?,
-              in_stock         = ?,
-              is_new           = ?,
-              brand            = ?,
-              is_best_seller   = ?,
-              is_exclusive     = ?,
-              featured         = ?,
-              stock_quantity   = ?,
-              slug             = ?,
-              image_url        = ?,
-              updated_at       = datetime('now')
-            WHERE id = ?
-        `, [
-            name,
-            category || 'Attar',
-            fragranceType || null,
-            description || null,
-            fullDescription || null,
-            rating || 0,
-            reviews || 0,
-            price,
-            originalPrice || null,
-            JSON.stringify(sizePricing || {}),
-            JSON.stringify(sizes || []),
-            JSON.stringify(topNotes || []),
-            JSON.stringify(heartNotes || []),
-            JSON.stringify(baseNotes || []),
-            longevity || null,
-            inStock !== undefined ? (inStock ? 1 : 0) : 1,
-            isNew !== undefined ? (isNew ? 1 : 0) : 0,
-            brand || null,
-            isBestSeller !== undefined ? (isBestSeller ? 1 : 0) : 0,
-            isExclusive !== undefined ? (isExclusive ? 1 : 0) : 0,
-            featured !== undefined ? (featured ? 1 : 0) : 0,
-            stockQuantity !== undefined ? Number(stockQuantity) : 0,
-            slug || null,
-            imageUrl || null,
-            parsed.value,
-        ]);
-
-        const updated = await db.get('SELECT * FROM products WHERE id = ?', parsed.value);
-        res.json(toProduct(updated));
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Failed to update product' });
-    }
+        const values = productValues(payload, false);
+        const columns = ['name', 'category', 'fragrance_type', 'description', 'full_description', 'rating', 'reviews', 'price', 'original_price', 'size_pricing', 'sizes', 'top_notes', 'heart_notes', 'base_notes', 'longevity', 'in_stock', 'is_new', 'brand', 'is_best_seller', 'is_exclusive', 'featured', 'stock_quantity', 'slug', 'image_url'];
+        const assignments = columns.map((column, index) => `${column} = $${index + 1}`).join(', ');
+        const previous = await query(`SELECT image_url FROM products WHERE id = $1`, [id]);
+        const result = await query(`UPDATE products SET ${assignments}, updated_at = NOW() WHERE id = $${values.length + 1} RETURNING ${PRODUCT_COLUMNS}`, [...values, id]);
+        if (!result.rows[0]) return res.status(404).json({ error: 'Product not found' });
+        if (previous.rows[0] && previous.rows[0].image_url !== result.rows[0].image_url) await cleanupImage(previous.rows[0].image_url);
+        res.json(toProduct(result.rows[0]));
+    } catch (err) { console.error(err); res.status(500).json({ error: 'Failed to update product' }); }
 });
 
-// ─── DELETE /api/products/:id ─────────────────────────────────────────────────
 router.delete('/:id', async (req, res) => {
-    const parsed = parseProductIdParam(req.params.id);
-    if (!parsed.valid) {
-        return res.status(400).json({ error: parsed.error });
-    }
-
+    const id = parseProductIdParam(req.params.id);
+    if (!id) return res.status(400).json({ error: 'Product ID must be a positive integer' });
     try {
-        const db = await getDb();
-
-        const existing = await db.get('SELECT id FROM products WHERE id = ?', parsed.value);
-        if (!existing) return res.status(404).json({ error: 'Product not found' });
-
-        await db.run('DELETE FROM products WHERE id = ?', parsed.value);
-        res.json({ message: 'Product deleted', id: parsed.value });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Failed to delete product' });
-    }
-});
-
-// ─── POST /api/products/upload-image ─────────────────────────────────────────
-router.post('/upload-image', upload.single('image'), (req, res) => {
-    if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
-    const imageUrl = `/uploads/products/${req.file.filename}`;
-    res.json({ imageUrl, filename: req.file.filename });
+        const existing = await query('SELECT image_url FROM products WHERE id = $1', [id]);
+        const result = await query('DELETE FROM products WHERE id = $1 RETURNING id', [id]);
+        if (!result.rows[0]) return res.status(404).json({ error: 'Product not found' });
+        if (existing.rows[0]) await cleanupImage(existing.rows[0].image_url);
+        res.json({ message: 'Product deleted', id });
+    } catch (err) { console.error(err); res.status(500).json({ error: 'Failed to delete product' }); }
 });
 
 module.exports = router;
