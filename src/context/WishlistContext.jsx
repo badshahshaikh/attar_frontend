@@ -11,9 +11,11 @@ export const WishlistProvider = ({ children }) => {
             const parsed = JSON.parse(saved);
             if (!Array.isArray(parsed)) return [];
 
-            // Remove duplicates
-            const cleanedWishlist = [...new Set(parsed)];
-            return cleanedWishlist;
+            const cleanedWishlist = parsed
+                .map(item => typeof item === 'number' && Number.isInteger(item) && item > 0 ? item : null)
+                .filter(Boolean);
+
+            return [...new Set(cleanedWishlist)];
         } catch (error) {
             console.error('Failed to parse wishlist from local storage', error);
             return [];

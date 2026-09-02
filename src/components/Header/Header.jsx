@@ -9,7 +9,7 @@ import './Header.css';
 const Header = () => {
     const { cartCount } = useCart();
     const { wishlistItems } = useWishlist();
-    const { products } = useProducts();
+    const { products, brands, fragranceFamilies } = useProducts();
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -37,28 +37,8 @@ const Header = () => {
         "Free Shipping on Selected Orders"
     ];
 
-    const brands = [
-        { name: "MS Fragrance Exclusive", value: "MS Fragrance", exclusive: true },
-        { name: "Inspired Fragrances", value: "Inspired Fragrances", exclusive: false },
-        { name: "Surrati", value: "Surrati", exclusive: false },
-        { name: "Anfar", value: "Anfar", exclusive: false },
-        { name: "SMD Ayyub MD Yaqub", value: "SMD Ayyub MD Yaqub", exclusive: false },
-        { name: "Al Haramain", value: "Al Haramain", exclusive: false },
-        { name: "Swiss Arabian", value: "Swiss Arabian", exclusive: false },
-        { name: "Nemat", value: "Nemat", exclusive: false },
-        { name: "S.H. Kelkar", value: "S.H. Kelkar", exclusive: false }
-    ];
-
-    const fragranceFamilies = [
-        { name: "Oud", value: "oud" },
-        { name: "Musk", value: "musk" },
-        { name: "Amber", value: "amber" },
-        { name: "Shamama", value: "shamama" },
-        { name: "Floral", value: "floral" },
-        { name: "French", value: "french" },
-        { name: "Khas", value: "khas" },
-        { name: "Dehn Al Oud", value: "dehn-al-oud" }
-    ];
+    const brandOptions = brands.map(brand => ({ name: brand, value: brand, exclusive: brand === 'MS Fragrance Exclusive' }));
+    const fragranceOptions = fragranceFamilies.map(family => ({ name: family, value: family }));
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -78,12 +58,12 @@ const Header = () => {
         }
         const lower = searchQuery.toLowerCase();
         const results = products.filter(p =>
-            p.name.toLowerCase().includes(lower) ||
-            p.description.toLowerCase().includes(lower) ||
-            p.fragranceType.toLowerCase().includes(lower) ||
-            p.topNotes.some(n => n.toLowerCase().includes(lower)) ||
-            p.heartNotes.some(n => n.toLowerCase().includes(lower)) ||
-            p.baseNotes.some(n => n.toLowerCase().includes(lower))
+            (p.name || '').toLowerCase().includes(lower) ||
+            (p.description || '').toLowerCase().includes(lower) ||
+            (p.fragranceType || '').toLowerCase().includes(lower) ||
+            (p.topNotes || []).some(n => (n || '').toLowerCase().includes(lower)) ||
+            (p.heartNotes || []).some(n => (n || '').toLowerCase().includes(lower)) ||
+            (p.baseNotes || []).some(n => (n || '').toLowerCase().includes(lower))
         ).slice(0, 5); // limit to top 5
         setSearchResults(results);
     }, [searchQuery, products]);
@@ -207,7 +187,7 @@ const Header = () => {
                             </button>
                             {isBrandsDropdownOpen && (
                                 <div className="brands-dropdown">
-                                    {brands.map((brand) => (
+                                    {brandOptions.map((brand) => (
                                         <button
                                             key={brand.value}
                                             className="brand-dropdown-item"
@@ -231,7 +211,7 @@ const Header = () => {
                             </button>
                             {isFragranceDropdownOpen && (
                                 <div className="fragrance-dropdown">
-                                    {fragranceFamilies.map((fragrance) => (
+                                    {fragranceOptions.map((fragrance) => (
                                         <button
                                             key={fragrance.value}
                                             className="fragrance-dropdown-item"
@@ -432,7 +412,7 @@ const Header = () => {
                         </button>
                         {isMobileBrandsOpen && (
                             <div className="mobile-nav-accordion-content">
-                                {brands.map((brand) => (
+                                {brandOptions.map((brand) => (
                                     <button
                                         key={brand.value}
                                         className="mobile-nav-accordion-item"
@@ -460,7 +440,7 @@ const Header = () => {
                         </button>
                         {isMobileFragranceOpen && (
                             <div className="mobile-nav-accordion-content">
-                                {fragranceFamilies.map((fragrance) => (
+                                {fragranceOptions.map((fragrance) => (
                                     <button
                                         key={fragrance.value}
                                         className="mobile-nav-accordion-item"

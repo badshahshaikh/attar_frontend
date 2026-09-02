@@ -60,6 +60,9 @@ async function getDb() {
             brand            TEXT,
             is_best_seller   INTEGER DEFAULT 0,
             is_exclusive     INTEGER DEFAULT 0,
+            featured         INTEGER DEFAULT 0,
+            stock_quantity   INTEGER DEFAULT 0,
+            slug             TEXT,
             image_url        TEXT,
             created_at       TEXT    DEFAULT (datetime('now')),
             updated_at       TEXT    DEFAULT (datetime('now'))
@@ -81,6 +84,17 @@ async function getDb() {
         await _db.exec('ALTER TABLE products ADD COLUMN is_exclusive INTEGER DEFAULT 0');
     } catch (err) {
         // Column already exists, ignore
+    }
+    for (const statement of [
+        'ALTER TABLE products ADD COLUMN featured INTEGER DEFAULT 0',
+        'ALTER TABLE products ADD COLUMN stock_quantity INTEGER DEFAULT 0',
+        'ALTER TABLE products ADD COLUMN slug TEXT',
+    ]) {
+        try {
+            await _db.exec(statement);
+        } catch (err) {
+            // Column already exists, ignore
+        }
     }
 
     console.log(`🗄️  SQLite database ready → ${DB_PATH}`);

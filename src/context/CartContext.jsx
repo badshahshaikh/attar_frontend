@@ -52,7 +52,28 @@ const init = (initialState) => {
     const savedCart = localStorage.getItem('attar_cart');
     if (savedCart) {
         try {
-            return JSON.parse(savedCart);
+            const parsed = JSON.parse(savedCart);
+            if (!parsed || typeof parsed !== 'object' || !Array.isArray(parsed.items)) {
+                return initialState;
+            }
+
+            const migratedItems = parsed.items
+                .map(item => {
+                    const normalizedProductId = item.productId;
+                    if (!Number.isInteger(normalizedProductId) || normalizedProductId <= 0) {
+                        return null;
+                    }
+                    return {
+                        ...item,
+                        productId: normalizedProductId,
+                        quantity: Number(item.quantity) > 0 ? Number(item.quantity) : 1,
+                        price: Number(item.price) || 0,
+                        total: Number(item.total) || (Number(item.price) || 0) * (Number(item.quantity) > 0 ? Number(item.quantity) : 1)
+                    };
+                })
+                .filter(Boolean);
+
+            return { ...parsed, items: migratedItems };
         } catch (error) {
             console.error("Failed to parse cart from local storage", error);
             return initialState;

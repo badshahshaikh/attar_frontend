@@ -60,7 +60,7 @@ const Home = () => {
 
     const featuredProducts = useMemo(() => {
         return [...products]
-            .sort((a, b) => Number(b.isNew) - Number(a.isNew) || b.reviews - a.reviews)
+            .sort((a, b) => Number(b.featured) - Number(a.featured) || Number(b.isNew) - Number(a.isNew) || b.reviews - a.reviews)
             .slice(0, 4);
     }, [products]);
 

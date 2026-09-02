@@ -6,7 +6,7 @@
  */
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { fetchProducts } from '../services/productService';
+import { fetchProducts, fetchProductFacets } from '../services/productService';
 
 const ProductContext = createContext();
 
@@ -14,14 +14,16 @@ export function ProductProvider({ children }) {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [facets, setFacets] = useState({ brands: [], fragranceFamilies: [] });
 
     useEffect(() => {
         async function loadProducts() {
             try {
                 setLoading(true);
                 setError(null);
-                const data = await fetchProducts();
+                const [data, productFacets] = await Promise.all([fetchProducts(), fetchProductFacets()]);
                 setProducts(data);
+                setFacets(productFacets);
             } catch (err) {
                 setError('Unable to load products. Please try again.');
                 console.error('Failed to load products:', err);
@@ -33,9 +35,10 @@ export function ProductProvider({ children }) {
         loadProducts();
     }, []);
 
-    // Helper function to get product by ID
+    // Helper function to get product by numeric SQLite ID
     const getProductById = (id) => {
-        return products.find(product => product.id === id);
+        const productId = Number(id);
+        return products.find(product => Number(product.id) === productId);
     };
 
     const value = {
@@ -43,6 +46,7 @@ export function ProductProvider({ children }) {
         loading,
         error,
         getProductById,
+        ...facets,
     };
 
     return (

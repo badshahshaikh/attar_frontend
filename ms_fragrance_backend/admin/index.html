@@ -235,6 +235,8 @@
 
     /* ── Loader ── */
     .loading { text-align: center; padding: 40px; color: #555; font-size: 14px; }
+    .list-tools { display: flex; gap: 10px; margin-bottom: 16px; }
+    .list-tools input { max-width: 320px; }
   </style>
 </head>
 <body>
@@ -264,17 +266,23 @@
         <h2>All Products <span class="badge" id="product-count">0</span></h2>
         <button class="btn btn-primary" onclick="openModal()">+ Add Product</button>
       </div>
+      <div class="list-tools">
+        <input type="search" id="product-search" placeholder="Search products..." oninput="loadProducts()" />
+        <button class="btn btn-outline btn-sm" onclick="changePage(-1)">Previous</button>
+        <span id="page-label" class="helper"></span>
+        <button class="btn btn-outline btn-sm" onclick="changePage(1)">Next</button>
+      </div>
       <div class="table-wrap">
         <table>
           <thead>
             <tr>
               <th>Image</th>
               <th>Name</th>
-              <th>Category</th>
-              <th>Type</th>
+              <th>Brand</th>
+              <th>Family</th>
               <th>Price</th>
               <th>Stock</th>
-              <th>New</th>
+              <th>Flags</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -319,11 +327,23 @@
           <label>Fragrance Type</label>
           <input type="text" id="field-fragranceType" placeholder="e.g. Floral, Woody & Earthy" />
         </div>
+        <div class="form-group">
+          <label>Brand *</label>
+          <input type="text" id="field-brand" placeholder="e.g. Anfar" required />
+        </div>
 
         <!-- Price -->
         <div class="form-group">
           <label>Base Price (₹) *</label>
           <input type="number" id="field-price" placeholder="299" min="0" step="0.01" required />
+        </div>
+        <div class="form-group">
+          <label>Original Price (₹)</label>
+          <input type="number" id="field-originalPrice" placeholder="399" min="0" step="0.01" />
+        </div>
+        <div class="form-group">
+          <label>Stock Quantity</label>
+          <input type="number" id="field-stockQuantity" value="0" min="0" step="1" />
         </div>
 
         <!-- Longevity -->
@@ -396,6 +416,18 @@
             <option value="true">Yes</option>
           </select>
         </div>
+        <div class="form-group">
+          <label>Best Seller</label>
+          <select id="field-isBestSeller"><option value="false">No</option><option value="true">Yes</option></select>
+        </div>
+        <div class="form-group">
+          <label>Exclusive</label>
+          <select id="field-isExclusive"><option value="false">No</option><option value="true">Yes</option></select>
+        </div>
+        <div class="form-group">
+          <label>Featured</label>
+          <select id="field-featured"><option value="false">No</option><option value="true">Yes</option></select>
+        </div>
 
         <!-- Image -->
         <div class="form-group full">
@@ -429,6 +461,8 @@
 <script>
   const API = 'http://localhost:5000/api/products';
   let products = [];
+  let currentPage = 1;
+  let totalPages = 1;
 
   // ── Helpers ──────────────────────────────────────────────────────────────────
   function toast(msg, type = 'ok') {
@@ -460,9 +494,16 @@
     const tbody = document.getElementById('product-tbody');
     tbody.innerHTML = '<tr><td colspan="8" class="loading">Loading…</td></tr>';
     try {
-      const res = await fetch(API);
-      products = await res.json();
-      document.getElementById('product-count').textContent = products.length;
+      const search = document.getElementById('product-search').value.trim();
+      const res = await fetch(`${API}?page=${currentPage}&limit=10&search=${encodeURIComponent(search)}`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Could not load products');
+      products = Array.isArray(data) ? data : data.products;
+      const pagination = data.pagination || { page: 1, totalPages: 1, totalProducts: products.length };
+      currentPage = pagination.page;
+      totalPages = pagination.totalPages || 1;
+      document.getElementById('product-count').textContent = pagination.totalProducts;
+      document.getElementById('page-label').textContent = `Page ${currentPage} of ${totalPages}`;
       renderTable();
     } catch (e) {
       console.error(e);
@@ -486,19 +527,26 @@
             alt="${p.name}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 1 1%22><rect fill=%22%23222%22/></svg>'" />
         </td>
         <td><strong>${p.name}</strong></td>
-        <td>${p.category || '—'}</td>
+        <td>${p.brand || '—'}</td>
         <td>${p.fragranceType || '—'}</td>
         <td>₹${p.price}</td>
         <td><span class="pill ${p.inStock ? 'pill-green' : 'pill-red'}">${p.inStock ? 'In Stock' : 'Out'}</span></td>
-        <td>${p.isNew ? '<span class="pill pill-blue">New</span>' : '—'}</td>
+        <td>${[p.isBestSeller && 'Best seller', p.isExclusive && 'Exclusive', p.featured && 'Featured'].filter(Boolean).map(flag => `<span class="pill pill-blue">${flag}</span>`).join(' ') || '—'}</td>
         <td>
           <div class="action-btns">
-            <button class="btn btn-outline btn-sm" onclick="editProduct(${p.dbId})">Edit</button>
-            <button class="btn btn-danger btn-sm" onclick="deleteProduct(${p.dbId}, '${p.name.replace(/'/g, "\\'")}')">Delete</button>
+            <button class="btn btn-outline btn-sm" onclick="editProduct(${p.id})">Edit</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteProduct(${p.id}, '${p.name.replace(/'/g, "\\'")}')">Delete</button>
           </div>
         </td>
       </tr>
     `).join('');
+  }
+
+  function changePage(delta) {
+    const nextPage = currentPage + delta;
+    if (nextPage < 1 || nextPage > totalPages) return;
+    currentPage = nextPage;
+    loadProducts();
   }
 
   // ── Modal ────────────────────────────────────────────────────────────────────
@@ -511,11 +559,14 @@
     if (product) {
       document.getElementById('modal-title').textContent = 'Edit Product';
       document.getElementById('submit-btn').textContent = 'Update Product';
-      document.getElementById('field-id').value = product.dbId;
+      document.getElementById('field-id').value = product.id;
       document.getElementById('field-name').value = product.name || '';
       document.getElementById('field-category').value = product.category || 'Attar';
       document.getElementById('field-fragranceType').value = product.fragranceType || '';
+      document.getElementById('field-brand').value = product.brand || '';
       document.getElementById('field-price').value = product.price || '';
+      document.getElementById('field-originalPrice').value = product.originalPrice || '';
+      document.getElementById('field-stockQuantity').value = product.stockQuantity || 0;
       document.getElementById('field-longevity').value = product.longevity || '';
       document.getElementById('field-rating').value = product.rating || '';
       document.getElementById('field-reviews').value = product.reviews || '';
@@ -529,6 +580,9 @@
       document.getElementById('field-fullDescription').value = product.fullDescription || '';
       document.getElementById('field-inStock').value = product.inStock ? 'true' : 'false';
       document.getElementById('field-isNew').value = product.isNew ? 'true' : 'false';
+      document.getElementById('field-isBestSeller').value = product.isBestSeller ? 'true' : 'false';
+      document.getElementById('field-isExclusive').value = product.isExclusive ? 'true' : 'false';
+      document.getElementById('field-featured').value = product.featured ? 'true' : 'false';
       document.getElementById('field-imageUrl').value = product.imageUrl || '';
       if (product.imageUrl) {
         document.getElementById('img-preview').src = product.imageUrl;
@@ -552,7 +606,7 @@
   }
 
   function editProduct(id) {
-    const p = products.find(x => x.dbId === id);
+    const p = products.find(x => x.id === id);
     if (p) openModal(p);
   }
 
@@ -623,7 +677,10 @@
         name: document.getElementById('field-name').value.trim(),
         category: document.getElementById('field-category').value,
         fragranceType: document.getElementById('field-fragranceType').value.trim(),
+        brand: document.getElementById('field-brand').value.trim(),
         price: parseFloat(document.getElementById('field-price').value),
+        originalPrice: parseFloat(document.getElementById('field-originalPrice').value) || null,
+        stockQuantity: parseInt(document.getElementById('field-stockQuantity').value, 10) || 0,
         longevity: document.getElementById('field-longevity').value.trim(),
         rating: parseFloat(document.getElementById('field-rating').value) || 0,
         reviews: parseInt(document.getElementById('field-reviews').value) || 0,
@@ -636,6 +693,9 @@
         fullDescription: document.getElementById('field-fullDescription').value.trim(),
         inStock: document.getElementById('field-inStock').value === 'true',
         isNew: document.getElementById('field-isNew').value === 'true',
+        isBestSeller: document.getElementById('field-isBestSeller').value === 'true',
+        isExclusive: document.getElementById('field-isExclusive').value === 'true',
+        featured: document.getElementById('field-featured').value === 'true',
         imageUrl,
       };
 

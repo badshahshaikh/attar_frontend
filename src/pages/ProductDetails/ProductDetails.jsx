@@ -22,8 +22,9 @@ const ProductDetails = () => {
         const foundProduct = getProductById(id);
         if (foundProduct) {
             setProduct(foundProduct);
-            setSelectedSize(foundProduct.sizes[0]);
-            setCurrentPrice(foundProduct.sizePricing[foundProduct.sizes[0]]);
+            const firstSize = foundProduct.sizes[0] || '';
+            setSelectedSize(firstSize);
+            setCurrentPrice(foundProduct.sizePricing[firstSize] || foundProduct.price || 0);
             setQuantity(1);
         }
     }, [id, getProductById]);
@@ -42,7 +43,7 @@ const ProductDetails = () => {
 
     const handleSizeChange = (size) => {
         setSelectedSize(size);
-        setCurrentPrice(product.sizePricing[size]);
+        setCurrentPrice(product.sizePricing[size] || product.price || 0);
     };
 
     const handleQuantityChange = (type) => {

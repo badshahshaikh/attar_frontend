@@ -1,6 +1,6 @@
 export const mockProducts = [
     {
-        id: "p7",
+        id: 1,
         name: "Mitti Attar",
         category: "Attar",
         fragranceType: "Earthy & Woody",
@@ -27,7 +27,7 @@ export const mockProducts = [
         imageUrl: "https://images.unsplash.com/photo-1594035910387-fea47794261f?q=80&w=800&auto=format&fit=crop"
     },
     {
-        id: "p8",
+        id: 2,
         name: "Mogra Attar",
         category: "Attar",
         fragranceType: "Floral",
@@ -54,7 +54,7 @@ export const mockProducts = [
         imageUrl: "https://images.unsplash.com/photo-1590736704728-f4730bb30770?q=80&w=800&auto=format&fit=crop"
     },
     {
-        id: "p9",
+        id: 3,
         name: "Kewda Attar",
         category: "Attar",
         fragranceType: "Floral & Fresh",
@@ -81,7 +81,7 @@ export const mockProducts = [
         imageUrl: "https://images.unsplash.com/photo-1629198688000-71f23e745b6e?q=80&w=800&auto=format&fit=crop"
     },
     {
-        id: "p10",
+        id: 4,
         name: "Ruh Gulab",
         category: "Attar",
         fragranceType: "Floral",
@@ -108,7 +108,7 @@ export const mockProducts = [
         imageUrl: "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?q=80&w=800&auto=format&fit=crop"
     },
     {
-        id: "p11",
+        id: 5,
         name: "White Musk",
         category: "Attar",
         fragranceType: "Musk",
@@ -135,7 +135,7 @@ export const mockProducts = [
         imageUrl: "https://images.unsplash.com/photo-1588405748880-12d1d2a59f75?q=80&w=800&auto=format&fit=crop"
     },
     {
-        id: "p12",
+        id: 6,
         name: "Khus Attar",
         category: "Attar",
         fragranceType: "Woody & Green",
@@ -162,7 +162,7 @@ export const mockProducts = [
         imageUrl: "https://images.unsplash.com/photo-1615529182904-14819c35db37?q=80&w=800&auto=format&fit=crop"
     },
     {
-        id: "p13",
+        id: 7,
         name: "Chandan Attar",
         category: "Attar",
         fragranceType: "Woody",
@@ -189,7 +189,7 @@ export const mockProducts = [
         imageUrl: "https://images.unsplash.com/photo-1594035910387-fea47794261f?q=80&w=800&auto=format&fit=crop"
     },
     {
-        id: "p14",
+        id: 8,
         name: "Jasmine Attar",
         category: "Attar",
         fragranceType: "Floral",
@@ -216,7 +216,7 @@ export const mockProducts = [
         imageUrl: "https://images.unsplash.com/photo-1629198688000-71f23e745b6e?q=80&w=800&auto=format&fit=crop"
     },
     {
-        id: "p15",
+        id: 9,
         name: "Majmua",
         category: "Attar",
         fragranceType: "Woody & Spicy",
@@ -243,7 +243,7 @@ export const mockProducts = [
         imageUrl: "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?q=80&w=800&auto=format&fit=crop"
     },
     {
-        id: "p16",
+        id: 10,
         name: "Oudh Musk",
         category: "Attar",
         fragranceType: "Woody & Musk",

@@ -92,13 +92,13 @@ const Shop = () => {
         if (searchTerm) {
             const lowerSearch = searchTerm.toLowerCase();
             result = result.filter(p =>
-                p.name.toLowerCase().includes(lowerSearch) ||
-                p.description.toLowerCase().includes(lowerSearch) ||
-                p.fragranceType.toLowerCase().includes(lowerSearch) ||
-                p.topNotes.some(n => n.toLowerCase().includes(lowerSearch)) ||
-                p.heartNotes.some(n => n.toLowerCase().includes(lowerSearch)) ||
-                p.baseNotes.some(n => n.toLowerCase().includes(lowerSearch)) ||
-                p.fullDescription.toLowerCase().includes(lowerSearch)
+                (p.name || '').toLowerCase().includes(lowerSearch) ||
+                (p.description || '').toLowerCase().includes(lowerSearch) ||
+                (p.fragranceType || '').toLowerCase().includes(lowerSearch) ||
+                (p.topNotes || []).some(n => (n || '').toLowerCase().includes(lowerSearch)) ||
+                (p.heartNotes || []).some(n => (n || '').toLowerCase().includes(lowerSearch)) ||
+                (p.baseNotes || []).some(n => (n || '').toLowerCase().includes(lowerSearch)) ||
+                (p.fullDescription || '').toLowerCase().includes(lowerSearch)
             );
         }
 
