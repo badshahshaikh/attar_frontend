@@ -7,22 +7,34 @@ if (!process.env.DATABASE_URL) {
     throw new Error('DATABASE_URL is required');
 }
 
+const environment = process.env.NODE_ENV || 'development';
+const isProduction = environment === 'production';
+const ssl = isProduction ? { rejectUnauthorized: false } : false;
+
 function getConnectionString() {
     const connectionUrl = new URL(process.env.DATABASE_URL);
-    for (const parameter of ['sslmode', 'sslcert', 'sslkey', 'sslrootcert', 'sslpassword']) {
-        connectionUrl.searchParams.delete(parameter);
+    const conflictingParameters = new Set([
+        'sslmode', 'ssl', 'require', 'verify-full',
+        'sslcert', 'sslkey', 'sslrootcert', 'sslpassword',
+    ]);
+    for (const parameter of [...connectionUrl.searchParams.keys()]) {
+        if (conflictingParameters.has(parameter.toLowerCase())) {
+            connectionUrl.searchParams.delete(parameter);
+        }
     }
     return connectionUrl.toString();
 }
 
 const pool = new Pool({
     connectionString: getConnectionString(),
-    ssl: { rejectUnauthorized: false },
+    ssl,
     max: 5,
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 10000,
     keepAlive: true,
 });
+
+console.log(`[database] environment=${environment} sslEnabled=${Boolean(ssl)}`);
 
 let schemaPromise;
 
