@@ -11,7 +11,7 @@ const Footer = () => {
                     {/* Brand Section */}
                     <div className="footer-brand">
                         <Link to="/" className="footer-logo">
-                            <img src="/ms-fragrance.png" alt="MS Fragrance" />
+                            <img src="/ms-fragrance-logo" alt="MS Fragrance" />
                         </Link>
                         <p className="brand-description">
                             The art of pure, non-alcoholic perfumery. We source the finest natural ingredients to craft timeless fragrance experiences for the modern connoisseur.

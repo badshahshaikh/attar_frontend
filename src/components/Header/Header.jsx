@@ -159,7 +159,7 @@ const Header = () => {
                         <Link to="/">
                             <picture className="desktop-logo">
                                 <img
-                                    src="/ms-fragrance.png"
+                                    src="/ms-fragrance-logo.png"
                                     alt="MS Fragrance"
                                 />
                             </picture>
@@ -302,7 +302,7 @@ const Header = () => {
                             <span className="mobile-brand-text">MS Fragrance</span>
                             <picture className="mobile-brand-logo">
                                 <img
-                                    src="/ms-fragrance-mobile.png"
+                                    src="/ms-fragrance-logo.png"
                                     alt="MS Fragrance"
                                 />
                             </picture>

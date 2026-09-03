@@ -7,6 +7,16 @@
 
 import { API_URL } from '../config/api';
 
+async function parseResponse(response) {
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+        const error = new Error(data.error || data.message || 'The request could not be completed.');
+        error.status = response.status;
+        throw error;
+    }
+    return data;
+}
+
 function normalizeProducts(products) {
     return products.map(product => ({
         ...product,
@@ -17,14 +27,21 @@ function normalizeProducts(products) {
 /**
  * Fetch all products from the backend API
  */
-export async function fetchProducts() {
+export async function fetchProducts({ page, limit, search } = {}) {
     try {
-        const response = await fetch(`${API_URL}/api/products`);
+        const params = new URLSearchParams();
+        if (page) params.set('page', page);
+        if (limit) params.set('limit', limit);
+        if (search) params.set('search', search);
+        const query = params.toString();
+        const response = await fetch(`${API_URL}/api/products${query ? `?${query}` : ''}`);
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
-        return normalizeProducts(Array.isArray(data) ? data : data.products || []);
+        if (Array.isArray(data)) return normalizeProducts(data);
+        const products = normalizeProducts(data.products || []);
+        return page || limit || search ? { ...data, products } : products;
     } catch (error) {
         console.error('Error fetching products:', error);
         throw error;
@@ -55,4 +72,45 @@ export async function fetchProductById(id) {
         console.error('Error fetching product:', error);
         throw error;
     }
+}
+
+export async function createProduct(payload) {
+    const response = await fetch(`${API_URL}/api/products`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(payload),
+    });
+    return parseResponse(response);
+}
+
+export async function updateProduct(id, payload) {
+    const response = await fetch(`${API_URL}/api/products/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(payload),
+    });
+    return parseResponse(response);
+}
+
+export async function deleteProduct(id) {
+    const response = await fetch(`${API_URL}/api/products/${id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+    });
+    return parseResponse(response);
+}
+
+export async function uploadProductImage(file, productId) {
+    const formData = new FormData();
+    formData.append('image', file);
+    if (productId) formData.append('productId', String(productId));
+
+    const response = await fetch(`${API_URL}/api/products/upload-image`, {
+        method: 'POST',
+        credentials: 'include',
+        body: formData,
+    });
+    return parseResponse(response);
 }

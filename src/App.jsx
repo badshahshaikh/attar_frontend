@@ -16,7 +16,9 @@ import { WishlistProvider } from './context/WishlistContext';
 import { ProductProvider } from './context/ProductContext';
 import { AuthProvider } from './context/AuthContext';
 import Login from './pages/Login/Login';
-import Admin from './pages/Admin/Admin';
+import AdminDashboard from './pages/Admin/AdminDashboard';
+import Products from './pages/Admin/Products';
+import ProductForm from './pages/Admin/ProductForm';
 import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute';
 import './App.css';
 
@@ -47,10 +49,10 @@ function App() {
 
                   {/* PROTECTED ADMIN AREA */}
                   <Route element={<ProtectedRoute />}>
-                    <Route path="/admin" element={<Admin />} />
-                    <Route path="/admin/products" element={<Admin />} />
-                    <Route path="/admin/products/new" element={<Admin />} />
-                    <Route path="/admin/products/:id/edit" element={<Admin />} />
+                    <Route path="/admin" element={<AdminDashboard />} />
+                    <Route path="/admin/products" element={<Products />} />
+                    <Route path="/admin/products/new" element={<ProductForm />} />
+                    <Route path="/admin/products/:id/edit" element={<ProductForm />} />
                   </Route>
                 </Routes>
 
