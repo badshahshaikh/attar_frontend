@@ -7,9 +7,17 @@ if (!process.env.DATABASE_URL) {
     throw new Error('DATABASE_URL is required');
 }
 
+function getConnectionString() {
+    const connectionUrl = new URL(process.env.DATABASE_URL);
+    for (const parameter of ['sslmode', 'sslcert', 'sslkey', 'sslrootcert', 'sslpassword']) {
+        connectionUrl.searchParams.delete(parameter);
+    }
+    return connectionUrl.toString();
+}
+
 const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: { rejectUnauthorized: process.env.NODE_ENV === 'production' },
+    connectionString: getConnectionString(),
+    ssl: { rejectUnauthorized: false },
     max: 5,
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 10000,
