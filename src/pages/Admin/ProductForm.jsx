@@ -4,7 +4,7 @@ import AdminLayout from '../../components/admin/AdminLayout';
 import ProductFormFields from '../../components/admin/ProductFormFields';
 import ImageUpload from '../../components/admin/ImageUpload';
 import { createProduct, fetchProductById, updateProduct } from '../../services/productService';
-import './admin.css';
+import './Admin.css';
 
 const emptyProduct = { name: '', category: 'Attar', fragranceType: '', brand: '', price: '', originalPrice: '', stockQuantity: 0, longevity: '', rating: 0, reviews: 0, sizes: '', sizePricing: '{}', topNotes: '', heartNotes: '', baseNotes: '', description: '', fullDescription: '', inStock: true, isNew: false, isBestSeller: false, isExclusive: false, featured: false, imageUrl: '' };
 const csv = value => Array.isArray(value) ? value.join(', ') : '';
