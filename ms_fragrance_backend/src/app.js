@@ -8,21 +8,32 @@ const authRoutes = require('./routes/auth');
 
 const app = express();
 const isProduction = process.env.NODE_ENV === 'production';
+const normalizeOrigin = origin => String(origin || '').trim().replace(/\/+$/, '');
 const developmentOrigins = [
     'http://localhost:5173',
     'http://127.0.0.1:5173',
     'http://localhost:3000',
     'http://localhost:4173',
 ];
-const configuredOrigins = isProduction
-    ? [process.env.FRONTEND_URL]
-    : [...developmentOrigins, ...(process.env.CORS_ORIGINS || '').split(',')];
-const allowedOrigins = configuredOrigins.map(origin => origin && origin.trim()).filter(Boolean);
+const configuredOrigins = [
+    ...(isProduction ? ['https://attar-frontend-tau.vercel.app'] : developmentOrigins),
+    ...(process.env.CORS_ORIGINS || '').split(','),
+    process.env.FRONTEND_URL,
+];
+const allowedOrigins = [...new Set(configuredOrigins.map(normalizeOrigin).filter(Boolean))];
 const uploadDir = path.resolve(process.env.UPLOAD_DIR || path.join(__dirname, '../uploads'));
 
 app.use(cors({
     origin: (origin, callback) => {
-        if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+        const normalizedOrigin = normalizeOrigin(origin);
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.includes(normalizedOrigin)) return callback(null, normalizedOrigin);
+        console.warn('[CORS_REJECTED]', {
+            environment: process.env.NODE_ENV || 'development',
+            receivedOrigin: origin,
+            normalizedOrigin,
+            allowedOrigins,
+        });
         return callback(new Error('Origin is not allowed by CORS'));
     },
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],

@@ -115,12 +115,17 @@ function extensionForMimeType(mimeType) {
     return { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' }[mimeType];
 }
 
-async function cleanupImage(imageUrl) {
+async function cleanupImage(imageUrl, productId = null) {
     if (!getStoragePath(imageUrl)) return;
     try {
         await removeProductImage(imageUrl);
     } catch (error) {
-        console.error('Supabase image cleanup failed');
+        console.error('[PRODUCT_UPDATE_ERROR]', {
+            stage: 'supabase_delete',
+            productId,
+            errorCode: error.code || null,
+            errorMessage: error.message,
+        });
     }
 }
 
@@ -195,18 +200,51 @@ router.post('/', authMiddleware, async (req, res) => {
 router.put('/:id', authMiddleware, async (req, res) => {
     const id = parseProductIdParam(req.params.id);
     if (!id) return res.status(400).json({ error: 'Product ID must be a positive integer' });
-    let payload;
-    try { payload = parseProductPayload(req.body); } catch (err) { return res.status(400).json({ error: err.message }); }
+    let stage = 'validate_payload';
+    let imageChanged = false;
     try {
+        if (process.env.NODE_ENV !== 'production') {
+            console.log('UPDATE REQUEST BODY', JSON.stringify(req.body, null, 2));
+        }
+        const payload = parseProductPayload(req.body);
         const values = productValues(payload, false);
+        if (process.env.NODE_ENV !== 'production') {
+            console.log('[PRODUCT_UPDATE] stage=payload_normalized', {
+                productId: id,
+                values: values.map((value, index) => ({
+                    index: index + 1,
+                    type: typeof value,
+                    isUndefined: value === undefined,
+                    isNull: value === null,
+                })),
+            });
+        }
         const columns = ['name', 'category', 'fragrance_type', 'description', 'full_description', 'rating', 'reviews', 'price', 'original_price', 'size_pricing', 'sizes', 'top_notes', 'heart_notes', 'base_notes', 'longevity', 'in_stock', 'is_new', 'brand', 'is_best_seller', 'is_exclusive', 'featured', 'stock_quantity', 'slug', 'image_url'];
         const assignments = columns.map((column, index) => `${column} = $${index + 1}`).join(', ');
+        stage = 'fetch_existing_product';
         const previous = await query(`SELECT image_url FROM products WHERE id = $1`, [id]);
+        stage = 'database_update';
         const result = await query(`UPDATE products SET ${assignments}, updated_at = NOW() WHERE id = $${values.length + 1} RETURNING ${PRODUCT_COLUMNS}`, [...values, id]);
         if (!result.rows[0]) return res.status(404).json({ error: 'Product not found' });
-        if (previous.rows[0] && previous.rows[0].image_url !== result.rows[0].image_url) await cleanupImage(previous.rows[0].image_url);
-        res.json(toProduct(result.rows[0]));
-    } catch (err) { console.error(err); res.status(500).json({ error: 'Failed to update product' }); }
+        imageChanged = Boolean(previous.rows[0] && previous.rows[0].image_url !== result.rows[0].image_url);
+        console.log('[PRODUCT_UPDATE]', { stage: 'database_update_complete', productId: id });
+        stage = 'image_cleanup';
+        if (imageChanged) await cleanupImage(previous.rows[0].image_url, id);
+        stage = 'response_serialization';
+        const responseProduct = toProduct(result.rows[0]);
+        res.json(responseProduct);
+        console.log('[PRODUCT_UPDATE]', { stage: 'complete', productId: id, imageChanged });
+    } catch (error) {
+        console.error('[PRODUCT_UPDATE_ERROR]', {
+            stage,
+            productId: id,
+            imageChanged,
+            errorCode: error.code || null,
+            errorMessage: error.message,
+        });
+        if (stage === 'validate_payload') return res.status(400).json({ error: error.message });
+        res.status(500).json({ error: 'Failed to update product' });
+    }
 });
 
 router.delete('/:id', authMiddleware, async (req, res) => {
