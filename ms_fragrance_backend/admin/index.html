@@ -644,7 +644,7 @@
     fd.append('image', file);
     const productId = document.getElementById('field-id').value;
     if (productId) fd.append('productId', productId);
-    const res = await fetch(`${API}/upload-image`, { method: 'POST', body: fd });
+    const res = await fetch(`${API}/upload-image`, { method: 'POST', body: fd, credentials: 'include' });
     if (!res.ok) throw new Error('Image upload failed');
     const data = await res.json();
     return data.imageUrl;
@@ -707,6 +707,7 @@
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(payload),
       });
 
@@ -731,7 +732,7 @@
   async function deleteProduct(id, name) {
     if (!confirm(`Delete "${name}"? This cannot be undone.`)) return;
     try {
-      const res = await fetch(`${API}/${id}`, { method: 'DELETE' });
+      const res = await fetch(`${API}/${id}`, { method: 'DELETE', credentials: 'include' });
       if (!res.ok) throw new Error('Delete failed');
       toast(`🗑️ "${name}" deleted`);
       await loadProducts();
