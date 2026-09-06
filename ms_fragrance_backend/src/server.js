@@ -1,6 +1,7 @@
 const app = require('./app');
 const { closeDb } = require('./db');
-const PORT = process.env.PORT || 5000;
+const { config } = require('./config/env');
+const PORT = config.port;
 const server = app.listen(PORT, () => {
     console.log(`✅ MS Fragrance Backend (PostgreSQL) running on port ${PORT}`);
     console.log(`📦 API:   /api/products`);
