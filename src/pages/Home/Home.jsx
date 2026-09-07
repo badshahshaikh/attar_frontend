@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import PageLoader from '../../components/PageLoader/PageLoader';
 import ProductCard from '../../components/ProductCard/ProductCard';
 import { useProducts } from '../../context/ProductContext';
 import './Home.css';
@@ -76,9 +77,7 @@ const Home = () => {
     if (loading) {
         return (
             <main className="home-page">
-                <section className="home-section container" style={{ textAlign: 'center', padding: '60px 20px' }}>
-                    <h2 style={{ fontSize: '1.8rem', fontWeight: 300, marginBottom: '16px', color: 'var(--text-color)' }}>Loading fragrances...</h2>
-                </section>
+                <PageLoader />
             </main>
         );
     }

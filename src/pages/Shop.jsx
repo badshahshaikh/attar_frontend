@@ -6,6 +6,7 @@ import Filters from '../components/Filters/Filters';
 import Sorting from '../components/Sorting/Sorting';
 import ProductGrid from '../components/ProductGrid/ProductGrid';
 import { useProducts } from '../context/ProductContext';
+import PageLoader from '../../components/PageLoader/PageLoader';
 
 const Shop = () => {
     const { products, loading, error } = useProducts();
@@ -169,13 +170,7 @@ const Shop = () => {
             <main>
                 <Breadcrumb />
                 <PageHeader />
-                <section className="shop-section container">
-                    <div className="shop-layout">
-                        <div className="shop-content" style={{ textAlign: 'center', padding: '60px 20px' }}>
-                            <h2 style={{ fontSize: '1.8rem', fontWeight: 300, marginBottom: '16px', color: 'var(--text-color)' }}>Loading fragrances...</h2>
-                        </div>
-                    </div>
-                </section>
+                <PageLoader />
             </main>
         );
     }

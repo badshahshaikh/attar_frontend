@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useProducts } from '../../context/ProductContext';
+import PageLoader from '../../components/PageLoader/PageLoader';
 import './Collections.css';
 
 const Collections = () => {
@@ -20,9 +21,7 @@ const Collections = () => {
     if (loading) {
         return (
             <main className="collections-page container">
-                <div className="text-center" style={{ padding: '60px 20px' }}>
-                    <h2 style={{ fontSize: '1.8rem', fontWeight: 300, marginBottom: '16px', color: 'var(--text-color)' }}>Loading fragrances...</h2>
-                </div>
+                <PageLoader />
             </main>
         );
     }
