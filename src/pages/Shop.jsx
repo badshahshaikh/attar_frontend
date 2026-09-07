@@ -6,7 +6,7 @@ import Filters from '../components/Filters/Filters';
 import Sorting from '../components/Sorting/Sorting';
 import ProductGrid from '../components/ProductGrid/ProductGrid';
 import { useProducts } from '../context/ProductContext';
-import PageLoader from '../../components/PageLoader/PageLoader';
+import PageLoader from "../components/PageLoader/PageLoader";
 
 const Shop = () => {
     const { products, loading, error } = useProducts();
