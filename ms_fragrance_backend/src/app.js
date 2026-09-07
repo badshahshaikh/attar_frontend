@@ -17,7 +17,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use('/uploads', express.static(uploadDir));
-app.use(express.static(path.join(__dirname, '../admin')));
 
 app.use('/api/products', productRouter);
 app.use('/api/auth', authRouter);

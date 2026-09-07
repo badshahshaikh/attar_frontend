@@ -5,7 +5,6 @@ const PORT = config.port;
 const server = app.listen(PORT, () => {
     console.log(`✅ MS Fragrance Backend (PostgreSQL) running on port ${PORT}`);
     console.log(`📦 API:   /api/products`);
-    console.log(`🖼️  Admin: /`);
 });
 
 async function shutdown(signal) {

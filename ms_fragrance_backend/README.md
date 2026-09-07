@@ -18,7 +18,7 @@ npm install
 npm run dev
 ```
 
-The API and admin panel run at `http://localhost:5000`.
+The API runs at `http://localhost:5000`.
 
 ## Environment Variables
 
@@ -63,10 +63,6 @@ npm run migrate:images
 ```
 
 The command skips external and already-migrated URLs, updates PostgreSQL only after a successful upload, and never deletes original local files.
-
-## Admin Panel
-
-Open `http://localhost:5000` after starting the backend. The admin panel uses same-origin `/api` URLs.
 
 ## API Endpoints
 
