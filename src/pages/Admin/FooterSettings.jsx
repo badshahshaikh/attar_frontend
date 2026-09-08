@@ -1,181 +1,25 @@
-import React, { useState, useEffect } from 'react';
-import { getFooterSettings, updateFooterSettings } from '../../services/footerSettingsService';
+import React from 'react';
+import { useFooterSettings } from '../../features/footer-settings/hooks/useFooterSettings';
 import './Admin.css';
 
-const defaultSettings = {
-    brand: {
-        name: 'MS Fragrance',
-        description: 'The art of pure, non-alcoholic perfumery. We source the finest natural ingredients to craft timeless fragrance experiences for the modern connoisseur.',
-        logo: ''
-    },
-    contact: {
-        email: 'hello@rooh-attars.com',
-        phone: '+91 98765 43210',
-        whatsapp: '+91 98765 43210',
-        address: 'Mumbai, India'
-    },
-    socialMedia: {
-        instagram: '',
-        facebook: '',
-        youtube: '',
-        twitter: ''
-    },
-    links: {
-        shop: true,
-        about: true,
-        collections: true,
-        contact: true
-    },
-    newsletter: {
-        enabled: true,
-        title: 'Stay Updated',
-        description: 'Subscribe to receive updates and exclusive offers.'
-    },
-    copyright: {
-        text: '© 2026 MS Fragrance. All rights reserved.'
-    }
-};
-
 export default function FooterSettings() {
-    const [settings, setSettings] = useState(defaultSettings);
-    const [loading, setLoading] = useState(true);
-    const [saving, setSaving] = useState(false);
-    const [error, setError] = useState('');
-    const [success, setSuccess] = useState('');
-    const [showJsonEditor, setShowJsonEditor] = useState(false);
-    const [jsonText, setJsonText] = useState('');
-    const [jsonError, setJsonError] = useState('');
-
-    useEffect(() => {
-        loadSettings();
-    }, []);
-
-    const loadSettings = async () => {
-        try {
-            setLoading(true);
-            const data = await getFooterSettings();
-            setSettings(data);
-            setJsonText(JSON.stringify(data, null, 2));
-        } catch (err) {
-            setError('Failed to load footer settings');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleInputChange = (section, field, value) => {
-        setSettings(prev => ({
-            ...prev,
-            [section]: {
-                ...prev[section],
-                [field]: value
-            }
-        }));
-    };
-
-    const handleToggleChange = (section, field) => {
-        setSettings(prev => ({
-            ...prev,
-            [section]: {
-                ...prev[section],
-                [field]: !prev[section][field]
-            }
-        }));
-    };
-
-    const validateForm = () => {
-        const errors = [];
-
-        if (!settings.brand.name?.trim()) {
-            errors.push('Brand name is required');
-        }
-
-        if (settings.contact.email && !isValidEmail(settings.contact.email)) {
-            errors.push('Invalid email format');
-        }
-
-        if (settings.contact.phone && !isValidPhone(settings.contact.phone)) {
-            errors.push('Invalid phone format');
-        }
-
-        if (settings.contact.whatsapp && !isValidPhone(settings.contact.whatsapp)) {
-            errors.push('Invalid WhatsApp format');
-        }
-
-        // Validate URLs in social media
-        const urlFields = ['instagram', 'facebook', 'youtube', 'twitter'];
-        urlFields.forEach(field => {
-            const url = settings.socialMedia[field];
-            if (url && !isValidUrl(url)) {
-                errors.push(`Invalid ${field} URL format`);
-            }
-        });
-
-        return errors;
-    };
-
-    const isValidEmail = (email) => {
-        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-    };
-
-    const isValidPhone = (phone) => {
-        return /^[\d\s+()-]+$/.test(phone);
-    };
-
-    const isValidUrl = (url) => {
-        try {
-            new URL(url);
-            return true;
-        } catch {
-            return false;
-        }
-    };
-
-    const handleSave = async () => {
-        const errors = validateForm();
-        if (errors.length > 0) {
-            setError(errors.join(', '));
-            setSuccess('');
-            return;
-        }
-
-        setSaving(true);
-        setError('');
-        setSuccess('');
-
-        try {
-            await updateFooterSettings(settings);
-            setSuccess('Footer settings updated successfully!');
-            setJsonText(JSON.stringify(settings, null, 2));
-        } catch (err) {
-            setError(err.message || 'Failed to update footer settings');
-        } finally {
-            setSaving(false);
-        }
-    };
-
-    const handleJsonSave = async () => {
-        setJsonError('');
-        try {
-            const parsed = JSON.parse(jsonText);
-            setSettings(parsed);
-            setSaving(true);
-            await updateFooterSettings(parsed);
-            setSuccess('Footer settings updated successfully!');
-            setShowJsonEditor(false);
-        } catch (err) {
-            setJsonError('Invalid JSON format: ' + err.message);
-        } finally {
-            setSaving(false);
-        }
-    };
-
-    const handleCancel = () => {
-        loadSettings();
-        setError('');
-        setSuccess('');
-        setShowJsonEditor(false);
-    };
+    const {
+        settings,
+        loading,
+        saving,
+        error,
+        success,
+        showJsonEditor,
+        jsonText,
+        jsonError,
+        handleInputChange,
+        handleToggleChange,
+        handleSave,
+        handleJsonSave,
+        handleCancel,
+        setShowJsonEditor,
+        setJsonText
+    } = useFooterSettings();
 
     if (loading) {
         return (

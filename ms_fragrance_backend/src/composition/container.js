@@ -8,10 +8,7 @@ const { createUserRepository } = require('../modules/auth/user.repository');
 const { createAuthService } = require('../modules/auth/auth.service');
 const { createAuthController } = require('../modules/auth/auth.controller');
 const { createAuthRouter } = require('../modules/auth/auth.routes');
-const { createSettingsRepository } = require('../modules/settings/settings.repository');
-const { createSettingsService } = require('../modules/settings/settings.service');
-const { createSettingsController } = require('../modules/settings/settings.controller');
-const { createSettingsRouter } = require('../modules/settings/settings.routes');
+const { createSettingsContainer } = require('../modules/settings/settings.container');
 
 function createContainer(dependencies = {}) {
     const productRepository = createProductRepository({ query: dependencies.query || database.query });
@@ -20,13 +17,16 @@ function createContainer(dependencies = {}) {
     const userRepository = createUserRepository({ query: dependencies.query || database.query });
     const authService = createAuthService({ userRepository });
     const authController = createAuthController({ authService });
-    const settingsRepository = createSettingsRepository({ query: dependencies.query || database.query });
-    const settingsService = createSettingsService({ settingsRepository });
-    const settingsController = createSettingsController({ settingsService });
+    
+    // Settings module now uses its own container with proper architecture
+    const settingsContainer = createSettingsContainer({ 
+        query: dependencies.query || database.query 
+    });
+
     return Object.freeze({
         productRouter: createProductRouter(productController),
         authRouter: createAuthRouter(authController),
-        settingsRouter: createSettingsRouter(settingsController)
+        settingsRouter: settingsContainer.settingsRouter
     });
 }
 

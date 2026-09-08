@@ -1,46 +1,13 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { getFooterSettings } from '../services/footerSettingsService';
+import { DEFAULT_FOOTER_SETTINGS } from '../features/footer-settings/constants/defaultFooterSettings';
 
 const FooterContext = createContext();
 
 export const useFooter = () => useContext(FooterContext);
 
-const defaultFooterSettings = {
-    brand: {
-        name: 'MS Fragrance',
-        description: 'The art of pure, non-alcoholic perfumery. We source the finest natural ingredients to craft timeless fragrance experiences for the modern connoisseur.',
-        logo: ''
-    },
-    contact: {
-        email: 'hello@rooh-attars.com',
-        phone: '+91 98765 43210',
-        whatsapp: '+91 98765 43210',
-        address: 'Mumbai, India'
-    },
-    socialMedia: {
-        instagram: '',
-        facebook: '',
-        youtube: '',
-        twitter: ''
-    },
-    links: {
-        shop: true,
-        about: true,
-        collections: true,
-        contact: true
-    },
-    newsletter: {
-        enabled: true,
-        title: 'Stay Updated',
-        description: 'Subscribe to receive updates and exclusive offers.'
-    },
-    copyright: {
-        text: '© 2026 MS Fragrance. All rights reserved.'
-    }
-};
-
 export const FooterProvider = ({ children }) => {
-    const [footerSettings, setFooterSettings] = useState(defaultFooterSettings);
+    const [footerSettings, setFooterSettings] = useState(DEFAULT_FOOTER_SETTINGS);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
