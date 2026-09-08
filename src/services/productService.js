@@ -114,3 +114,13 @@ export async function uploadProductImage(file, productId) {
     });
     return parseResponse(response);
 }
+
+export async function bulkUpsertProducts({ create = [], update = [] }) {
+    const response = await fetch(`${API_URL}/api/products/bulk-upsert`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ create, update }),
+    });
+    return parseResponse(response);
+}

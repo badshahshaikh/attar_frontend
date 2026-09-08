@@ -2,6 +2,11 @@ const { PRODUCT_COLUMNS, PRODUCT_WRITE_COLUMNS } = require('./product.constants'
 const { logger } = require('../../shared/logging/logger');
 
 function createProductRepository({ query }) {
+    // Helper: run a query using an explicit pg client (for transactions) or the default pool.
+    async function run(sql, values, client) {
+        if (client) return client.query(sql, values);
+        return query(sql, values);
+    }
     return {
         async findAll(filters) {
             const conditions = [];
@@ -54,6 +59,26 @@ function createProductRepository({ query }) {
         async delete(id) {
             const result = await query('DELETE FROM products WHERE id = $1 RETURNING id', [id]);
             return result.rows[0] || null;
+        },
+        async bulkCreate(products, client) {
+            const placeholders = PRODUCT_WRITE_COLUMNS.map((_, i) => `$${i + 1}`).join(', ');
+            const insertSql = `INSERT INTO products (${PRODUCT_WRITE_COLUMNS.join(', ')}) VALUES (${placeholders}) RETURNING ${PRODUCT_COLUMNS}`;
+            const rows = [];
+            for (const values of products) {
+                const result = await run(insertSql, values, client);
+                if (result.rows[0]) rows.push(result.rows[0]);
+            }
+            return rows;
+        },
+        async bulkUpdate(products, client) {
+            const assignments = PRODUCT_WRITE_COLUMNS.map((col, i) => `${col} = $${i + 1}`).join(', ');
+            const updateSql = `UPDATE products SET ${assignments}, updated_at = NOW() WHERE id = $${PRODUCT_WRITE_COLUMNS.length + 1} RETURNING ${PRODUCT_COLUMNS}`;
+            const rows = [];
+            for (const { id, values } of products) {
+                const result = await run(updateSql, [...values, id], client);
+                if (result.rows[0]) rows.push(result.rows[0]);
+            }
+            return rows;
         },
     };
 }

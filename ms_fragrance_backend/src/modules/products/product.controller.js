@@ -53,6 +53,23 @@ function createProductController({ productService }) {
             try { const deleted = await productService.delete(id); return deleted ? res.json({ message: 'Product deleted', id }) : res.status(404).json({ error: 'Product not found' }); }
             catch (error) { logger.error('[PRODUCT_DELETE_ERROR]', { productId: id, errorMessage: error.message }); return res.status(500).json({ error: 'Failed to delete product' }); }
         },
+        async bulkUpsert(req, res) {
+            const { create, update } = req.body;
+            if (!Array.isArray(create) && !Array.isArray(update)) {
+                return res.status(400).json({ error: '"create" and/or "update" must be arrays' });
+            }
+            try {
+                const result = await productService.bulkUpsert({
+                    create: Array.isArray(create) ? create : [],
+                    update: Array.isArray(update) ? update : [],
+                });
+                if (!result.success) return res.status(422).json(result);
+                return res.status(200).json(result);
+            } catch (error) {
+                logger.error('[BULK_UPSERT_ERROR]', { errorMessage: error.message });
+                return res.status(500).json({ error: 'Failed to save products. No database changes were made.' });
+            }
+        },
     };
 }
 

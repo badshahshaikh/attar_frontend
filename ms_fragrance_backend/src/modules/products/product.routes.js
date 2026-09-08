@@ -9,6 +9,7 @@ function createProductRouter(controller) {
     router.get('/brands', controller.brands);
     router.get('/fragrance-families', controller.fragranceFamilies);
     router.post('/upload-image', authenticate, upload.single('image'), asyncHandler(controller.uploadImage));
+    router.post('/bulk-upsert', authenticate, asyncHandler(controller.bulkUpsert));
     router.get('/:id', asyncHandler(controller.getById));
     router.post('/', authenticate, asyncHandler(controller.create));
     router.put('/:id', authenticate, asyncHandler(controller.update));

@@ -18,7 +18,8 @@ export default function AdminLayout({ children }) {
                 <Link to="/admin" className="admin-brand">MS FRAGRANCE <span>ADMIN</span></Link>
                 <nav className="admin-nav" aria-label="Admin navigation">
                     <NavLink to="/admin" end>Dashboard</NavLink>
-                    <NavLink to="/admin/products">Products</NavLink>
+                    <NavLink to="/admin/products" end>Products</NavLink>
+                    <NavLink to="/admin/products/bulk">Bulk Manage</NavLink>
                 </nav>
                 <button type="button" className="admin-logout" onClick={handleLogout}>Log out</button>
             </aside>

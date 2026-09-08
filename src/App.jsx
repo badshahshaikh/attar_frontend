@@ -43,6 +43,7 @@ const Products = lazy(() => import('./pages/Admin/Products'));
 const ProductForm = lazy(() =>
   import('./pages/Admin/ProductForm')
 );
+const BulkProducts = lazy(() => import('./pages/Admin/BulkProducts'));
 
 import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute';
 import './App.css';
@@ -76,15 +77,16 @@ function App() {
                     <Route element={<ProtectedRoute />}>
                       <Route path="/admin" element={<AdminDashboard />} />
                       <Route path="/admin/products" element={<Products />} />
+                      <Route path="/admin/products/bulk" element={<BulkProducts />} />
                       <Route path="/admin/products/new" element={<ProductForm />} />
                       <Route path="/admin/products/:id/edit" element={<ProductForm />} />
                     </Route>
                   </Routes>
 
-                   <Footer />
+                  <Footer />
                 </Suspense>
 
-               
+
               </div>
             </WishlistProvider>
           </CartProvider>
