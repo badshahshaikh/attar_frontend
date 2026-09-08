@@ -1,9 +1,9 @@
 import React from 'react';
-import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useNavigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import './admin.css';
 
-export default function AdminLayout({ children }) {
+export default function AdminLayout() {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
 
@@ -20,6 +20,7 @@ export default function AdminLayout({ children }) {
                     <NavLink to="/admin" end>Dashboard</NavLink>
                     <NavLink to="/admin/products" end>Products</NavLink>
                     <NavLink to="/admin/products/bulk">Bulk Manage</NavLink>
+                    <NavLink to="/admin/footer-settings">Footer Settings</NavLink>
                 </nav>
                 <button type="button" className="admin-logout" onClick={handleLogout}>Log out</button>
             </aside>
@@ -29,7 +30,7 @@ export default function AdminLayout({ children }) {
                     <button type="button" className="admin-logout" onClick={handleLogout}>Log out</button>
                 </div>
                 <div className="admin-user">Signed in as <strong>{user?.username}</strong></div>
-                {children}
+                <Outlet />
             </main>
         </div>
     );

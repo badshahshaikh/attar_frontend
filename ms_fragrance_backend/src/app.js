@@ -8,7 +8,7 @@ const { errorHandler } = require('./shared/errors/error-handler');
 const { createContainer } = require('./composition/container');
 
 const app = express();
-const { productRouter, authRouter } = createContainer();
+const { productRouter, authRouter, settingsRouter } = createContainer();
 const uploadDir = config.uploads.directory;
 
 app.use(cors(corsOptions));
@@ -20,6 +20,7 @@ app.use('/uploads', express.static(uploadDir));
 
 app.use('/api/products', productRouter);
 app.use('/api/auth', authRouter);
+app.use('/api/settings', settingsRouter);
 
 app.get('/api/health', (req, res) => {
     res.json({

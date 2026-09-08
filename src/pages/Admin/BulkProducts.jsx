@@ -1,6 +1,5 @@
 import React, { useCallback, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import AdminLayout from '../../components/admin/AdminLayout';
 import { fetchProducts, bulkUpsertProducts } from '../../services/productService';
 import './BulkProducts.css';
 
@@ -598,7 +597,7 @@ export default function BulkProducts() {
     }, { toCreate: 0, toUpdate: 0, unchanged: 0, invalid: 0 });
 
     return (
-        <AdminLayout>
+        <>
             <section className="bulk-page">
                 {/* page heading */}
                 <div className="admin-page-heading">
@@ -701,6 +700,6 @@ export default function BulkProducts() {
                     onCancel={() => setShowConfirm(false)}
                 />
             )}
-        </AdminLayout>
+        </>
     );
 }
