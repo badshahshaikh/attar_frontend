@@ -9,12 +9,13 @@ import './Header.css';
 const Header = () => {
     const { cartCount } = useCart();
     const { wishlistItems } = useWishlist();
-    const { products, brands, fragranceFamilies } = useProducts();
+    const { products, brands, fragranceFamilies, searchProducts } = useProducts();
     const navigate = useNavigate();
     const location = useLocation();
 
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
+    const [searchLoading, setSearchLoading] = useState(false);
     const [searchResults, setSearchResults] = useState([]);
     const searchRef = useRef(null);
 
@@ -52,21 +53,42 @@ const Header = () => {
     }, [location.pathname]);
 
     useEffect(() => {
-        if (!searchQuery.trim()) {
+        const query = searchQuery.trim();
+
+        if (!query) {
             setSearchResults([]);
+            setSearchLoading(false);
             return;
         }
-        const lower = searchQuery.toLowerCase();
-        const results = products.filter(p =>
-            (p.name || '').toLowerCase().includes(lower) ||
-            (p.description || '').toLowerCase().includes(lower) ||
-            (p.fragranceType || '').toLowerCase().includes(lower) ||
-            (p.topNotes || []).some(n => (n || '').toLowerCase().includes(lower)) ||
-            (p.heartNotes || []).some(n => (n || '').toLowerCase().includes(lower)) ||
-            (p.baseNotes || []).some(n => (n || '').toLowerCase().includes(lower))
-        ).slice(0, 5); // limit to top 5
-        setSearchResults(results);
-    }, [searchQuery, products]);
+
+        let cancelled = false;
+
+        const timer = setTimeout(async () => {
+            try {
+                setSearchLoading(true);
+
+                const results = await searchProducts(query, 5);
+
+                if (!cancelled) {
+                    setSearchResults(results);
+                }
+            } catch (error) {
+                if (!cancelled) {
+                    console.error('Product search failed:', error);
+                    setSearchResults([]);
+                }
+            } finally {
+                if (!cancelled) {
+                    setSearchLoading(false);
+                }
+            }
+        }, 300);
+
+        return () => {
+            cancelled = true;
+            clearTimeout(timer);
+        };
+    }, [searchQuery, searchProducts]);
 
     useEffect(() => {
         const handleClickOutside = (e) => {
@@ -169,13 +191,13 @@ const Header = () => {
                     {/* Desktop Navigation */}
                     <nav className="nav-links" aria-label="Main navigation">
                         <Link to="/" className={isActiveNav('/') ? 'active' : ''}>Home</Link>
-                        <button 
+                        <button
                             className={`nav-link-btn ${getActiveClass('best-sellers')}`}
                             onClick={() => handleNavClick('best-sellers')}
                         >
                             Best Sellers
                         </button>
-                        <div 
+                        <div
                             className="nav-item-with-dropdown"
                             ref={brandsDropdownRef}
                             onMouseEnter={() => setIsBrandsDropdownOpen(true)}
@@ -199,7 +221,7 @@ const Header = () => {
                                 </div>
                             )}
                         </div>
-                        <div 
+                        <div
                             className="nav-item-with-dropdown"
                             ref={fragranceDropdownRef}
                             onMouseEnter={() => setIsFragranceDropdownOpen(true)}
@@ -223,7 +245,7 @@ const Header = () => {
                                 </div>
                             )}
                         </div>
-                        <button 
+                        <button
                             className={`nav-link-btn ${getActiveClass('ms-fragrance')}`}
                             onClick={() => handleNavClick(null, 'MS Fragrance')}
                         >
@@ -259,23 +281,42 @@ const Header = () => {
                                     </form>
 
                                     {searchQuery.trim() && (
+
                                         <div className="search-results">
-                                            {searchResults.length > 0 ? (
+                                            {searchLoading ? (
+                                                <div className="search-loading">
+                                                    Searching...
+                                                </div>
+                                            ) : searchResults.length > 0 ? (
                                                 searchResults.map(product => (
-                                                    <div
+                                                    <Link
                                                         key={product.id}
+                                                        to={`/product/${product.id}`}
                                                         className="search-result-item"
-                                                        onClick={() => handleResultClick(product.id)}
+                                                        style={{
+                                                            display: 'flex',
+                                                            textDecoration: 'none'
+                                                        }}
+                                                        onClick={() => {
+                                                            setIsSearchOpen(false);
+                                                            setSearchQuery('');
+                                                        }}
                                                     >
-                                                        <img src={product.imageUrl} alt={product.name} />
+                                                        <img
+                                                            src={product.imageUrl}
+                                                            alt={product.name}
+                                                        />
+
                                                         <div className="search-result-info">
                                                             <h4>{product.name}</h4>
                                                             <span>{product.fragranceType}</span>
                                                         </div>
-                                                    </div>
+                                                    </Link>
                                                 ))
                                             ) : (
-                                                <div className="search-no-results">No products found.</div>
+                                                <div className="search-no-results">
+                                                    No products found.
+                                                </div>
                                             )}
                                         </div>
                                     )}
@@ -345,17 +386,22 @@ const Header = () => {
                                             <div className="search-results">
                                                 {searchResults.length > 0 ? (
                                                     searchResults.map(product => (
-                                                        <div
+                                                        <Link
                                                             key={product.id}
+                                                            to={`/product/${product.id}`}
                                                             className="search-result-item"
-                                                            onClick={() => handleResultClick(product.id)}
+                                                            style={{ display: 'flex', textDecoration: 'none' }}
+                                                            onClick={(e) => {
+                                                                setIsSearchOpen(false);
+                                                                setSearchQuery('');
+                                                            }}
                                                         >
                                                             <img src={product.imageUrl} alt={product.name} />
                                                             <div className="search-result-info">
                                                                 <h4>{product.name}</h4>
                                                                 <span>{product.fragranceType}</span>
                                                             </div>
-                                                        </div>
+                                                        </Link>
                                                     ))
                                                 ) : (
                                                     <div className="search-no-results">No products found.</div>
@@ -380,100 +426,100 @@ const Header = () => {
                     </div>
                 </div>
 
-            {/* Mobile Nav Drawer */}
-            <div className={`mobile-nav-drawer ${isMobileMenuOpen ? 'open' : ''}`}>
-                <div className="mobile-nav-header">
-                    <span className="mobile-nav-title">Menu</span>
-                    <button className="close-mobile-nav" onClick={() => setIsMobileMenuOpen(false)}>
-                        <X size={24} />
-                    </button>
+                {/* Mobile Nav Drawer */}
+                <div className={`mobile-nav-drawer ${isMobileMenuOpen ? 'open' : ''}`}>
+                    <div className="mobile-nav-header">
+                        <span className="mobile-nav-title">Menu</span>
+                        <button className="close-mobile-nav" onClick={() => setIsMobileMenuOpen(false)}>
+                            <X size={24} />
+                        </button>
+                    </div>
+                    <nav className="mobile-nav-links" aria-label="Mobile navigation">
+                        <Link to="/" onClick={() => setIsMobileMenuOpen(false)}>Home</Link>
+                        <button
+                            className="mobile-nav-link-btn"
+                            onClick={() => {
+                                handleNavClick('best-sellers');
+                                setIsMobileMenuOpen(false);
+                            }}
+                        >
+                            Best Sellers
+                        </button>
+                        <div className="mobile-nav-accordion">
+                            <button
+                                className="mobile-nav-accordion-header"
+                                onClick={() => setIsMobileBrandsOpen(!isMobileBrandsOpen)}
+                            >
+                                Brands
+                                <ChevronDown
+                                    size={16}
+                                    className={`mobile-nav-chevron ${isMobileBrandsOpen ? 'open' : ''}`}
+                                />
+                            </button>
+                            {isMobileBrandsOpen && (
+                                <div className="mobile-nav-accordion-content">
+                                    {brandOptions.map((brand) => (
+                                        <button
+                                            key={brand.value}
+                                            className="mobile-nav-accordion-item"
+                                            onClick={() => {
+                                                handleBrandClick(brand.value, brand.exclusive);
+                                                setIsMobileMenuOpen(false);
+                                            }}
+                                        >
+                                            {brand.name}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                        <div className="mobile-nav-accordion">
+                            <button
+                                className="mobile-nav-accordion-header"
+                                onClick={() => setIsMobileFragranceOpen(!isMobileFragranceOpen)}
+                            >
+                                Fragrance Family
+                                <ChevronDown
+                                    size={16}
+                                    className={`mobile-nav-chevron ${isMobileFragranceOpen ? 'open' : ''}`}
+                                />
+                            </button>
+                            {isMobileFragranceOpen && (
+                                <div className="mobile-nav-accordion-content">
+                                    {fragranceOptions.map((fragrance) => (
+                                        <button
+                                            key={fragrance.value}
+                                            className="mobile-nav-accordion-item"
+                                            onClick={() => {
+                                                handleFragranceClick(fragrance.value);
+                                                setIsMobileMenuOpen(false);
+                                            }}
+                                        >
+                                            {fragrance.name}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                        <button
+                            className="mobile-nav-link-btn"
+                            onClick={() => {
+                                handleNavClick(null, 'MS Fragrance');
+                                setIsMobileMenuOpen(false);
+                            }}
+                        >
+                            MS Fragrance
+                        </button>
+                        <Link to="/wishlist" onClick={() => setIsMobileMenuOpen(false)}>Wishlist</Link>
+                        <Link to="/cart" onClick={() => setIsMobileMenuOpen(false)}>Cart</Link>
+                    </nav>
                 </div>
-                <nav className="mobile-nav-links" aria-label="Mobile navigation">
-                    <Link to="/" onClick={() => setIsMobileMenuOpen(false)}>Home</Link>
-                    <button 
-                        className="mobile-nav-link-btn"
-                        onClick={() => {
-                            handleNavClick('best-sellers');
-                            setIsMobileMenuOpen(false);
-                        }}
-                    >
-                        Best Sellers
-                    </button>
-                    <div className="mobile-nav-accordion">
-                        <button 
-                            className="mobile-nav-accordion-header"
-                            onClick={() => setIsMobileBrandsOpen(!isMobileBrandsOpen)}
-                        >
-                            Brands
-                            <ChevronDown 
-                                size={16} 
-                                className={`mobile-nav-chevron ${isMobileBrandsOpen ? 'open' : ''}`} 
-                            />
-                        </button>
-                        {isMobileBrandsOpen && (
-                            <div className="mobile-nav-accordion-content">
-                                {brandOptions.map((brand) => (
-                                    <button
-                                        key={brand.value}
-                                        className="mobile-nav-accordion-item"
-                                        onClick={() => {
-                                            handleBrandClick(brand.value, brand.exclusive);
-                                            setIsMobileMenuOpen(false);
-                                        }}
-                                    >
-                                        {brand.name}
-                                    </button>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                    <div className="mobile-nav-accordion">
-                        <button 
-                            className="mobile-nav-accordion-header"
-                            onClick={() => setIsMobileFragranceOpen(!isMobileFragranceOpen)}
-                        >
-                            Fragrance Family
-                            <ChevronDown 
-                                size={16} 
-                                className={`mobile-nav-chevron ${isMobileFragranceOpen ? 'open' : ''}`} 
-                            />
-                        </button>
-                        {isMobileFragranceOpen && (
-                            <div className="mobile-nav-accordion-content">
-                                {fragranceOptions.map((fragrance) => (
-                                    <button
-                                        key={fragrance.value}
-                                        className="mobile-nav-accordion-item"
-                                        onClick={() => {
-                                            handleFragranceClick(fragrance.value);
-                                            setIsMobileMenuOpen(false);
-                                        }}
-                                    >
-                                        {fragrance.name}
-                                    </button>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                    <button 
-                        className="mobile-nav-link-btn"
-                        onClick={() => {
-                            handleNavClick(null, 'MS Fragrance');
-                            setIsMobileMenuOpen(false);
-                        }}
-                    >
-                        MS Fragrance
-                    </button>
-                    <Link to="/wishlist" onClick={() => setIsMobileMenuOpen(false)}>Wishlist</Link>
-                    <Link to="/cart" onClick={() => setIsMobileMenuOpen(false)}>Cart</Link>
-                </nav>
-            </div>
 
-            {/* Backdrop for the Mobile Drawer */}
-            {isMobileMenuOpen && (
-                <div className="mobile-nav-backdrop" onClick={() => setIsMobileMenuOpen(false)}></div>
-            )}
-        </header>
+                {/* Backdrop for the Mobile Drawer */}
+                {isMobileMenuOpen && (
+                    <div className="mobile-nav-backdrop" onClick={() => setIsMobileMenuOpen(false)}></div>
+                )}
+            </header>
         </>
     );
 };

@@ -44,7 +44,7 @@ export function validateProductRow(row) {
     // Validate size pricing or main price
     const hasSizePrice = Object.keys(row.sizePricing || {}).length > 0;
     const manualPrice = row.price !== '' && row.price !== undefined ? parseFloat(row.price) : NaN;
-    
+
     if (!hasSizePrice && isNaN(manualPrice)) {
         errors.push('At least one size price or a main price is required');
     }
@@ -82,16 +82,27 @@ export function validateProductForm(values) {
 
     // Validate size pricing JSON
     if (values.sizePricing) {
-        try {
-            const parsed = JSON.parse(values.sizePricing);
-            if (typeof parsed !== 'object' || Array.isArray(parsed)) {
-                errors.sizePricing = 'Size pricing must be a valid object';
+        if (!Array.isArray(values.sizePricing)) {
+            errors.sizePricing = 'Size pricing must be a valid list';
+        } else {
+            const invalidItem = values.sizePricing.some((item) => {
+                const size = Number(item?.size);
+                const price = Number(item?.price);
+
+                return (
+                    !Number.isFinite(size) ||
+                    size <= 0 ||
+                    !Number.isFinite(price) ||
+                    price < 0
+                );
+            });
+
+            if (invalidItem) {
+                errors.sizePricing =
+                    'Each size must be a valid number and each price must be zero or greater';
             }
-        } catch {
-            errors.sizePricing = 'Size pricing must be valid JSON';
         }
     }
-
     return {
         isValid: Object.keys(errors).length === 0,
         errors

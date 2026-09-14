@@ -1,19 +1,15 @@
-const ValidationError = require('../../core/errors/ValidationError');
+import ValidationError from '../../core/errors/ValidationError.js';
 
-/**
- * ProductValidator - Validation and normalization for product data
- * 
- * Pure functions for validating and normalizing product data.
- * Reusable and testable without dependencies.
- */
+import {
+    requireText,
+    validateArrayFields,
+    validateObjectField,
+    parseBoolean,
+    validateNonNegativeNumber,
+    validateNonNegativeInteger,
+    validateRange
+} from '../../core/validation/validation.helpers.js';
 
-function parseBoolean(value, fieldName) {
-    if (value === undefined) return undefined;
-    if (value === true || value === false) return value;
-    if (value === 1 || value === '1' || value === 'true') return true;
-    if (value === 0 || value === '0' || value === 'false') return false;
-    throw new Error(`${fieldName} must be a boolean`);
-}
 
 /**
  * Validate and normalize product payload
@@ -21,85 +17,126 @@ function parseBoolean(value, fieldName) {
  * @returns {Object} Normalized product payload
  * @throws {ValidationError} If validation fails
  */
-function parseProductPayload(body) {
-    const payload = { ...body, fragranceType: body.fragranceType || body.fragranceFamily };
-    
+export function parseProductPayload(body) {
+    const payload = {
+        ...body,
+        fragranceType:
+            body.fragranceType ||
+            body.fragranceFamily
+    };
+
     // Required fields
-    if (!payload.name || !String(payload.name).trim()) {
-        throw new ValidationError('Product name is required');
-    }
-    if (payload.price === undefined || payload.price === '' || !Number.isFinite(Number(payload.price)) || Number(payload.price) < 0) {
-        throw new ValidationError('Price must be a non-negative number');
-    }
-    if (!payload.brand || !String(payload.brand).trim()) {
-        throw new ValidationError('Brand is required');
-    }
-    if (!payload.fragranceType || !String(payload.fragranceType).trim()) {
-        throw new ValidationError('Fragrance family is required');
-    }
-    
+    payload.name = requireText(
+        payload.name,
+        'Product name'
+    );
+
+    payload.brand = requireText(
+        payload.brand,
+        'Brand'
+    );
+
+    payload.fragranceType = requireText(
+        payload.fragranceType,
+        'Fragrance family'
+    );
+
+    // Price
+    payload.price = validateNonNegativeNumber(
+        payload.price,
+        'Price',
+        { required: true }
+    );
+
     // Array fields
-    for (const field of ['sizes', 'topNotes', 'heartNotes', 'baseNotes']) {
-        if (payload[field] !== undefined && !Array.isArray(payload[field])) {
-            throw new ValidationError(`${field} must be an array`);
-        }
-    }
-    
+    validateArrayFields(
+        payload,
+        [
+            'sizes',
+            'topNotes',
+            'heartNotes',
+            'baseNotes'
+        ]
+    );
+
     // Object fields
-    if (payload.sizePricing !== undefined && (typeof payload.sizePricing !== 'object' || Array.isArray(payload.sizePricing) || payload.sizePricing === null)) {
-        throw new ValidationError('sizePricing must be an object');
-    }
-    
+    validateObjectField(
+        payload,
+        'sizePricing',
+        'sizePricing must be an object'
+    );
+
     // Boolean fields
-    for (const field of ['inStock', 'isNew', 'isBestSeller', 'isExclusive', 'featured']) {
-        payload[field] = parseBoolean(payload[field], field);
+    for (const field of [
+        'inStock',
+        'isNew',
+        'isBestSeller',
+        'isExclusive',
+        'featured'
+    ]) {
+        payload[field] = parseBoolean(
+            payload[field],
+            field
+        );
     }
-    
-    // Numeric fields
-    if (payload.stockQuantity !== undefined && (!Number.isInteger(Number(payload.stockQuantity)) || Number(payload.stockQuantity) < 0)) {
-        throw new ValidationError('Stock quantity must be a non-negative integer');
-    }
-    
-    // Rating validation
-    if (payload.rating !== undefined && payload.rating !== '' && (!Number.isFinite(Number(payload.rating)) || Number(payload.rating) < 0 || Number(payload.rating) > 5)) {
-        throw new ValidationError('Rating must be between 0 and 5');
-    }
-    
-    // Reviews validation
-    if (payload.reviews !== undefined && payload.reviews !== '' && (!Number.isInteger(Number(payload.reviews)) || Number(payload.reviews) < 0)) {
-        throw new ValidationError('Reviews must be a non-negative integer');
-    }
-    
-    // Normalize numeric fields
-    payload.price = Number(payload.price);
-    if (payload.originalPrice !== undefined && payload.originalPrice !== null && payload.originalPrice !== '') {
-        if (!Number.isFinite(Number(payload.originalPrice)) || Number(payload.originalPrice) < 0) {
-            throw new ValidationError('Original price must be a non-negative number');
-        }
-        payload.originalPrice = Number(payload.originalPrice);
-    }
-    
-    if (payload.rating !== undefined && payload.rating !== '') {
-        payload.rating = Number(payload.rating);
-    }
-    
-    if (payload.reviews !== undefined && payload.reviews !== '') {
-        payload.reviews = Number(payload.reviews);
-    }
-    
+
+    // Stock quantity
     if (payload.stockQuantity !== undefined) {
-        payload.stockQuantity = Number(payload.stockQuantity);
+        payload.stockQuantity =
+            validateNonNegativeInteger(
+                payload.stockQuantity,
+                'Stock quantity'
+            );
     }
-    
+
+    // Original price
+    if (
+        payload.originalPrice !== undefined &&
+        payload.originalPrice !== null &&
+        payload.originalPrice !== ''
+    ) {
+        payload.originalPrice =
+            validateNonNegativeNumber(
+                payload.originalPrice,
+                'Original price'
+            );
+    }
+
+    // Rating
+    if (
+        payload.rating !== undefined &&
+        payload.rating !== ''
+    ) {
+        payload.rating = validateRange(
+            payload.rating,
+            'Rating',
+            0,
+            5
+        );
+    }
+
+    // Reviews
+    if (
+        payload.reviews !== undefined &&
+        payload.reviews !== ''
+    ) {
+        payload.reviews =
+            validateNonNegativeInteger(
+                payload.reviews,
+                'Reviews'
+            );
+    }
+
     return payload;
 }
+
 
 /**
  * Validate product ID parameter
  * @param {string|number} rawId - Raw ID from request params
  * @returns {number|null} Validated ID or null if invalid
  */
-function parseProductIdParam(rawId) {
+export function parseProductIdParam(rawId) {
     if (!/^\d+$/.test(String(rawId)) || Number(rawId) <= 0) return null;
     return Number(rawId);
 }
@@ -109,21 +146,74 @@ function parseProductIdParam(rawId) {
  * @param {Object} query - Query parameters from request
  * @returns {Object} Normalized query parameters
  */
-function parseListQuery(query) {
-    const page = Math.max(1, Number.parseInt(query.page, 10) || 1);
-    const limit = Math.min(100, Math.max(1, Number.parseInt(query.limit, 10) || 50));
-    
-    return {
+export function parseListQuery(query) {
+    const page = Math.max(
+        1,
+        Number.parseInt(query.page, 10) || 1
+    );
+
+    const limit = Math.min(
+        100,
+        Math.max(1, Number.parseInt(query.limit, 10) || 50)
+    );
+
+    const fragranceFamily = Array.isArray(query.fragranceFamily)
+        ? query.fragranceFamily
+        : query.fragranceFamily
+            ? [query.fragranceFamily]
+            : [];
+
+    const category = Array.isArray(query.category)
+        ? query.category
+        : query.category
+            ? [query.category]
+            : [];
+
+    const sizes = Array.isArray(query.size)
+        ? query.size
+        : query.size
+            ? [query.size]
+            : [];
+
+    const filters = {
         page,
         limit,
         search: query.search,
         brand: query.brand,
-        fragranceFamily: query.fragranceFamily,
-        category: query.category,
-        isBestSeller: query.isBestSeller === undefined ? undefined : parseBoolean(query.isBestSeller, 'isBestSeller'),
-        isExclusive: query.isExclusive === undefined ? undefined : parseBoolean(query.isExclusive, 'isExclusive'),
-        featured: query.featured === undefined ? undefined : parseBoolean(query.featured, 'featured')
+        fragranceFamily,
+        category,
+        minPrice:
+            query.minPrice !== undefined
+                ? Number(query.minPrice)
+                : undefined,
+
+        maxPrice:
+            query.maxPrice !== undefined
+                ? Number(query.maxPrice)
+                : undefined,
+
+        sizes,
+
+        isBestSeller:
+            query.isBestSeller === undefined
+                ? undefined
+                : parseBoolean(query.isBestSeller, 'isBestSeller'),
+
+        isExclusive:
+            query.isExclusive === undefined
+                ? undefined
+                : parseBoolean(query.isExclusive, 'isExclusive'),
+
+        featured:
+            query.featured === undefined
+                ? undefined
+                : parseBoolean(query.featured, 'featured')
     };
+
+    console.log('QUERY:', query);
+    console.log('FRAGRANCE FAMILY:', filters.fragranceFamily);
+
+    return filters;
 }
 
 /**
@@ -132,33 +222,33 @@ function parseListQuery(query) {
  * @param {Array} sizes - Available sizes array
  * @returns {Object} Normalized size pricing
  */
-function normalizeSizePricing(sizePricing, sizes = []) {
-    if (!sizePricing || typeof sizePricing !== 'object') {
+export function normalizeSizePricing(sizePricing) {
+    if (!sizePricing || typeof sizePricing !== 'object' || Array.isArray(sizePricing)) {
         return {};
     }
-    
+
     const normalized = {};
-    
-    // Ensure all keys in sizePricing have valid numeric values
-    for (const [size, price] of Object.entries(sizePricing)) {
+
+    for (const [rawSize, price] of Object.entries(sizePricing)) {
+        const sizeNumber = Number(
+            String(rawSize)
+                .trim()
+                .toLowerCase()
+                .replace(/\s*ml$/, '')
+        );
+
         const numPrice = Number(price);
-        if (!isNaN(numPrice) && numPrice >= 0) {
-            normalized[size] = numPrice;
+
+        if (
+            Number.isFinite(sizeNumber) &&
+            sizeNumber > 0 &&
+            Number.isFinite(numPrice) &&
+            numPrice >= 0
+        ) {
+            normalized[`${sizeNumber}ml`] = numPrice;
         }
     }
-    
-    // If sizes array is provided, ensure sizePricing only contains sizes from that array
-    if (Array.isArray(sizes) && sizes.length > 0) {
-        const validSizes = new Set(sizes);
-        const filtered = {};
-        for (const [size, price] of Object.entries(normalized)) {
-            if (validSizes.has(size)) {
-                filtered[size] = price;
-            }
-        }
-        return filtered;
-    }
-    
+
     return normalized;
 }
 
@@ -167,7 +257,7 @@ function normalizeSizePricing(sizePricing, sizes = []) {
  * @param {Object} sizePricing - Size pricing object
  * @returns {Array} Array of size keys
  */
-function deriveSizesFromPricing(sizePricing) {
+export function deriveSizesFromPricing(sizePricing) {
     if (!sizePricing || typeof sizePricing !== 'object') {
         return [];
     }
@@ -182,34 +272,33 @@ function deriveSizesFromPricing(sizePricing) {
  * @param {Object} product - Product object
  * @returns {Object} Product with consistent size pricing and sizes
  */
-function ensureSizeConsistency(product) {
+export function ensureSizeConsistency(product) {
     const normalized = { ...product };
-    
-    // Normalize size pricing
-    normalized.sizePricing = normalizeSizePricing(product.sizePricing, product.sizes);
-    
-    // If sizes is empty or undefined, derive from sizePricing
-    if (!normalized.sizes || normalized.sizes.length === 0) {
-        normalized.sizes = deriveSizesFromPricing(normalized.sizePricing);
+
+    // Normalize size pricing first.
+    normalized.sizePricing = normalizeSizePricing(
+        product.sizePricing
+    );
+
+    // Size pricing is now the source of truth for available sizes.
+    if (Object.keys(normalized.sizePricing).length > 0) {
+        normalized.sizes = Object.keys(normalized.sizePricing);
+    } else if (!Array.isArray(normalized.sizes)) {
+        normalized.sizes = [];
     }
-    
-    // If sizePricing is empty but sizes exist, create empty pricing
-    if (Object.keys(normalized.sizePricing).length === 0 && normalized.sizes && normalized.sizes.length > 0) {
+
+    // If sizes exist but there is no pricing, create zero-price entries.
+    if (
+        Object.keys(normalized.sizePricing).length === 0 &&
+        normalized.sizes.length > 0
+    ) {
         normalized.sizePricing = {};
-        normalized.sizes.forEach(size => {
+
+        normalized.sizes.forEach((size) => {
             normalized.sizePricing[size] = 0;
         });
     }
-    
+
     return normalized;
 }
 
-module.exports = {
-    parseBoolean,
-    parseProductPayload,
-    parseProductIdParam,
-    parseListQuery,
-    normalizeSizePricing,
-    deriveSizesFromPricing,
-    ensureSizeConsistency
-};

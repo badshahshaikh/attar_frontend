@@ -22,16 +22,28 @@ export function csvToArray(value) {
  * Convert product data to form format
  */
 export function productToForm(product, emptyProduct) {
+    const sizePricing = product.sizePricing || {};
+
+    const sizePricingRows = Object.entries(sizePricing).map(
+        ([size, price]) => ({
+            size: String(size).replace(/ml$/i, ''),
+            price: price ?? '',
+        })
+    );
+
     return {
         ...emptyProduct,
         ...product,
+
         sizes: arrayToCsv(product.sizes),
         topNotes: arrayToCsv(product.topNotes),
         heartNotes: arrayToCsv(product.heartNotes),
         baseNotes: arrayToCsv(product.baseNotes),
-        sizePricing: JSON.stringify(product.sizePricing || {}),
+
+        sizePricing: sizePricingRows,
+
         originalPrice: product.originalPrice ?? '',
-        imageUrl: product.imageUrl || ''
+        imageUrl: product.imageUrl || '',
     };
 }
 
@@ -39,22 +51,47 @@ export function productToForm(product, emptyProduct) {
  * Convert form data to product payload
  */
 export function formToProductPayload(values) {
-    let sizePricing;
-    try {
-        sizePricing = values.sizePricing.trim() ? JSON.parse(values.sizePricing) : {};
-    } catch {
-        throw new Error('Size pricing must be valid JSON');
-    }
+    const sizePricingRows = Array.isArray(values.sizePricing)
+        ? values.sizePricing
+        : [];
+
+    const sizePricing = sizePricingRows.reduce((result, item) => {
+        const size = Number(item?.size);
+        const price = Number(item?.price);
+
+        if (
+            Number.isFinite(size) &&
+            size > 0 &&
+            Number.isFinite(price) &&
+            price >= 0
+        ) {
+            result[`${size}ml`] = price;
+        }
+
+        return result;
+    }, {});
+
+    const sizes = Object.keys(sizePricing);
 
     return {
         ...values,
+
         price: Number(values.price),
-        originalPrice: values.originalPrice === '' ? null : Number(values.originalPrice),
+
+        originalPrice:
+            values.originalPrice === ''
+                ? null
+                : Number(values.originalPrice),
+
         stockQuantity: Number(values.stockQuantity),
         rating: Number(values.rating),
         reviews: Number(values.reviews),
-        sizes: csvToArray(values.sizes),
+
+        // Derived from sizePricing — no second source of truth
+        sizes,
+
         sizePricing,
+
         topNotes: csvToArray(values.topNotes),
         heartNotes: csvToArray(values.heartNotes),
         baseNotes: csvToArray(values.baseNotes)

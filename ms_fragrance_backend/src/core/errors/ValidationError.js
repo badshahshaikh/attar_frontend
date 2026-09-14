@@ -1,5 +1,5 @@
-const AppError = require('./AppError');
 
+import AppError from './AppError.js';
 /**
  * ValidationError - Error for input validation failures
  * 
@@ -14,4 +14,4 @@ class ValidationError extends AppError {
     }
 }
 
-module.exports = ValidationError;
+export default ValidationError;

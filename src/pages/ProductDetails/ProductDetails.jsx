@@ -73,11 +73,11 @@ const ProductDetails = () => {
     return (
         <main className="product-details-page">
             {/* Dynamic simple breadcrumb for this page */}
-            <nav className="breadcrumb container">
+            <nav className="breadcrumb-container container" aria-label="Breadcrumb">
                 <ol>
                     <li><Link to="/">Home</Link></li>
                     <li className="separator">/</li>
-                    <li><Link to="/">Shop</Link></li>
+                    <li><Link to="/shop">Shop</Link></li>
                     <li className="separator">/</li>
                     <li className="active" aria-current="page">{product.name}</li>
                 </ol>

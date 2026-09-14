@@ -1,5 +1,5 @@
-const AppError = require('./AppError');
 
+import AppError from './AppError.js';
 /**
  * NotFoundError - Error for resource not found
  * 
@@ -13,4 +13,4 @@ class NotFoundError extends AppError {
     }
 }
 
-module.exports = NotFoundError;
+export default NotFoundError;

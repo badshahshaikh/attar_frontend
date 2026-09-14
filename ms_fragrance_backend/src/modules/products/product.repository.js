@@ -11,23 +11,162 @@ function createProductRepository({ query }) {
         async findAll(filters) {
             const conditions = [];
             const values = [];
+
+            // Search
             if (filters.search) {
                 const search = `%${String(filters.search).trim()}%`;
-                conditions.push('(name ILIKE $1 OR description ILIKE $1 OR brand ILIKE $1 OR fragrance_type ILIKE $1 OR category ILIKE $1)');
+
+                conditions.push(`
+                        (
+                            name ILIKE $1
+                            OR description ILIKE $1
+                            OR brand ILIKE $1
+                            OR fragrance_type ILIKE $1
+                            OR category ILIKE $1
+                        )
+                    `);
+
                 values.push(search);
             }
-            for (const [name, column] of [['brand', 'brand'], ['fragranceFamily', 'fragrance_type'], ['category', 'category']]) {
-                if (filters[name]) { conditions.push(`${column} = $${values.length + 1}`); values.push(String(filters[name])); }
+
+            if (filters.inStockOnly !== undefined) {
+                conditions.push(
+                    `in_stock = $${values.length + 1}`
+                );
+
+                values.push(filters.inStockOnly);
             }
-            for (const [name, column] of [['isBestSeller', 'is_best_seller'], ['isExclusive', 'is_exclusive'], ['featured', 'featured']]) {
-                if (filters[name] !== undefined) { conditions.push(`${column} = $${values.length + 1}`); values.push(filters[name]); }
+
+            // Brand
+            if (filters.brand) {
+                conditions.push(
+                    `brand = $${values.length + 1}`
+                );
+
+                values.push(String(filters.brand));
             }
-            const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
-            const count = await query(`SELECT COUNT(*)::int AS total FROM products ${where}`, values);
+
+            // Fragrance Profile / Fragrance Family
+            if (
+                Array.isArray(filters.fragranceFamily) &&
+                filters.fragranceFamily.length > 0
+            ) {
+                const placeholders = filters.fragranceFamily.map(
+                    (_, index) => `$${values.length + index + 1}`
+                );
+
+                conditions.push(
+                    `fragrance_type IN (${placeholders.join(', ')})`
+                );
+
+                values.push(
+                    ...filters.fragranceFamily.map(String)
+                );
+            }
+
+            // Product Category
+            if (
+                Array.isArray(filters.category) &&
+                filters.category.length > 0
+            ) {
+                const placeholders = filters.category.map(
+                    (_, index) => `$${values.length + index + 1}`
+                );
+
+                conditions.push(
+                    `category IN (${placeholders.join(', ')})`
+                );
+
+                values.push(
+                    ...filters.category.map(String)
+                );
+            }
+
+            // Boolean filters
+            for (const [name, column] of [
+                ['isBestSeller', 'is_best_seller'],
+                ['isExclusive', 'is_exclusive'],
+                ['featured', 'featured']
+            ]) {
+                if (filters[name] !== undefined) {
+                    conditions.push(
+                        `${column} = $${values.length + 1}`
+                    );
+
+                    values.push(filters[name]);
+                }
+            }
+
+            if (filters.minPrice !== undefined) {
+                conditions.push(
+                    `price >= $${values.length + 1}`
+                );
+
+                values.push(filters.minPrice);
+            }
+
+            if (filters.maxPrice !== undefined) {
+                conditions.push(
+                    `price <= $${values.length + 1}`
+                );
+
+                values.push(filters.maxPrice);
+            }
+
+            if (
+                Array.isArray(filters.sizes) &&
+                filters.sizes.length > 0
+            ) {
+                conditions.push(
+                    `sizes ?| $${values.length + 1}::text[]`
+                );
+
+                values.push(filters.sizes.map(String));
+            }
+
+            if (filters.inStockOnly !== undefined) {
+                conditions.push(
+                    `in_stock = $${values.length + 1}`
+                );
+
+                values.push(filters.inStockOnly);
+            }
+
+
+            const where = conditions.length
+                ? `WHERE ${conditions.join(' AND ')}`
+                : '';
+
+            // Count
+            const count = await query(
+                `SELECT COUNT(*)::int AS total
+         FROM products
+         ${where}`,
+                values
+            );
+
+            // Pagination
             const limitIndex = values.length + 1;
             const offsetIndex = values.length + 2;
-            const products = await query(`SELECT ${PRODUCT_COLUMNS} FROM products ${where} ORDER BY id ASC LIMIT $${limitIndex} OFFSET $${offsetIndex}`, [...values, filters.limit, (filters.page - 1) * filters.limit]);
-            return { rows: products.rows, total: count.rows[0].total };
+
+            const products = await query(
+                `SELECT ${PRODUCT_COLUMNS}
+                    FROM products
+                    ${where}
+                    ORDER BY id ASC
+                    LIMIT $${limitIndex}
+                    OFFSET $${offsetIndex}`,
+                [
+                    ...values,
+                    filters.limit,
+                    (filters.page - 1) * filters.limit
+                ]
+            );
+
+            return {
+                rows: products.rows,
+                total: count.rows[0].total
+            };
         },
         async findById(id) {
             const result = await query(`SELECT ${PRODUCT_COLUMNS} FROM products WHERE id = $1`, [id]);

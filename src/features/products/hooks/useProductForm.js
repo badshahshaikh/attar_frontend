@@ -16,7 +16,7 @@ export function useProductForm() {
     const { id } = useParams();
     const editing = Boolean(id);
     const navigate = useNavigate();
-    
+
     const [values, setValues] = useState(EMPTY_PRODUCT);
     const [loading, setLoading] = useState(editing);
     const [saving, setSaving] = useState(false);
@@ -25,7 +25,7 @@ export function useProductForm() {
     // Load product data if editing
     useEffect(() => {
         if (!editing) return;
-        
+
         fetchProductById(id)
             .then(product => setValues(productToForm(product, EMPTY_PRODUCT)))
             .catch(loadError => {
@@ -50,30 +50,33 @@ export function useProductForm() {
         }
 
         // Parse size pricing JSON
-        let sizePricing;
-        try {
-            sizePricing = values.sizePricing.trim() ? JSON.parse(values.sizePricing) : {};
-        } catch {
-            setError('Size pricing must be valid JSON, for example {"3ml":199}.');
-            return;
-        }
+
 
         setSaving(true);
         try {
-            const payload = formToProductPayload({ ...values, sizePricing });
-            
+            const payload = formToProductPayload(values);
+            console.log('=== PRODUCT SAVE DEBUG ===');
+            console.log('Form sizePricing:', values.sizePricing);
+            console.log('Final sizePricing:', payload.sizePricing);
+            console.log('Full payload:', payload);
+            console.log('==========================');
             if (editing) {
                 await updateProduct(id, payload);
             } else {
                 await createProduct(payload);
             }
-            
+
             navigate('/admin/products');
         } catch (saveError) {
+            console.error('PRODUCT SAVE ERROR:', saveError);
+            console.error('Status:', saveError?.status);
+            console.error('Message:', saveError?.message);
+
+
             setError(
                 saveError.status === 401 ? 'Your session has expired. Please sign in again.' :
-                saveError.status === 400 ? saveError.message :
-                'Unable to save product. Please check the form and try again.'
+                    saveError.status === 400 ? saveError.message :
+                        'Unable to save product. Please check the form and try again.'
             );
         } finally {
             setSaving(false);
@@ -87,7 +90,7 @@ export function useProductForm() {
         saving,
         error,
         editing,
-        
+
         // Actions
         handleChange,
         handleSubmit,

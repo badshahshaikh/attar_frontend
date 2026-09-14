@@ -20,21 +20,78 @@ function toProduct(row) {
 
 function toPersistenceValues(payload) {
     const values = [
-        payload.name, payload.category || 'Attar', payload.fragranceType || null,
-        payload.description || null, payload.fullDescription || null,
-        payload.rating || 0, payload.reviews || 0, payload.price,
-        payload.originalPrice || null, payload.sizePricing || {}, payload.sizes || [],
-        payload.topNotes || [], payload.heartNotes || [], payload.baseNotes || [],
-        payload.longevity || null, payload.inStock !== undefined ? payload.inStock : true,
-        payload.isNew !== undefined ? payload.isNew : false, payload.brand || null,
+        payload.name,
+        payload.category || 'Attar',
+        payload.fragranceType || null,
+        payload.description || null,
+        payload.fullDescription || null,
+        payload.rating || 0,
+        payload.reviews || 0,
+        payload.price,
+        payload.originalPrice || null,
+        payload.sizePricing || {},
+        payload.sizes || [],
+        payload.topNotes || [],
+        payload.heartNotes || [],
+        payload.baseNotes || [],
+        payload.longevity || null,
+        payload.inStock !== undefined ? payload.inStock : true,
+        payload.isNew !== undefined ? payload.isNew : false,
+        payload.brand || null,
         payload.isBestSeller !== undefined ? payload.isBestSeller : false,
         payload.isExclusive !== undefined ? payload.isExclusive : false,
         payload.featured !== undefined ? payload.featured : false,
-        payload.stockQuantity !== undefined ? Number(payload.stockQuantity) : (payload.inStock === false ? 0 : 1),
-        payload.slug || null, payload.imageUrl || null,
+        payload.stockQuantity !== undefined
+            ? Number(payload.stockQuantity)
+            : (payload.inStock === false ? 0 : 1),
+        payload.slug || null,
+        payload.imageUrl || null,
     ];
-    const columns = ['name', 'category', 'fragrance_type', 'description', 'full_description', 'rating', 'reviews', 'price', 'original_price', 'size_pricing', 'sizes', 'top_notes', 'heart_notes', 'base_notes', 'longevity', 'in_stock', 'is_new', 'brand', 'is_best_seller', 'is_exclusive', 'featured', 'stock_quantity', 'slug', 'image_url'];
-    return values.map((value, index) => JSON_FIELDS.has(columns[index]) ? JSON.stringify(value) : value);
+
+    const columns = [
+        'name',
+        'category',
+        'fragrance_type',
+        'description',
+        'full_description',
+        'rating',
+        'reviews',
+        'price',
+        'original_price',
+        'size_pricing',
+        'sizes',
+        'top_notes',
+        'heart_notes',
+        'base_notes',
+        'longevity',
+        'in_stock',
+        'is_new',
+        'brand',
+        'is_best_seller',
+        'is_exclusive',
+        'featured',
+        'stock_quantity',
+        'slug',
+        'image_url'
+    ];
+
+    const persistenceValues = values.map((value, index) =>
+        JSON_FIELDS.has(columns[index])
+            ? JSON.stringify(value)
+            : value
+    );
+
+    console.log(
+        'SIZE PRICING BEFORE DB:',
+        payload.sizePricing
+    );
+
+    console.log(
+        'SIZE PRICING AFTER DB CONVERSION:',
+        persistenceValues[9]
+    );
+
+    return persistenceValues;
 }
 
 module.exports = { toProduct, toPersistenceValues };

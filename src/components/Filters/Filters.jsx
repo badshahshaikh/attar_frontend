@@ -5,7 +5,7 @@ import './Filters.css';
 const Filters = ({
     isOpen, onClose,
     searchTerm, setSearchTerm,
-    filters, handleFilterChange, resetFilters,
+    filters, handleFilterChange, handlePriceChange, resetFilters,
     availableCategories, availableSizes
 }) => {
     const [openSections, setOpenSections] = useState({
@@ -103,31 +103,47 @@ const Filters = ({
                             />
                         </div>
                         {openSections.price && (
-                            <div className="filter-options">
-                                <label className="filter-checkbox">
+                            <div className="filter-options price-filter">
+                                <div className="price-values">
+                                    <span>₹{filters.minPrice}</span>
+                                    <span>₹{filters.maxPrice}</span>
+                                </div>
+
+                                <div className="price-slider-container">
+                                    <div className="price-slider-track"></div>
+
+                                    <div
+                                        className="price-slider-range"
+                                        style={{
+                                            left: `${(filters.minPrice / 10000) * 100}%`,
+                                            right: `${100 - (filters.maxPrice / 10000) * 100}%`
+                                        }}
+                                    ></div>
+
                                     <input
-                                        type="checkbox"
-                                        checked={filters.priceRanges.includes('under2000')}
-                                        onChange={() => handleFilterChange('priceRanges', 'under2000')}
+                                        type="range"
+                                        min="0"
+                                        max="10000"
+                                        step="50"
+                                        value={filters.minPrice}
+                                        onChange={(e) =>
+                                            handlePriceChange('minPrice', Number(e.target.value))
+                                        }
+                                        className="price-range-input price-range-min"
                                     />
-                                    <span>Under ₹2000</span>
-                                </label>
-                                <label className="filter-checkbox">
+
                                     <input
-                                        type="checkbox"
-                                        checked={filters.priceRanges.includes('2000-4000')}
-                                        onChange={() => handleFilterChange('priceRanges', '2000-4000')}
+                                        type="range"
+                                        min="0"
+                                        max="10000"
+                                        step="50"
+                                        value={filters.maxPrice}
+                                        onChange={(e) =>
+                                            handlePriceChange('maxPrice', Number(e.target.value))
+                                        }
+                                        className="price-range-input price-range-max"
                                     />
-                                    <span>₹2000 - ₹4000</span>
-                                </label>
-                                <label className="filter-checkbox">
-                                    <input
-                                        type="checkbox"
-                                        checked={filters.priceRanges.includes('above4000')}
-                                        onChange={() => handleFilterChange('priceRanges', 'above4000')}
-                                    />
-                                    <span>Above ₹4000</span>
-                                </label>
+                                </div>
                             </div>
                         )}
                     </div>

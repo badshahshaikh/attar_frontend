@@ -186,6 +186,120 @@
     display: none;
 }
 
+.price-filter {
+    padding-top: 8px;
+}
+
+.price-values {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--color-text-primary);
+}
+
+.price-slider-container {
+    position: relative;
+    width: 100%;
+    height: 32px;
+}
+
+/* Base track */
+.price-slider-track {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 4px;
+    transform: translateY(-50%);
+    background: var(--color-border);
+    border-radius: 4px;
+}
+
+/* Selected range */
+.price-slider-range {
+    position: absolute;
+    top: 50%;
+    height: 4px;
+    transform: translateY(-50%);
+    background: var(--color-text-primary);
+    border-radius: 4px;
+}
+
+/* Range inputs */
+.price-range-input {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: 32px;
+    margin: 0;
+    padding: 0;
+    transform: translateY(-50%);
+    appearance: none;
+    -webkit-appearance: none;
+    background: transparent;
+    pointer-events: none;
+}
+
+/* WebKit track */
+.price-range-input::-webkit-slider-runnable-track {
+    height: 4px;
+    background: transparent;
+}
+
+/* WebKit handle */
+.price-range-input::-webkit-slider-thumb {
+    appearance: none;
+    -webkit-appearance: none;
+
+    width: 16px;
+    height: 16px;
+
+    margin-top: -6px;
+
+    border: 1px solid var(--color-text-primary);
+    border-radius: 50%;
+
+    background: var(--color-bg-primary);
+
+    cursor: pointer;
+    pointer-events: auto;
+
+    transition: transform var(--transition-fast);
+}
+
+.price-range-input::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
+}
+
+/* Firefox track */
+.price-range-input::-moz-range-track {
+    height: 4px;
+    background: transparent;
+}
+
+/* Firefox handle */
+.price-range-input::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+
+    border: 1px solid var(--color-text-primary);
+    border-radius: 50%;
+
+    background: var(--color-bg-primary);
+
+    cursor: pointer;
+    pointer-events: auto;
+
+    transition: transform var(--transition-fast);
+}
+
+.price-range-input::-moz-range-thumb:hover {
+    transform: scale(1.15);
+}
+
 /* Mobile Drawer Styles */
 @media (max-width: 1023px) {
     .filters-sidebar {

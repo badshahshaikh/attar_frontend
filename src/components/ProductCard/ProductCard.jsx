@@ -11,21 +11,47 @@ const ProductCard = ({ product }) => {
     return (
         <div className="product-card group">
             <Link to={`/product/${product.id}`} className="product-image-container" style={{ display: 'block' }}>
-                {product.isNew && <span className="product-badge new">New</span>}
-                {product.originalPrice && <span className="product-badge sale">Sale</span>}
+                {!product.inStock ? (
+                    <span className="product-badge sold-out">Sold Out</span>
+                ) : product.isNew ? (
+                    <span className="product-badge new">New</span>
+                ) : product.originalPrice ? (
+                    <span className="product-badge sale">Sale</span>
+                ) : null}
 
-                <img
-                    src={product.imageUrl}
-                    alt={product.name}
-                    className="product-image"
-                    loading="lazy"
-                />
+                {product.imageUrl ? (
+                    <img
+                        src={product.imageUrl}
+                        alt={product.name}
+                        className="product-image"
+                        loading="lazy"
+                    />
+                ) : (
+                    <div className="product-image-placeholder">
+                        <span>No image available</span>
+                    </div>
+                )}
 
                 {/* Hover Actions */}
-                <div className="product-actions" onClick={(e) => e.preventDefault()}>
-                    <Link to={`/product/${product.id}`} className="btn-icon" title="Quick View">
+                <div
+                    className="product-actions"
+                    onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }}
+                >
+                    <button
+                        type="button"
+                        className="btn-icon"
+                        title="Quick View"
+                        onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            // Add quick-view behavior here if you have one.
+                        }}
+                    >
                         <Eye size={18} strokeWidth={1.5} />
-                    </Link>
+                    </button>
                     <button
                         className="btn-icon"
                         title="Toggle Wishlist"

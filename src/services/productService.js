@@ -27,23 +27,121 @@ function normalizeProducts(products) {
 /**
  * Fetch all products from the backend API
  */
-export async function fetchProducts({ page, limit, search } = {}) {
+export async function fetchProducts({
+    page,
+    limit,
+    search,
+    categories,
+    minPrice,
+    maxPrice,
+    sizes,
+    inStockOnly
+} = {}) {
     try {
         const params = new URLSearchParams();
-        if (page) params.set('page', page);
-        if (limit) params.set('limit', limit);
-        if (search) params.set('search', search);
-        const query = params.toString();
-        const response = await fetch(`${API_URL}/api/products${query ? `?${query}` : ''}`);
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+
+        // Pagination
+        if (page) {
+            params.set('page', page);
         }
+
+        if (limit) {
+            params.set('limit', limit);
+        }
+
+        // Search
+        if (search) {
+            params.set('search', search);
+        }
+
+        // Fragrance Profile
+        if (Array.isArray(categories)) {
+            categories.forEach((category) => {
+                if (category) {
+                    params.append(
+                        'fragranceFamily',
+                        category
+                    );
+                }
+            });
+        }
+
+        // Price
+        if (
+            minPrice !== undefined &&
+            minPrice !== null
+        ) {
+            params.set('minPrice', minPrice);
+        }
+
+        if (
+            maxPrice !== undefined &&
+            maxPrice !== null
+        ) {
+            params.set('maxPrice', maxPrice);
+        }
+
+        // Sizes
+        if (Array.isArray(sizes)) {
+            sizes.forEach((size) => {
+                if (size) {
+                    params.append('sizes', size);
+                }
+            });
+        }
+
+        // Stock
+        if (inStockOnly !== undefined) {
+            params.set(
+                'inStockOnly',
+                String(inStockOnly)
+            );
+        }
+
+        const query = params.toString();
+
+        const response = await fetch(
+            `${API_URL}/api/products${query ? `?${query}` : ''}`
+        );
+
+        if (!response.ok) {
+            throw new Error(
+                `HTTP error! status: ${response.status}`
+            );
+        }
+
         const data = await response.json();
-        if (Array.isArray(data)) return normalizeProducts(data);
-        const products = normalizeProducts(data.products || []);
-        return page || limit || search ? { ...data, products } : products;
+
+        if (Array.isArray(data)) {
+            return normalizeProducts(data);
+        }
+
+        const products = normalizeProducts(
+            data.products || []
+        );
+
+        return (
+            page ||
+            limit ||
+            search ||
+            categories?.length ||
+            sizes?.length ||
+            minPrice !== undefined ||
+            maxPrice !== undefined ||
+            inStockOnly !== undefined
+        )
+            ? {
+                ...data,
+                products
+            }
+            : products;
+
     } catch (error) {
-        console.error('Error fetching products:', error);
+        console.error(
+            'Error fetching products:',
+            error
+        );
+
         throw error;
     }
 }

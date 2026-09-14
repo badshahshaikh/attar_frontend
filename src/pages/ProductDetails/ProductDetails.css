@@ -2,6 +2,38 @@
     padding-bottom: 80px;
 }
 
+.breadcrumb-container {
+    padding-top: 40px;
+    padding-bottom: 20px;
+}
+
+.breadcrumb-container ol {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 500;
+}
+
+.breadcrumb-container a {
+    color: var(--color-text-muted);
+}
+
+.breadcrumb-container a:hover {
+    color: var(--color-text-primary);
+}
+
+.breadcrumb-container .separator {
+    color: var(--color-border);
+}
+
+.breadcrumb-container .active {
+    color: var(--color-text-primary);
+}
+
 .product-hero {
     display: flex;
     flex-direction: column;
