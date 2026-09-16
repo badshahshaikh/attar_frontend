@@ -1,37 +1,53 @@
-import React, { useState } from 'react';
-import { X, ChevronDown } from 'lucide-react';
+import React from 'react';
+import { X } from 'lucide-react';
+import FilterSection from './FilterSection';
+import CheckboxFilter from './CheckboxFilter';
+import PriceRangeFilter from './PriceRangeFilter';
 import './Filters.css';
 
+/**
+ * Filters (ShopFilters)
+ *
+ * Composes the filter sidebar for the Shop page.
+ * Does NOT own filter state — receives everything via props.
+ * Can be reused on any product listing page.
+ *
+ * Props:
+ *   isOpen             {boolean}  - Mobile drawer open state.
+ *   onClose            {function} - Close the mobile drawer.
+ *   searchTerm         {string}   - Current search input value.
+ *   setSearchTerm      {function} - Update search input.
+ *   filters            {object}   - Current filters { categories, minPrice, maxPrice, sizes, inStockOnly }.
+ *   handleFilterChange {function} - Toggle an item in an array filter or set a boolean.
+ *   handlePriceChange  {function} - Update min/max price.
+ *   resetFilters       {function} - Restore all filters to defaults.
+ *   availableCategories {string[]} - Fragrance family options.
+ *   availableSizes      {string[]} - Size options.
+ */
 const Filters = ({
-    isOpen, onClose,
-    searchTerm, setSearchTerm,
-    filters, handleFilterChange, handlePriceChange, resetFilters,
-    availableCategories, availableSizes
+    isOpen,
+    onClose,
+    searchTerm,
+    setSearchTerm,
+    filters,
+    handleFilterChange,
+    handlePriceChange,
+    resetFilters,
+    availableCategories,
+    availableSizes
 }) => {
-    const [openSections, setOpenSections] = useState({
-        search: true,
-        category: true,
-        price: true,
-        size: false
-    });
-
-    const toggleSection = (section) => {
-        setOpenSections(prev => ({
-            ...prev,
-            [section]: !prev[section]
-        }));
-    };
-
     return (
         <>
-            {/* Mobile Backdrop */}
-            {isOpen && <div className="filter-backdrop" onClick={onClose}></div>}
+            {/* Mobile backdrop */}
+            {isOpen && <div className="filter-backdrop" onClick={onClose} />}
 
             <aside className={`filters-sidebar ${isOpen ? 'open' : ''}`}>
                 <div className="filters-header">
                     <h3>Filter By</h3>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <button className="reset-filters-btn" onClick={resetFilters}>Reset</button>
+                        <button className="reset-filters-btn" onClick={resetFilters}>
+                            Reset
+                        </button>
                         <button className="close-filter-btn" onClick={onClose}>
                             <X size={20} />
                         </button>
@@ -39,156 +55,85 @@ const Filters = ({
                 </div>
 
                 <div className="filter-sections">
-                    {/* Search Field */}
-                    <div className="filter-section">
-                        <div className="filter-section-header" onClick={() => toggleSection('search')}>
-                            <h4>Search</h4>
-                            <ChevronDown
-                                size={16}
-                                className={`filter-chevron ${openSections.search ? 'open' : ''}`}
+                    {/* Search */}
+                    <FilterSection title="Search" defaultOpen>
+                        <div className="search-input-wrapper">
+                            <input
+                                type="text"
+                                placeholder="Search attars..."
+                                value={searchTerm}
+                                onChange={e => setSearchTerm(e.target.value)}
+                                className="filter-search-input"
                             />
+                            {searchTerm && (
+                                <button
+                                    className="clear-search"
+                                    onClick={() => setSearchTerm('')}
+                                >
+                                    <X size={14} />
+                                </button>
+                            )}
                         </div>
-                        {openSections.search && (
-                            <div className="filter-options">
-                                <div className="search-input-wrapper">
-                                    <input
-                                        type="text"
-                                        placeholder="Search attars..."
-                                        value={searchTerm}
-                                        onChange={e => setSearchTerm(e.target.value)}
-                                        className="filter-search-input"
-                                    />
-                                    {searchTerm && (
-                                        <button className="clear-search" onClick={() => setSearchTerm('')}>
-                                            <X size={14} />
-                                        </button>
-                                    )}
-                                </div>
-                            </div>
-                        )}
-                    </div>
+                    </FilterSection>
 
-                    {/* Category Filter */}
-                    <div className="filter-section">
-                        <div className="filter-section-header" onClick={() => toggleSection('category')}>
-                            <h4>Fragrance Profile</h4>
-                            <ChevronDown
-                                size={16}
-                                className={`filter-chevron ${openSections.category ? 'open' : ''}`}
-                            />
-                        </div>
-                        {openSections.category && (
-                            <div className="filter-options">
-                                {availableCategories.map(cat => (
-                                    <label key={cat} className="filter-checkbox">
-                                        <input
-                                            type="checkbox"
-                                            checked={filters.categories.includes(cat)}
-                                            onChange={() => handleFilterChange('categories', cat)}
-                                        />
-                                        <span>{cat}</span>
-                                    </label>
-                                ))}
-                            </div>
-                        )}
-                    </div>
+                    {/* Fragrance Profile */}
+                    <FilterSection title="Fragrance Profile" defaultOpen>
+                        <CheckboxFilter
+                            options={availableCategories}
+                            selected={filters.categories}
+                            onChange={value => handleFilterChange('categories', value)}
+                        />
+                    </FilterSection>
 
-                    {/* Price Filter */}
-                    <div className="filter-section">
-                        <div className="filter-section-header" onClick={() => toggleSection('price')}>
-                            <h4>Price Range</h4>
-                            <ChevronDown
-                                size={16}
-                                className={`filter-chevron ${openSections.price ? 'open' : ''}`}
-                            />
-                        </div>
-                        {openSections.price && (
-                            <div className="filter-options price-filter">
-                                <div className="price-values">
-                                    <span>₹{filters.minPrice}</span>
-                                    <span>₹{filters.maxPrice}</span>
-                                </div>
+                    {/* Price Range */}
+                    <FilterSection title="Price Range" defaultOpen>
+                        <PriceRangeFilter
+                            min={filters.minPrice}
+                            max={filters.maxPrice}
+                            onChange={handlePriceChange}
+                        />
+                    </FilterSection>
 
-                                <div className="price-slider-container">
-                                    <div className="price-slider-track"></div>
+                    {/* Size */}
+                    <FilterSection title="Size" defaultOpen={false}>
+                        <CheckboxFilter
+                            options={availableSizes}
+                            selected={filters.sizes}
+                            onChange={value => handleFilterChange('sizes', value)}
+                        />
+                    </FilterSection>
 
-                                    <div
-                                        className="price-slider-range"
-                                        style={{
-                                            left: `${(filters.minPrice / 10000) * 100}%`,
-                                            right: `${100 - (filters.maxPrice / 10000) * 100}%`
-                                        }}
-                                    ></div>
-
-                                    <input
-                                        type="range"
-                                        min="0"
-                                        max="10000"
-                                        step="50"
-                                        value={filters.minPrice}
-                                        onChange={(e) =>
-                                            handlePriceChange('minPrice', Number(e.target.value))
-                                        }
-                                        className="price-range-input price-range-min"
-                                    />
-
-                                    <input
-                                        type="range"
-                                        min="0"
-                                        max="10000"
-                                        step="50"
-                                        value={filters.maxPrice}
-                                        onChange={(e) =>
-                                            handlePriceChange('maxPrice', Number(e.target.value))
-                                        }
-                                        className="price-range-input price-range-max"
-                                    />
-                                </div>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Size Filter */}
-                    <div className="filter-section">
-                        <div className="filter-section-header" onClick={() => toggleSection('size')}>
-                            <h4>Size</h4>
-                            <ChevronDown
-                                size={16}
-                                className={`filter-chevron ${openSections.size ? 'open' : ''}`}
-                            />
-                        </div>
-                        {openSections.size && (
-                            <div className="filter-options">
-                                {availableSizes.map(size => (
-                                    <label key={size} className="filter-checkbox">
-                                        <input
-                                            type="checkbox"
-                                            checked={filters.sizes.includes(size)}
-                                            onChange={() => handleFilterChange('sizes', size)}
-                                        />
-                                        <span>{size}</span>
-                                    </label>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Availability */}
+                    {/* In Stock Only */}
                     <div className="filter-section">
                         <label className="filter-switch">
                             <input
                                 type="checkbox"
                                 checked={filters.inStockOnly}
-                                onChange={(e) => handleFilterChange('inStockOnly', e.target.checked)}
+                                onChange={e =>
+                                    handleFilterChange('inStockOnly', e.target.checked)
+                                }
                             />
                             <span>In Stock Only</span>
                         </label>
                     </div>
                 </div>
 
+                {/* Mobile apply/reset actions */}
                 <div className="filter-actions-mobile">
-                    <button className="btn btn-primary" onClick={onClose}>Apply Filters</button>
-                    <button className="btn" onClick={resetFilters} style={{ marginTop: '10px', backgroundColor: 'transparent', border: '1px solid var(--color-border)' }}>Reset All</button>
+                    <button className="btn btn-primary" onClick={onClose}>
+                        Apply Filters
+                    </button>
+                    <button
+                        className="btn"
+                        onClick={resetFilters}
+                        style={{
+                            marginTop: '10px',
+                            backgroundColor: 'transparent',
+                            border: '1px solid var(--color-border)'
+                        }}
+                    >
+                        Reset All
+                    </button>
                 </div>
             </aside>
         </>

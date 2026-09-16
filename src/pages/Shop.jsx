@@ -1,74 +1,97 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import ProductCard from '../components/ProductCard/ProductCard';
-import Filters from '../components/Filters/Filters';
-import { useProducts } from '../context/ProductContext';
 import { Filter } from 'lucide-react';
+
+import { useProducts } from '../context/ProductContext';
+import { useProductFilters } from '../hooks/useProductFilters';
+import { useDebouncedValue } from '../hooks/useDebouncedValue';
+import { sortSizes } from '../features/products/utils/filterUtils';
+import { SEARCH_DEBOUNCE_DELAY, PRICE_DEBOUNCE_DELAY } from '../config/constants';
+
+import Filters from '../components/Filters/Filters';
+import ProductCard from '../components/ProductCard/ProductCard';
+
 import './Shop.css';
 
+/**
+ * Shop
+ *
+ * Orchestration component for the product listing page.
+ * Coordinates: ProductContext, URL state, search, filters, debounce, product loading.
+ * Delegates: filter state to useProductFilters, debounce to useDebouncedValue,
+ *            filter UI to Filters, product rendering to ProductCard.
+ */
 const Shop = () => {
+    // ── Data from context ───────────────────────────────────────────────────
     const {
         products,
         loading,
         error,
         loadProducts,
         fragranceFamilies,
-        brands,
-        sizes
+        sizes: facetSizes
     } = useProducts();
-    const [searchTerm, setSearchTerm] = useState('');
 
+    // ── URL state ───────────────────────────────────────────────────────────
     const [searchParams, setSearchParams] = useSearchParams();
-
-    const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
-
-
-
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            const trimmedSearch = searchTerm.trim();
-
-            setSearchParams(prev => {
-                const params = new URLSearchParams(prev);
-
-                if (trimmedSearch) {
-                    params.set('search', trimmedSearch);
-                } else {
-                    params.delete('search');
-                }
-
-                params.set('page', '1');
-
-                return params;
-            });
-        }, 400);
-
-        return () => clearTimeout(timer);
-    }, [searchTerm, setSearchParams]);
-
-
-    const [filters, setFilters] = useState({
-        categories: [],
-        minPrice: 0,
-        maxPrice: 10000,
-        sizes: [],
-        inStockOnly: false
-    });
-
-    const [debouncedPrice, setDebouncedPrice] = useState({
-        minPrice: 0,
-        maxPrice: 10000
-    });
-
     const searchQuery = searchParams.get('search') || '';
     const collection = searchParams.get('collection') || '';
     const brand = searchParams.get('brand') || '';
 
-    // Initialize local search term from URL query if present
+    // ── Local search input ──────────────────────────────────────────────────
+    // searchTerm is local input state; searchQuery (from URL) is the source of truth.
+    const [searchTerm, setSearchTerm] = useState(searchQuery);
+
+    // Sync input from URL on external navigation (deep links, back button)
     useEffect(() => {
         setSearchTerm(searchQuery);
     }, [searchQuery]);
 
+    // Debounce the raw input before updating the URL
+    const debouncedSearch = useDebouncedValue(searchTerm, SEARCH_DEBOUNCE_DELAY);
+
+    useEffect(() => {
+        const trimmed = debouncedSearch.trim();
+
+        setSearchParams(prev => {
+            const params = new URLSearchParams(prev);
+
+            if (trimmed) {
+                params.set('search', trimmed);
+            } else {
+                params.delete('search');
+            }
+
+            params.set('page', '1');
+            return params;
+        });
+    }, [debouncedSearch, setSearchParams]);
+
+    // ── Filter state ────────────────────────────────────────────────────────
+    const {
+        filters,
+        handleFilterChange,
+        handlePriceChange,
+        resetFilters: resetFilterState
+    } = useProductFilters();
+
+    // Debounce price to avoid flooding the API on every slider tick
+    const debouncedPrice = useDebouncedValue(
+        { minPrice: filters.minPrice, maxPrice: filters.maxPrice },
+        PRICE_DEBOUNCE_DELAY
+    );
+
+    // ── Mobile drawer ───────────────────────────────────────────────────────
+    const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
+
+    // ── Reset: clear filter state + URL + search input ──────────────────────
+    const resetFilters = () => {
+        resetFilterState();
+        setSearchTerm('');
+        setSearchParams({});
+    };
+
+    // ── Product loading ─────────────────────────────────────────────────────
     useEffect(() => {
         loadProducts({
             page: 1,
@@ -85,112 +108,33 @@ const Shop = () => {
     }, [
         searchQuery,
         filters.categories,
-        debouncedPrice.minPrice,
-        debouncedPrice.maxPrice,
         filters.sizes,
         filters.inStockOnly,
+        debouncedPrice.minPrice,
+        debouncedPrice.maxPrice,
         brand,
         collection,
         loadProducts
     ]);
 
-    // Compute dynamic filter options
-    // const availableCategories = useMemo(() =>
-    //     [...new Set(products.map(p => p.fragranceType).filter(Boolean))],
-    //     [products]);
-
-    const availableCategories = [...fragranceFamilies].sort();
-
-    const availableSizes = useMemo(
-        () =>
-            [
-                ...new Set(
-                    products
-                        .flatMap(product =>
-                            Array.isArray(product.sizes)
-                                ? product.sizes
-                                : []
-                        )
-                        .filter(Boolean)
-                )
-            ].sort((a, b) => {
-                const sizeA = parseFloat(a);
-                const sizeB = parseFloat(b);
-
-                if (
-                    Number.isFinite(sizeA) &&
-                    Number.isFinite(sizeB)
-                ) {
-                    return sizeA - sizeB;
-                }
-
-                return String(a).localeCompare(String(b));
-            }),
-        [products]
+    // ── Facets ──────────────────────────────────────────────────────────────
+    // Use backend-provided facets so filter options don't shrink as products are filtered.
+    const availableCategories = useMemo(
+        () => [...fragranceFamilies].sort(),
+        [fragranceFamilies]
     );
 
-    const handleFilterChange = (filterType, value) => {
-        setFilters((previous) => {
-            const currentValues = previous[filterType] || [];
+    // Sizes come from facets; fall back to deriving from loaded products if facets are empty.
+    const availableSizes = useMemo(
+        () => sortSizes(facetSizes && facetSizes.length > 0
+            ? facetSizes
+            : products.flatMap(p => Array.isArray(p.sizes) ? p.sizes : [])
+        ),
+        [facetSizes, products]
+    );
 
-            const updatedValues = currentValues.includes(value)
-                ? currentValues.filter((item) => item !== value)
-                : [...currentValues, value];
-
-            return {
-                ...previous,
-                [filterType]: updatedValues
-            };
-        });
-    };
-
-
-
-
-    const handlePriceChange = (type, value) => {
-        setFilters(prev => {
-            if (type === 'minPrice') {
-                return {
-                    ...prev,
-                    minPrice: Math.min(value, prev.maxPrice)
-                };
-            }
-
-            if (type === 'maxPrice') {
-                return {
-                    ...prev,
-                    maxPrice: Math.max(value, prev.minPrice)
-                };
-            }
-
-            return prev;
-        });
-    };
-
-
-
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setDebouncedPrice({
-                minPrice: filters.minPrice,
-                maxPrice: filters.maxPrice
-            });
-        }, 500);
-
-        return () => clearTimeout(timer);
-    }, [
-        filters.minPrice,
-        filters.maxPrice
-    ]);
-
-
-    const resetFilters = () => {
-        setFilters({ categories: [], minPrice: 0, maxPrice: 10000, sizes: [], inStockOnly: false });
-        setSearchTerm('');
-        setSearchParams({});
-    };
-
-    if (loading) {
+    // ── Render states ───────────────────────────────────────────────────────
+    if (loading && products.length === 0) {
         return (
             <main className="shop-page">
                 <div className="container">
@@ -200,7 +144,7 @@ const Shop = () => {
         );
     }
 
-    if (error) {
+    if (error && products.length === 0) {
         return (
             <main className="shop-page">
                 <div className="container">
@@ -218,7 +162,11 @@ const Shop = () => {
                     <p>Discover our complete collection of premium attars and fragrances.</p>
                 </div>
 
-                <div className="mobile-filter-toggle" style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '20px' }}>
+                {/* Mobile filter toggle — hidden on desktop via CSS */}
+                <div
+                    className="mobile-filter-toggle"
+                    style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '20px' }}
+                >
                     <button
                         className="btn btn-outline"
                         onClick={() => setIsMobileFiltersOpen(true)}
@@ -229,6 +177,7 @@ const Shop = () => {
                 </div>
 
                 <div style={{ display: 'flex', gap: '30px' }}>
+                    {/* Filter Sidebar */}
                     <Filters
                         isOpen={isMobileFiltersOpen}
                         onClose={() => setIsMobileFiltersOpen(false)}
@@ -242,10 +191,12 @@ const Shop = () => {
                         availableSizes={availableSizes}
                     />
 
+                    {/* Product Area */}
                     <div style={{ flex: 1, minWidth: 0 }}>
+                        {/* Active URL filters indicator */}
                         {(searchQuery || collection || brand) && (
                             <div className="shop-filters">
-                                {searchQuery && <span>Search: "{searchQuery}"</span>}
+                                {searchQuery && <span>Search: &ldquo;{searchQuery}&rdquo;</span>}
                                 {collection && <span>Collection: {collection}</span>}
                                 {brand && <span>Brand: {brand}</span>}
                                 <button
@@ -257,18 +208,24 @@ const Shop = () => {
                             </div>
                         )}
 
+                        {/* Subtle loading indicator while filters update */}
+                        {loading && products.length > 0 && (
+                            <div className="shop-loading" style={{ padding: '10px 0', fontSize: '0.9rem' }}>
+                                Updating products...
+                            </div>
+                        )}
+
+                        {/* Empty state */}
                         {!loading && products.length === 0 ? (
                             <div className="shop-empty">
                                 <h2>No products found</h2>
                                 <p>Try adjusting your filters or search terms.</p>
                             </div>
                         ) : (
+                            /* Product grid */
                             <div className="shop-grid">
                                 {products.map(product => (
-                                    <ProductCard
-                                        key={product.id}
-                                        product={product}
-                                    />
+                                    <ProductCard key={product.id} product={product} />
                                 ))}
                             </div>
                         )}
