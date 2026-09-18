@@ -1,8 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 const textFields = [
     ['name', 'Product name', true],
-    ['brand', 'Brand', true],
     ['fragranceType', 'Fragrance family', true],
     ['longevity', 'Longevity'],
     ['description', 'Short description'],
@@ -10,6 +9,30 @@ const textFields = [
 ];
 
 export default function ProductFormFields({ values, onChange }) {
+    const [brands, setBrands] = useState([]);
+    const [categories, setCategories] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const loadCatalog = async () => {
+            try {
+                const [brandsRes, categoriesRes] = await Promise.all([
+                    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/catalog/brands`),
+                    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/catalog/categories`),
+                ]);
+                if (brandsRes.ok && categoriesRes.ok) {
+                    setBrands(await brandsRes.json());
+                    setCategories(await categoriesRes.json());
+                }
+            } catch (err) {
+                console.error('Failed to load catalog data:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadCatalog();
+    }, []);
+
     const update = (name, value) => {
         onChange({
             ...values,
@@ -111,21 +134,48 @@ export default function ProductFormFields({ values, onChange }) {
                 );
             })}
 
+            {/* Brand */}
+            <label className="admin-field">
+                <span>Brand *</span>
+                {loading ? (
+                    <select disabled>
+                        <option>Loading brands...</option>
+                    </select>
+                ) : (
+                    <select
+                        value={values.brand || ''}
+                        onChange={(event) => update('brand', event.target.value)}
+                        required
+                    >
+                        <option value="">Select brand</option>
+                        {brands.map((brand) => (
+                            <option key={brand.id} value={brand.name}>
+                                {brand.name}
+                            </option>
+                        ))}
+                    </select>
+                )}
+            </label>
+
             {/* Category */}
             <label className="admin-field">
                 <span>Category</span>
-
-                <select
-                    value={values.category || 'Attar'}
-                    onChange={(event) =>
-                        update('category', event.target.value)
-                    }
-                >
-                    <option value="Attar">Attar</option>
-                    <option value="Perfume">Perfume</option>
-                    <option value="Essential Oil">Essential Oil</option>
-                    <option value="Other">Other</option>
-                </select>
+                {loading ? (
+                    <select disabled>
+                        <option>Loading categories...</option>
+                    </select>
+                ) : (
+                    <select
+                        value={values.category || 'Attar'}
+                        onChange={(event) => update('category', event.target.value)}
+                    >
+                        {categories.map((category) => (
+                            <option key={category.id} value={category.name}>
+                                {category.name}
+                            </option>
+                        ))}
+                    </select>
+                )}
             </label>
 
             {/* Price */}

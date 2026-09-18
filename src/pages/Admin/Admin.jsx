@@ -26,10 +26,15 @@ const Admin = () => {
             </div>
 
             <div className="admin-content">
-                <h3>Product Management APIs configured and protected.</h3>
-                <p>The backend APIs now require this administrative session to perform modifications.</p>
+                <h3>Management</h3>
+                <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginTop: '1rem' }}>
+                    <Link to="/admin/products" className="btn btn-primary">Products</Link>
+                    <Link to="/admin/brands" className="btn btn-outline">Brands</Link>
+                    <Link to="/admin/categories" className="btn btn-outline">Categories</Link>
+                    <Link to="/admin/footer" className="btn btn-outline">Footer Settings</Link>
+                </div>
                 <div style={{ marginTop: '2rem' }}>
-                    <Link to="/" className="btn btn-primary">Go to Storefront</Link>
+                    <Link to="/" className="btn btn-outline">Go to Storefront</Link>
                 </div>
             </div>
         </div>

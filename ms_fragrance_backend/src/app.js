@@ -7,8 +7,11 @@ const { corsOptions } = require('./config/cors');
 const { errorHandler } = require('./shared/errors/error-handler');
 const { createContainer } = require('./composition/container');
 
+
+const { checkDatabaseConnection } = require('./shared/database');
+
 const app = express();
-const { productRouter, authRouter, settingsRouter } = createContainer();
+const { productRouter, catalogRouter, authRouter, settingsRouter } = createContainer();
 const uploadDir = config.uploads.directory;
 
 app.use(cors(corsOptions));
@@ -19,6 +22,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static(uploadDir));
 
 app.use('/api/products', productRouter);
+app.use('/api/catalog', catalogRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/settings', settingsRouter);
 
@@ -29,6 +33,18 @@ app.get('/api/health', (req, res) => {
         database: 'postgresql',
         timestamp: new Date().toISOString(),
     });
+});
+
+app.get('/api/health/db', async (req, res) => {
+    try {
+        const result = await checkDatabaseConnection();
+        res.json(result);
+    } catch (error) {
+        res.status(503).json({
+            connected: false,
+            error: error.message,
+        });
+    }
 });
 
 app.use(errorHandler);

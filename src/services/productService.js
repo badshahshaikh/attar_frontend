@@ -147,12 +147,17 @@ export async function fetchProducts({
 }
 
 export async function fetchProductFacets() {
-    const [brandsResponse, familiesResponse] = await Promise.all([
-        fetch(`${API_URL}/api/products/brands`),
+    const [brandsResponse, categoriesResponse, familiesResponse] = await Promise.all([
+        fetch(`${API_URL}/api/catalog/brands`),
+        fetch(`${API_URL}/api/catalog/categories`),
         fetch(`${API_URL}/api/products/fragrance-families`),
     ]);
-    if (!brandsResponse.ok || !familiesResponse.ok) throw new Error('Unable to load product navigation');
-    return { brands: await brandsResponse.json(), fragranceFamilies: await familiesResponse.json() };
+    if (!brandsResponse.ok || !categoriesResponse.ok || !familiesResponse.ok) throw new Error('Unable to load product navigation');
+    return { 
+        brands: await brandsResponse.json(), 
+        categories: await categoriesResponse.json(),
+        fragranceFamilies: await familiesResponse.json() 
+    };
 }
 
 /**

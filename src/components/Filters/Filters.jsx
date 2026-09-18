@@ -22,6 +22,7 @@ import './Filters.css';
  *   handlePriceChange  {function} - Update min/max price.
  *   resetFilters       {function} - Restore all filters to defaults.
  *   availableCategories {string[]} - Fragrance family options.
+ *   availableBrands    {string[]} - Brand options.
  *   availableSizes      {string[]} - Size options.
  */
 const Filters = ({
@@ -34,6 +35,7 @@ const Filters = ({
     handlePriceChange,
     resetFilters,
     availableCategories,
+    availableBrands,
     availableSizes
 }) => {
     return (
@@ -84,6 +86,17 @@ const Filters = ({
                             onChange={value => handleFilterChange('categories', value)}
                         />
                     </FilterSection>
+
+                    {/* Brand */}
+                    {availableBrands && availableBrands.length > 0 && (
+                        <FilterSection title="Brand" defaultOpen={false}>
+                            <CheckboxFilter
+                                options={availableBrands}
+                                selected={filters.brands}
+                                onChange={value => handleFilterChange('brands', value)}
+                            />
+                        </FilterSection>
+                    )}
 
                     {/* Price Range */}
                     <FilterSection title="Price Range" defaultOpen>

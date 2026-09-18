@@ -157,42 +157,43 @@ export function parseListQuery(query) {
         Math.max(1, Number.parseInt(query.limit, 10) || 50)
     );
 
-    const fragranceFamily = Array.isArray(query.fragranceFamily)
-        ? query.fragranceFamily
-        : query.fragranceFamily
-            ? [query.fragranceFamily]
-            : [];
+    const toArray = (value) => {
+        if (value === undefined || value === null || value === '') {
+            return [];
+        }
 
-    const category = Array.isArray(query.category)
-        ? query.category
-        : query.category
-            ? [query.category]
-            : [];
+        return Array.isArray(value) ? value : [value];
+    };
 
-    const sizes = Array.isArray(query.size)
-        ? query.size
-        : query.size
-            ? [query.size]
-            : [];
+    const parsePrice = (value, fieldName) => {
+        if (value === undefined || value === '') {
+            return undefined;
+        }
+
+        const price = Number(value);
+
+        if (!Number.isFinite(price) || price < 0) {
+            throw new Error(`${fieldName} must be a valid non-negative number`);
+        }
+
+        return price;
+    };
 
     const filters = {
         page,
         limit,
+
         search: query.search,
         brand: query.brand,
-        fragranceFamily,
-        category,
-        minPrice:
-            query.minPrice !== undefined
-                ? Number(query.minPrice)
-                : undefined,
 
-        maxPrice:
-            query.maxPrice !== undefined
-                ? Number(query.maxPrice)
-                : undefined,
+        fragranceFamily: toArray(query.fragranceFamily),
+        category: toArray(query.category),
 
-        sizes,
+        // Support both query.size and query.sizes
+        sizes: toArray(query.sizes ?? query.size),
+
+        minPrice: parsePrice(query.minPrice, 'minPrice'),
+        maxPrice: parsePrice(query.maxPrice, 'maxPrice'),
 
         isBestSeller:
             query.isBestSeller === undefined
@@ -204,14 +205,24 @@ export function parseListQuery(query) {
                 ? undefined
                 : parseBoolean(query.isExclusive, 'isExclusive'),
 
+        inStockOnly:
+            query.inStockOnly === undefined
+                ? undefined
+                : parseBoolean(query.inStockOnly, 'inStockOnly'),
+
         featured:
             query.featured === undefined
                 ? undefined
                 : parseBoolean(query.featured, 'featured')
     };
 
-    console.log('QUERY:', query);
-    console.log('FRAGRANCE FAMILY:', filters.fragranceFamily);
+    if (
+        filters.minPrice !== undefined &&
+        filters.maxPrice !== undefined &&
+        filters.minPrice > filters.maxPrice
+    ) {
+        throw new Error('minPrice cannot be greater than maxPrice');
+    }
 
     return filters;
 }

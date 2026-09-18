@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useRef } from 'react';
+import React, { useCallback, useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { fetchProducts, bulkUpsertProducts } from '../../services/productService';
 import './BulkProducts.css';
@@ -6,12 +6,40 @@ import './BulkProducts.css';
 // ─── constants ────────────────────────────────────────────────────────────────
 const SIZE_KEYS = ['3ml', '6ml', '12ml', '50ml', '100ml'];
 const FRAGRANCE_FAMILIES = ['Oud', 'Musk', 'Amber', 'Shamama', 'Floral', 'French', 'Khas', 'Dehn Al Oud'];
-const CATEGORIES = ['Attar', 'Perfume', 'Essential Oil', 'Other'];
 const IMPORT_HEADERS = ['name', 'brand', 'fragranceType', '3ml', '6ml', '12ml', '50ml', '100ml'];
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 let _uid = 0;
 function uid() { return `r${++_uid}`; }
+
+// ─── catalog data hook ─────────────────────────────────────────────────────────
+function useCatalogData() {
+    const [brands, setBrands] = useState([]);
+    const [categories, setCategories] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const loadCatalog = async () => {
+            try {
+                const [brandsRes, categoriesRes] = await Promise.all([
+                    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/catalog/brands`),
+                    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/catalog/categories`),
+                ]);
+                if (brandsRes.ok && categoriesRes.ok) {
+                    setBrands(await brandsRes.json());
+                    setCategories(await categoriesRes.json());
+                }
+            } catch (err) {
+                console.error('Failed to load catalog data:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadCatalog();
+    }, []);
+
+    return { brands, categories, loading };
+}
 
 function buildSizePricing(row) {
     const sp = {};
@@ -60,6 +88,7 @@ function validateRow(row) {
     const errs = [];
     if (!row.name || !String(row.name).trim()) errs.push('Product name required');
     if (!row.brand || !String(row.brand).trim()) errs.push('Brand required');
+    if (!row.category || !String(row.category).trim()) errs.push('Category required');
     if (!row.fragranceType || !String(row.fragranceType).trim()) errs.push('Fragrance family required');
     const sp = buildSizePricing(row);
     const hasSizePrice = Object.keys(sp).length > 0;
@@ -81,7 +110,7 @@ function emptyRow(overrides = {}) {
     return {
         _uid: uid(), _origin: null, _originalSnapshot: null,
         id: null,
-        name: '', brand: '', fragranceType: '', category: 'Attar',
+        name: '', brand: '', fragranceType: '', category: '',
         price: '', originalPrice: '',
         price_3ml: '', price_6ml: '', price_12ml: '', price_50ml: '', price_100ml: '',
         rating: '', reviews: '', stockQuantity: '', longevity: '',
@@ -98,7 +127,7 @@ function rowFromProduct(p) {
     return emptyRow({
         _origin: 'db', id: p.id,
         name: p.name || '', brand: p.brand || '', fragranceType: p.fragranceType || '',
-        category: p.category || 'Attar', price: '',
+        category: p.category || '', price: '',
         originalPrice: p.originalPrice != null ? String(p.originalPrice) : '',
         price_3ml: p.sizePricing?.['3ml'] ?? '', price_6ml: p.sizePricing?.['6ml'] ?? '',
         price_12ml: p.sizePricing?.['12ml'] ?? '', price_50ml: p.sizePricing?.['50ml'] ?? '',
@@ -203,7 +232,7 @@ function RowBadge({ status }) {
     return <span className="row-badge row-badge-existing">Saved</span>;
 }
 
-function BulkRow({ row, index, onUpdate, onDelete, onDuplicate }) {
+function BulkRow({ row, index, onUpdate, onDelete, onDuplicate, brands, categories }) {
     const update = useCallback(
         (field, value) => onUpdate(row._uid, { [field]: value }),
         [onUpdate, row._uid]
@@ -221,12 +250,15 @@ function BulkRow({ row, index, onUpdate, onDelete, onDuplicate }) {
                 </td>
 
                 <td className="col-brand">
-                    <CellInput value={row.brand} onChange={v => update('brand', v)} placeholder="Brand" hasError={hasErrors && !row.brand} />
+                    <CellSelect value={row.brand || ''} onChange={v => update('brand', v)}
+                        options={[{ value: '', label: '—' }, ...brands.map(b => ({ value: b.name, label: b.name }))]}
+                    />
                 </td>
 
                 <td className="col-cat">
-                    <CellSelect value={row.category} onChange={v => update('category', v)}
-                        options={CATEGORIES.map(c => ({ value: c, label: c }))} />
+                    <CellSelect value={row.category || ''} onChange={v => update('category', v)}
+                        options={[{ value: '', label: '—' }, ...categories.map(c => ({ value: c.name, label: c.name }))]}
+                    />
                 </td>
 
                 <td className="col-frag">
@@ -432,6 +464,7 @@ export default function BulkProducts() {
     const [showConfirm, setShowConfirm] = useState(false);
     const [feedback, setFeedback] = useState({ type: '', message: '' });
     const tableRef = useRef(null);
+    const { brands, categories, loading: catalogLoading } = useCatalogData();
 
     // ── row operations ──────────────────────────────────────────────────────
     const updateRow = useCallback((uid, patch) => {
@@ -679,6 +712,8 @@ export default function BulkProducts() {
                                     onUpdate={updateRow}
                                     onDelete={deleteRow}
                                     onDuplicate={duplicateRow}
+                                    brands={brands}
+                                    categories={categories}
                                 />
                             ))}
                         </tbody>

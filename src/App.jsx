@@ -17,6 +17,8 @@ const Products = lazy(() => import('./pages/Admin/Products'));
 const ProductForm = lazy(() => import('./pages/Admin/ProductForm'));
 const BulkProducts = lazy(() => import('./pages/Admin/BulkProducts'));
 const FooterSettings = lazy(() => import('./pages/Admin/FooterSettings'));
+const Brands = lazy(() => import('./pages/Admin/Brands'));
+const Categories = lazy(() => import('./pages/Admin/Categories'));
 
 const PublicLayout = lazy(() => import('./components/layouts/PublicLayout'));
 const AdminLayout = lazy(() => import('./components/admin/AdminLayout'));
@@ -65,6 +67,8 @@ function App() {
                           <Route path="/admin/products/bulk" element={<BulkProducts />} />
                           <Route path="/admin/products/new" element={<ProductForm />} />
                           <Route path="/admin/products/:id/edit" element={<ProductForm />} />
+                          <Route path="/admin/brands" element={<Brands />} />
+                          <Route path="/admin/categories" element={<Categories />} />
                           <Route path="/admin/footer-settings" element={<FooterSettings />} />
                         </Route>
                       </Route>

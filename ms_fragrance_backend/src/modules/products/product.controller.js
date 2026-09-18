@@ -1,5 +1,5 @@
 const { parseProductIdParam, parseListQuery } = require('./product.validator');
-const { BRANDS, FRAGRANCE_FAMILIES } = require('./product.constants');
+const { FRAGRANCE_FAMILIES } = require('./product.constants');
 const { logger } = require('../../shared/logging/logger');
 const AppError = require('../../core/errors/AppError');
 
@@ -10,7 +10,9 @@ function createProductController({
     updateProductUseCase,
     deleteProductUseCase,
     bulkUpsertProductsUseCase,
-    uploadProductImageUseCase
+    uploadProductImageUseCase,
+    getBrandsUseCase,
+    getCategoriesUseCase
 }) {
     return {
         async list(req, res) {
@@ -26,8 +28,28 @@ function createProductController({
             }
         },
 
-        brands(req, res) {
-            res.json(BRANDS);
+        async brands(req, res) {
+            try {
+                const brands = await getBrandsUseCase.execute();
+                res.json(brands);
+            } catch (error) {
+                logger.error('[PRODUCT_BRANDS_ERROR]', { errorMessage: error.message });
+                const statusCode = error.statusCode || 500;
+                const message = error.isOperational ? error.message : 'Failed to fetch brands';
+                res.status(statusCode).json({ error: message });
+            }
+        },
+
+        async categories(req, res) {
+            try {
+                const categories = await getCategoriesUseCase.execute();
+                res.json(categories);
+            } catch (error) {
+                logger.error('[PRODUCT_CATEGORIES_ERROR]', { errorMessage: error.message });
+                const statusCode = error.statusCode || 500;
+                const message = error.isOperational ? error.message : 'Failed to fetch categories';
+                res.status(statusCode).json({ error: message });
+            }
         },
 
         fragranceFamilies(req, res) {

@@ -20,6 +20,13 @@ export default function AdminLayout() {
                     <NavLink to="/admin" end>Dashboard</NavLink>
                     <NavLink to="/admin/products" end>Products</NavLink>
                     <NavLink to="/admin/products/bulk">Bulk Manage</NavLink>
+                    <NavLink to="/admin/brands">
+                        Brands
+                    </NavLink>
+
+                    <NavLink to="/admin/categories">
+                        Categories
+                    </NavLink>
                     <NavLink to="/admin/footer-settings">Footer Settings</NavLink>
                 </nav>
                 <button type="button" className="admin-logout" onClick={handleLogout}>Log out</button>

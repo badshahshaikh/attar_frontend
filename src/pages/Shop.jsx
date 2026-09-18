@@ -32,11 +32,37 @@ const Shop = () => {
         sizes: facetSizes
     } = useProducts();
 
+    // ── Catalog data (brands/categories) ───────────────────────────────────
+    const [brands, setBrands] = useState([]);
+    const [categories, setCategories] = useState([]);
+    const [catalogLoading, setCatalogLoading] = useState(true);
+
+    useEffect(() => {
+        const loadCatalog = async () => {
+            try {
+                const [brandsRes, categoriesRes] = await Promise.all([
+                    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/catalog/brands`),
+                    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/catalog/categories`),
+                ]);
+                if (brandsRes.ok && categoriesRes.ok) {
+                    setBrands(await brandsRes.json());
+                    setCategories(await categoriesRes.json());
+                }
+            } catch (err) {
+                console.error('Failed to load catalog data:', err);
+            } finally {
+                setCatalogLoading(false);
+            }
+        };
+        loadCatalog();
+    }, []);
+
     // ── URL state ───────────────────────────────────────────────────────────
     const [searchParams, setSearchParams] = useSearchParams();
     const searchQuery = searchParams.get('search') || '';
     const collection = searchParams.get('collection') || '';
     const brand = searchParams.get('brand') || '';
+    const category = searchParams.get('category') || '';
 
     // ── Local search input ──────────────────────────────────────────────────
     // searchTerm is local input state; searchQuery (from URL) is the source of truth.
@@ -103,7 +129,7 @@ const Shop = () => {
             maxPrice: debouncedPrice.maxPrice,
             inStockOnly: filters.inStockOnly,
             brand,
-            collection
+            category
         });
     }, [
         searchQuery,
@@ -113,13 +139,18 @@ const Shop = () => {
         debouncedPrice.minPrice,
         debouncedPrice.maxPrice,
         brand,
-        collection,
+        category,
         loadProducts
     ]);
 
     // ── Facets ──────────────────────────────────────────────────────────────
     // Use backend-provided facets so filter options don't shrink as products are filtered.
     const availableCategories = useMemo(
+        () => [...categories.map(c => c.name)].sort(),
+        [categories]
+    );
+
+    const availableFragranceFamilies = useMemo(
         () => [...fragranceFamilies].sort(),
         [fragranceFamilies]
     );
@@ -187,18 +218,20 @@ const Shop = () => {
                         handleFilterChange={handleFilterChange}
                         handlePriceChange={handlePriceChange}
                         resetFilters={resetFilters}
-                        availableCategories={availableCategories}
+                        availableCategories={availableFragranceFamilies}
+                        availableBrands={brands.map(b => b.name)}
                         availableSizes={availableSizes}
                     />
 
                     {/* Product Area */}
                     <div style={{ flex: 1, minWidth: 0 }}>
                         {/* Active URL filters indicator */}
-                        {(searchQuery || collection || brand) && (
+                        {(searchQuery || collection || brand || category) && (
                             <div className="shop-filters">
                                 {searchQuery && <span>Search: &ldquo;{searchQuery}&rdquo;</span>}
                                 {collection && <span>Collection: {collection}</span>}
                                 {brand && <span>Brand: {brand}</span>}
+                                {category && <span>Category: {category}</span>}
                                 <button
                                     className="btn btn-outline btn-small"
                                     onClick={() => setSearchParams({})}

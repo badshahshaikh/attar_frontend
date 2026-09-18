@@ -20,6 +20,7 @@ export const DEFAULT_MAX_PRICE = 10000;
  */
 export const DEFAULT_FILTERS = {
     categories: [],
+    brands: [],
     minPrice: DEFAULT_MIN_PRICE,
     maxPrice: DEFAULT_MAX_PRICE,
     sizes: [],

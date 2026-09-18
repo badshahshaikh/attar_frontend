@@ -4,4 +4,4 @@ const logger = Object.freeze({
     error: (event, metadata) => console.error(event, metadata || ''),
 });
 
-module.exports = { logger };
+export { logger };

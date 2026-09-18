@@ -1,4 +1,5 @@
-const { createProductRepository } = require('./product.repository');
+import { createProductRepository } from './product.repository.js';
+
 const GetProductsUseCase = require('./application/use-cases/GetProductsUseCase');
 const GetProductByIdUseCase = require('./application/use-cases/GetProductByIdUseCase');
 const CreateProductUseCase = require('./application/use-cases/CreateProductUseCase');
@@ -30,10 +31,10 @@ const { createProductRouter } = require('./product.routes');
 function createProductsContainer(dependencies = {}) {
     const database = dependencies.database || require('../../infrastructure/database/postgres-database');
     const storage = dependencies.storage || require('../../infrastructure/storage/supabase-storage.adapter');
-    
+
     // Repository layer
-    const productRepository = createProductRepository({ 
-        query: dependencies.query || database.query 
+    const productRepository = createProductRepository({
+        query: dependencies.query || database.query
     });
 
     // Application layer (use cases)
@@ -45,17 +46,23 @@ function createProductsContainer(dependencies = {}) {
     const bulkUpsertProductsUseCase = new BulkUpsertProductsUseCase(productRepository);
     const uploadProductImageUseCase = new UploadProductImageUseCase(storage);
 
+    // Get catalog use cases from dependencies (injected from main container)
+    const getBrandsUseCase = dependencies.getBrandsUseCase;
+    const getCategoriesUseCase = dependencies.getCategoriesUseCase;
+
     // Presentation layer
-    const productController = createProductController({ 
+    const productController = createProductController({
         getProductsUseCase,
         getProductByIdUseCase,
         createProductUseCase,
         updateProductUseCase,
         deleteProductUseCase,
         bulkUpsertProductsUseCase,
-        uploadProductImageUseCase
+        uploadProductImageUseCase,
+        getBrandsUseCase,
+        getCategoriesUseCase
     });
-    
+
     const productRouter = createProductRouter(productController);
 
     return Object.freeze({
@@ -71,4 +78,4 @@ function createProductsContainer(dependencies = {}) {
     });
 }
 
-module.exports = { createProductsContainer };
+export { createProductsContainer };
