@@ -1,14 +1,21 @@
+import { createRequire } from 'node:module';
 import { createProductRepository } from './product.repository.js';
+import { createProductRouter } from './product.routes.js';
 
-const GetProductsUseCase = require('./application/use-cases/GetProductsUseCase');
-const GetProductByIdUseCase = require('./application/use-cases/GetProductByIdUseCase');
-const CreateProductUseCase = require('./application/use-cases/CreateProductUseCase');
-const UpdateProductUseCase = require('./application/use-cases/UpdateProductUseCase');
-const DeleteProductUseCase = require('./application/use-cases/DeleteProductUseCase');
-const BulkUpsertProductsUseCase = require('./application/use-cases/BulkUpsertProductsUseCase');
-const UploadProductImageUseCase = require('./application/use-cases/UploadProductImageUseCase');
-const { createProductController } = require('./product.controller');
-const { createProductRouter } = require('./product.routes');
+const require = createRequire(import.meta.url);
+
+const { createProductController } = require('./product.controller.js');
+
+
+
+const GetProductsUseCase = require('./application/use-cases/GetProductsUseCase.js');
+const GetProductByIdUseCase = require('./application/use-cases/GetProductByIdUseCase.js');
+const CreateProductUseCase = require('./application/use-cases/CreateProductUseCase.js');
+const UpdateProductUseCase = require('./application/use-cases/UpdateProductUseCase.js');
+const DeleteProductUseCase = require('./application/use-cases/DeleteProductUseCase.js');
+const BulkUpsertProductsUseCase = require('./application/use-cases/BulkUpsertProductsUseCase.js');
+const UploadProductImageUseCase = require('./application/use-cases/UploadProductImageUseCase.js');
+
 
 /**
  * ProductsContainer - Dependency injection container for products module

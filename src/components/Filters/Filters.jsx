@@ -32,6 +32,7 @@ const Filters = ({
     setSearchTerm,
     filters,
     handleFilterChange,
+    handleFragranceFilterChange,
     handlePriceChange,
     resetFilters,
     availableCategories,
@@ -83,7 +84,7 @@ const Filters = ({
                         <CheckboxFilter
                             options={availableCategories}
                             selected={filters.categories}
-                            onChange={value => handleFilterChange('categories', value)}
+                            onChange={handleFragranceFilterChange}
                         />
                     </FilterSection>
 

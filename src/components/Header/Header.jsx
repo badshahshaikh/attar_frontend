@@ -38,7 +38,11 @@ const Header = () => {
         "Free Shipping on Selected Orders"
     ];
 
-    const brandOptions = brands.map(brand => ({ name: brand, value: brand, exclusive: brand === 'MS Fragrance Exclusive' }));
+    const brandOptions = brands.map((brand) => ({
+        name: brand.name,
+        value: brand.id,
+        exclusive: false,
+    }));
     const fragranceOptions = fragranceFamilies.map(family => ({ name: family, value: family }));
 
     useEffect(() => {
@@ -163,6 +167,7 @@ const Header = () => {
         const currentCollection = new URLSearchParams(location.search).get('collection');
         return currentCollection === collection ? 'active' : '';
     };
+
 
     return (
         <>

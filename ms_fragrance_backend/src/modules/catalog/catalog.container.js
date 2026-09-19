@@ -1,9 +1,13 @@
+import { createRequire } from 'node:module';
+
+const require = createRequire(import.meta.url);
 import { createCatalogRepository } from './catalog.repository.js';
-const GetBrandsUseCase = require('./application/use-cases/GetBrandsUseCase');
+const GetBrandsUseCase = require('./application/use-cases/GetBrandsUseCase.js');
+const GetCategoriesUseCase = require('./application/use-cases/GetCategoriesUseCase.js');
 const CreateBrandUseCase = require('./application/use-cases/CreateBrandUseCase');
 const UpdateBrandUseCase = require('./application/use-cases/UpdateBrandUseCase');
 const DeleteBrandUseCase = require('./application/use-cases/DeleteBrandUseCase');
-const GetCategoriesUseCase = require('./application/use-cases/GetCategoriesUseCase');
+
 const CreateCategoryUseCase = require('./application/use-cases/CreateCategoryUseCase');
 const UpdateCategoryUseCase = require('./application/use-cases/UpdateCategoryUseCase');
 const DeleteCategoryUseCase = require('./application/use-cases/DeleteCategoryUseCase');

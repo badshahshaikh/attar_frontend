@@ -10,9 +10,15 @@ import { SEARCH_DEBOUNCE_DELAY, PRICE_DEBOUNCE_DELAY } from '../config/constants
 
 import Filters from '../components/Filters/Filters';
 import ProductCard from '../components/ProductCard/ProductCard';
-
+import LoadMoreButton from "../components/LoadMoreButton/LoadMoreButton";
 import './Shop.css';
-
+import { fetchJson } from '../utils/api';
+import { buildProductQuery } from '../utils/productQuery';
+import {
+    getAvailableCategories,
+    getAvailableFragranceFamilies,
+    getAvailableSizes,
+} from '../utils/productFacets';
 /**
  * Shop
  *
@@ -40,20 +46,20 @@ const Shop = () => {
     useEffect(() => {
         const loadCatalog = async () => {
             try {
-                const [brandsRes, categoriesRes] = await Promise.all([
-                    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/catalog/brands`),
-                    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/catalog/categories`),
+                const [brands, categories] = await Promise.all([
+                    fetchJson('/api/catalog/brands'),
+                    fetchJson('/api/catalog/categories'),
                 ]);
-                if (brandsRes.ok && categoriesRes.ok) {
-                    setBrands(await brandsRes.json());
-                    setCategories(await categoriesRes.json());
-                }
+
+                setBrands(brands);
+                setCategories(categories);
             } catch (err) {
                 console.error('Failed to load catalog data:', err);
             } finally {
                 setCatalogLoading(false);
             }
         };
+
         loadCatalog();
     }, []);
 
@@ -79,6 +85,8 @@ const Shop = () => {
     useEffect(() => {
         const trimmed = debouncedSearch.trim();
 
+        if (trimmed === searchQuery) return;
+
         setSearchParams(prev => {
             const params = new URLSearchParams(prev);
 
@@ -91,14 +99,15 @@ const Shop = () => {
             params.set('page', '1');
             return params;
         });
-    }, [debouncedSearch, setSearchParams]);
+    }, [debouncedSearch, searchQuery, setSearchParams]);
 
     // ── Filter state ────────────────────────────────────────────────────────
     const {
         filters,
+        setFilters, // Add this
         handleFilterChange,
         handlePriceChange,
-        resetFilters: resetFilterState
+        resetFilters: resetFilterState,
     } = useProductFilters();
 
     // Debounce price to avoid flooding the API on every slider tick
@@ -118,19 +127,57 @@ const Shop = () => {
     };
 
     // ── Product loading ─────────────────────────────────────────────────────
+
+    const [page, setPage] = useState(1);
+    const [hasMore, setHasMore] = useState(true);
+    const PRODUCTS_PER_PAGE = 12;
+    const productParams = {
+        limit: PRODUCTS_PER_PAGE,
+        search: searchQuery,
+        categories: filters.categories,
+        sizes: filters.sizes,
+        minPrice: debouncedPrice.minPrice,
+        maxPrice: debouncedPrice.maxPrice,
+        inStockOnly: filters.inStockOnly,
+        brand,
+        category,
+    };
     useEffect(() => {
-        loadProducts({
-            page: 1,
-            limit: 50,
-            search: searchQuery,
-            categories: filters.categories,
-            sizes: filters.sizes,
-            minPrice: debouncedPrice.minPrice,
-            maxPrice: debouncedPrice.maxPrice,
-            inStockOnly: filters.inStockOnly,
-            brand,
-            category
-        });
+        let isActive = true;
+
+        const loadFirstPage = async () => {
+            setPage(1);
+            setHasMore(true);
+
+            try {
+                const result = await loadProducts({
+                    ...productParams,
+                    page: 1,
+                });
+
+                if (!isActive) return;
+
+                const productList = Array.isArray(result)
+                    ? result
+                    : result.products || [];
+
+                setHasMore(
+                    result.totalPages
+                        ? 1 < result.totalPages
+                        : productList.length === PRODUCTS_PER_PAGE
+                );
+            } catch {
+                if (isActive) {
+                    setHasMore(false);
+                }
+            }
+        };
+
+        loadFirstPage();
+
+        return () => {
+            isActive = false;
+        };
     }, [
         searchQuery,
         filters.categories,
@@ -140,27 +187,82 @@ const Shop = () => {
         debouncedPrice.maxPrice,
         brand,
         category,
-        loadProducts
+        loadProducts,
     ]);
 
+    const handleLoadMore = async () => {
+        if (loading || !hasMore) return;
+
+        const nextPage = page + 1;
+
+        try {
+            const result = await loadProducts(
+                {
+                    ...productParams,
+                    page: nextPage,
+                },
+                { append: true }
+            );
+
+            const productList = Array.isArray(result)
+                ? result
+                : result.products || [];
+
+            setPage(nextPage);
+
+            setHasMore(
+                result.totalPages
+                    ? nextPage < result.totalPages
+                    : productList.length === PRODUCTS_PER_PAGE
+            );
+        } catch {
+            // Keep the current page so the user can retry.
+        }
+    };
+
+    useEffect(() => {
+        const collections = searchParams.getAll('collection');
+
+        setFilters(previous => {
+            const currentCategories = previous.categories || [];
+
+            // Don't update state if the values are already the same
+            const areSame =
+                currentCategories.length === collections.length &&
+                currentCategories.every(
+                    (value, index) => value === collections[index]
+                );
+
+            if (areSame) {
+                return previous;
+            }
+
+            return {
+                ...previous,
+                categories: collections,
+            };
+        });
+    }, [searchParams, setFilters]);
+
+
     // ── Facets ──────────────────────────────────────────────────────────────
-    // Use backend-provided facets so filter options don't shrink as products are filtered.
+
     const availableCategories = useMemo(
-        () => [...categories.map(c => c.name)].sort(),
+        () => getAvailableCategories(categories),
         [categories]
     );
 
     const availableFragranceFamilies = useMemo(
-        () => [...fragranceFamilies].sort(),
+        () => getAvailableFragranceFamilies(fragranceFamilies),
         [fragranceFamilies]
     );
 
-    // Sizes come from facets; fall back to deriving from loaded products if facets are empty.
     const availableSizes = useMemo(
-        () => sortSizes(facetSizes && facetSizes.length > 0
-            ? facetSizes
-            : products.flatMap(p => Array.isArray(p.sizes) ? p.sizes : [])
-        ),
+        () => getAvailableSizes({
+            facetSizes,
+            products,
+            sortSizes,
+        }),
         [facetSizes, products]
     );
 
@@ -184,6 +286,34 @@ const Shop = () => {
             </main>
         );
     }
+
+    const handleFragranceFilterChange = (value) => {
+        const currentCategories = filters.categories || [];
+
+        const updatedCategories = currentCategories.includes(value)
+            ? currentCategories.filter(item => item !== value)
+            : [...currentCategories, value];
+
+        // Update checkbox state with all selected values
+        setFilters(previous => ({
+            ...previous,
+            categories: updatedCategories,
+        }));
+
+        // Update URL with all selected fragrance families
+        const params = new URLSearchParams(searchParams);
+
+        params.delete('collection');
+
+        updatedCategories.forEach(item => {
+            params.append('collection', item);
+        });
+
+        params.delete('page');
+        setSearchParams(params);
+    };
+
+
 
     return (
         <main className="shop-page">
@@ -216,6 +346,7 @@ const Shop = () => {
                         setSearchTerm={setSearchTerm}
                         filters={filters}
                         handleFilterChange={handleFilterChange}
+                        handleFragranceFilterChange={handleFragranceFilterChange}
                         handlePriceChange={handlePriceChange}
                         resetFilters={resetFilters}
                         availableCategories={availableFragranceFamilies}
@@ -264,6 +395,13 @@ const Shop = () => {
                         )}
                     </div>
                 </div>
+
+                <LoadMoreButton
+                    onClick={handleLoadMore}
+                    loading={loading}
+                    hasMore={hasMore}
+                />
+
             </div>
         </main>
     );

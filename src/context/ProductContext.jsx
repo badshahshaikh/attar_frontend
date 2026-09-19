@@ -15,7 +15,7 @@ const ProductContext = createContext();
 
 export function ProductProvider({ children }) {
     const [products, setProducts] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [facets, setFacets] = useState({
         brands: [],
@@ -58,11 +58,10 @@ export function ProductProvider({ children }) {
                 setLoading(true);
                 setError(null);
 
-                const [data, productFacets] =
-                    await Promise.all([
-                        fetchProducts(),
-                        fetchProductFacets()
-                    ]);
+                const [data, productFacets] = await Promise.all([
+                    fetchProducts(),
+                    fetchProductFacets()
+                ]);
 
                 setProducts(
                     Array.isArray(data)
@@ -72,14 +71,8 @@ export function ProductProvider({ children }) {
 
                 setFacets(productFacets);
             } catch (err) {
-                setError(
-                    'Unable to load products. Please try again.'
-                );
-
-                console.error(
-                    'Failed to load products:',
-                    err
-                );
+                setError('Unable to load products. Please try again.');
+                console.error('Failed to load products:', err);
             } finally {
                 setLoading(false);
             }

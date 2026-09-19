@@ -1,0 +1,24 @@
+.load-more-wrapper {
+    display: flex;
+    justify-content: center;
+    margin: 2rem 0 3rem;
+}
+
+.load-more-button {
+    padding: 0.85rem 2rem;
+    border: 1px solid #3d2914;
+    background: transparent;
+    color: #3d2914;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.load-more-button:hover:not(:disabled) {
+    background: #3d2914;
+    color: #fff;
+}
+
+.load-more-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
