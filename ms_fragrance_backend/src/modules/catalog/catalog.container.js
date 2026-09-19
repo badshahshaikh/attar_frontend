@@ -1,6 +1,4 @@
-import { createRequire } from 'node:module';
 
-const require = createRequire(import.meta.url);
 import { createCatalogRepository } from './catalog.repository.js';
 const GetBrandsUseCase = require('./application/use-cases/GetBrandsUseCase.js');
 const GetCategoriesUseCase = require('./application/use-cases/GetCategoriesUseCase.js');
