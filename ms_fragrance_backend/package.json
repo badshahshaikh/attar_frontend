@@ -1,6 +1,7 @@
 {
     "name": "ms-fragrance-backend",
     "version": "1.0.0",
+    "type": "module",
     "description": "MVP backend for MS Fragrance product management",
     "main": "src/server.js",
     "scripts": {

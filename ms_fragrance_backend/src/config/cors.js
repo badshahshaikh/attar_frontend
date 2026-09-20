@@ -1,5 +1,6 @@
-const { config, normalizeOrigin } = require('./env');
-const { logger } = require('../shared/logging/logger');
+
+import { config, normalizeOrigin } from './env.js';
+import { logger } from '../shared/logging/logger.js';
 
 const corsOptions = {
     origin: (origin, callback) => {
@@ -19,4 +20,4 @@ const corsOptions = {
     credentials: true,
 };
 
-module.exports = { corsOptions };
+export { corsOptions };

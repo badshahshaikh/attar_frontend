@@ -1,14 +1,13 @@
-const express = require('express');
-const cors = require('cors');
-const path = require('path');
-const cookieParser = require('cookie-parser');
-const { config } = require('./config/env');
-const { corsOptions } = require('./config/cors');
-const { errorHandler } = require('./shared/errors/error-handler');
-const { createContainer } = require('./composition/container');
+import express from 'express';
+import cors from 'cors';
+import path from 'node:path';
+import cookieParser from 'cookie-parser';
 
-
-const { checkDatabaseConnection } = require('./shared/database');
+import { config } from './config/env.js';
+import { corsOptions } from './config/cors.js';
+import { errorHandler } from './shared/errors/error-handler.js';
+import { createContainer } from './composition/container.js';
+import { checkDatabaseConnection } from './shared/database/index.js';
 
 const app = express();
 const { productRouter, catalogRouter, authRouter, settingsRouter } = createContainer();
@@ -49,4 +48,4 @@ app.get('/api/health/db', async (req, res) => {
 
 app.use(errorHandler);
 
-module.exports = app;
+export default app;

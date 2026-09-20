@@ -13,4 +13,4 @@ function clearAuthCookie(res) {
     });
 }
 
-module.exports = { setAuthCookie, clearAuthCookie };
+export { setAuthCookie, clearAuthCookie };

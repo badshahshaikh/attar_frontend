@@ -1,6 +1,6 @@
-const { createProductRepository } = require('./product.repository.js');
-const { createProductRouter } = require('./product.routes.js');
-const { createProductController } = require('./product.controller.js');
+import { createProductRepository } from './product.repository.js';
+import { createProductRouter } from './product.routes.js';
+import { createProductController } from './product.controller.js';
 
 const GetProductsUseCase = require('./application/use-cases/GetProductsUseCase.js');
 const GetProductByIdUseCase = require('./application/use-cases/GetProductByIdUseCase.js');

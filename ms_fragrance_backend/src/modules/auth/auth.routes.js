@@ -17,4 +17,4 @@ function createAuthRouter(controller) {
     return router;
 }
 
-module.exports = { createAuthRouter };
+export { createAuthRouter };

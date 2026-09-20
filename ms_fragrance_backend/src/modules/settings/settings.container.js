@@ -24,10 +24,10 @@ const { createSettingsRouter } = require('./settings.routes');
 
 function createSettingsContainer(dependencies = {}) {
     const database = dependencies.database || require('../../infrastructure/database/postgres-database');
-    
+
     // Repository layer
-    const settingsRepository = createSettingsRepository({ 
-        query: dependencies.query || database.query 
+    const settingsRepository = createSettingsRepository({
+        query: dependencies.query || database.query
     });
 
     // Application layer (use cases)
@@ -35,11 +35,11 @@ function createSettingsContainer(dependencies = {}) {
     const updateFooterSettingsUseCase = new UpdateFooterSettingsUseCase(settingsRepository);
 
     // Presentation layer
-    const settingsController = createSettingsController({ 
-        getFooterSettingsUseCase, 
-        updateFooterSettingsUseCase 
+    const settingsController = createSettingsController({
+        getFooterSettingsUseCase,
+        updateFooterSettingsUseCase
     });
-    
+
     const settingsRouter = createSettingsRouter(settingsController);
 
     return Object.freeze({
@@ -50,4 +50,4 @@ function createSettingsContainer(dependencies = {}) {
     });
 }
 
-module.exports = { createSettingsContainer };
+export { createSettingsContainer };

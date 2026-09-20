@@ -9,10 +9,10 @@ function createSettingsController({ getFooterSettingsUseCase, updateFooterSettin
                 res.json(settings);
             } catch (error) {
                 logger.error('[SETTINGS_GET_FOOTER_ERROR]', { errorMessage: error.message });
-                
+
                 const statusCode = error.statusCode || 500;
                 const message = error.isOperational ? error.message : 'Failed to fetch footer settings';
-                
+
                 res.status(statusCode).json({ error: message });
             }
         },
@@ -23,11 +23,11 @@ function createSettingsController({ getFooterSettingsUseCase, updateFooterSettin
                 res.json(settings);
             } catch (error) {
                 logger.error('[SETTINGS_UPDATE_FOOTER_ERROR]', { errorMessage: error.message });
-                
+
                 const statusCode = error.statusCode || 500;
                 const message = error.isOperational ? error.message : 'Failed to update footer settings';
-                
-                res.status(statusCode).json({ 
+
+                res.status(statusCode).json({
                     error: message,
                     details: error.details || null
                 });
@@ -36,4 +36,4 @@ function createSettingsController({ getFooterSettingsUseCase, updateFooterSettin
     };
 }
 
-module.exports = { createSettingsController };
+export { createSettingsController };

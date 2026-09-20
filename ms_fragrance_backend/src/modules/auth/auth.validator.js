@@ -4,4 +4,4 @@ function validateLogin(body) {
     return { username, password };
 }
 
-module.exports = { validateLogin };
+export { validateLogin };

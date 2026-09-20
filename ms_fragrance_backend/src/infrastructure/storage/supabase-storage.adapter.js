@@ -1,5 +1,7 @@
-const { createClient } = require('@supabase/supabase-js');
-const { config } = require('../../config/env');
+// const { createClient } = require('@supabase/supabase-js');
+import { createClient } from '@supabase/supabase-js';
+
+import { config } from '../../config/env.js';
 
 const { bucket, url, serviceRoleKey } = config.storage;
 let client;
@@ -47,4 +49,4 @@ async function removeProductImage(imageUrl) {
     return true;
 }
 
-module.exports = { bucket, getSupabase, uploadProductImage, removeProductImage, getStoragePath };
+export { bucket, getSupabase, uploadProductImage, removeProductImage, getStoragePath };

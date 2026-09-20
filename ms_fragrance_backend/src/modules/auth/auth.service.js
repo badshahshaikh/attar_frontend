@@ -14,4 +14,5 @@ function createAuthService({ userRepository }) {
     };
 }
 
-module.exports = { createAuthService };
+
+export { createAuthService };

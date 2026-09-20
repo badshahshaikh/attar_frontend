@@ -1,4 +1,4 @@
-const { logger } = require('../logging/logger');
+import { logger } from '../logging/logger.js';
 
 function errorHandler(error, req, res, next) { // eslint-disable-line no-unused-vars
     if (error instanceof Error && (error.code === 'LIMIT_FILE_SIZE' || error.message === 'Only image files are allowed')) {
@@ -14,4 +14,4 @@ function errorHandler(error, req, res, next) { // eslint-disable-line no-unused-
     return res.status(500).json({ error: 'Internal server error' });
 }
 
-module.exports = { errorHandler };
+export { errorHandler };

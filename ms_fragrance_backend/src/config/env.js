@@ -1,5 +1,11 @@
-require('dotenv').config();
-const path = require('path');
+import dotenv from 'dotenv';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const environment = process.env.NODE_ENV || 'development';
 const isProduction = environment === 'production';
@@ -52,8 +58,10 @@ const config = Object.freeze({
         bucket: process.env.SUPABASE_STORAGE_BUCKET || 'product-images',
     }),
     uploads: Object.freeze({
-        directory: path.resolve(process.env.UPLOAD_DIR || path.join(__dirname, '../../uploads')),
+        directory: path.resolve(
+            process.env.UPLOAD_DIR || path.join(__dirname, '../../uploads')
+        ),
     }),
 });
 
-module.exports = { config, normalizeOrigin };
+export { config, normalizeOrigin };

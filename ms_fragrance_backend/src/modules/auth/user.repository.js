@@ -7,4 +7,4 @@ function createUserRepository({ query }) {
     };
 }
 
-module.exports = { createUserRepository };
+export { createUserRepository };

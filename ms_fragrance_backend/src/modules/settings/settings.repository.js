@@ -37,4 +37,4 @@ function createSettingsRepository({ query }) {
     };
 }
 
-module.exports = { createSettingsRepository };
+export { createSettingsRepository };
