@@ -1,5 +1,5 @@
-const ValidationError = require('../../../../core/errors/ValidationError');
-const { logger } = require('../../../../shared/logging/logger');
+import ValidationError from '../../../../core/errors/ValidationError.js';
+import { logger } from '../../../../shared/logging/logger.js';
 
 class CreateCategoryUseCase {
     constructor(catalogRepository) {
@@ -23,4 +23,4 @@ class CreateCategoryUseCase {
     }
 }
 
-module.exports = CreateCategoryUseCase;
+export default CreateCategoryUseCase;

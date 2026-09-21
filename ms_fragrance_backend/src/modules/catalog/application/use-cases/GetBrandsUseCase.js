@@ -1,4 +1,4 @@
-const { logger } = require('../../../../shared/logging/logger');
+import { logger } from '../../../../shared/logging/logger.js';
 
 class GetBrandsUseCase {
     constructor(catalogRepository) {
@@ -16,4 +16,4 @@ class GetBrandsUseCase {
     }
 }
 
-module.exports = GetBrandsUseCase;
+export default GetBrandsUseCase;

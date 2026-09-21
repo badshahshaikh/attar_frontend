@@ -1,5 +1,5 @@
-const { logger } = require('../../shared/logging/logger');
-const AppError = require('../../core/errors/AppError');
+import { logger } from '../../shared/logging/logger.js';
+import AppError from '../../core/errors/AppError.js';
 
 function createSettingsController({ getFooterSettingsUseCase, updateFooterSettingsUseCase }) {
     return {

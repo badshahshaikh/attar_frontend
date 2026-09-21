@@ -1,5 +1,5 @@
-const { logger } = require('../../../../shared/logging/logger');
-const { validateFooterSettings } = require('../validators/FooterSettingsValidator');
+import { logger } from '../../../../shared/logging/logger.js';
+import { validateFooterSettings } from '../validators/FooterSettingsValidator.js';
 
 /**
  * UpdateFooterSettingsUseCase - Business logic for updating footer settings
@@ -35,4 +35,4 @@ class UpdateFooterSettingsUseCase {
     }
 }
 
-module.exports = UpdateFooterSettingsUseCase;
+export default UpdateFooterSettingsUseCase;

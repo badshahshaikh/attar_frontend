@@ -1,6 +1,6 @@
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-const { config } = require('../../config/env');
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import { config } from '../../config/env.js';
 
 function createAuthService({ userRepository }) {
     return {

@@ -1,1 +1,1 @@
-module.exports = require('../infrastructure/storage/supabase-storage.adapter');
+export default r;equire('../infrastructure/storage/supabase-storage.adapter');

@@ -1,6 +1,6 @@
-const ValidationError = require('../../../../core/errors/ValidationError');
-const NotFoundError = require('../../../../core/errors/NotFoundError');
-const { logger } = require('../../../../shared/logging/logger');
+import ValidationError from '../../../../core/errors/ValidationError.js';
+import NotFoundError from '../../../../core/errors/NotFoundError.js';
+import { logger } from '../../../../shared/logging/logger.js';
 
 class UpdateBrandUseCase {
     constructor(catalogRepository) {
@@ -29,4 +29,4 @@ class UpdateBrandUseCase {
     }
 }
 
-module.exports = UpdateBrandUseCase;
+export default UpdateBrandUseCase;

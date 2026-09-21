@@ -1,8 +1,8 @@
 require('dotenv').config();
-const fs = require('fs');
-const path = require('path');
-const { query, closeDb } = require('./src/db');
-const { uploadProductImage, getStoragePath } = require('./src/config/supabase');
+import fs from 'fs';
+import path from 'path';
+import { query, closeDb } from './src/db.js';
+import { uploadProductImage, getStoragePath } from './src/config/supabase.js';
 
 const uploadRoot = path.resolve(process.env.UPLOAD_DIR || path.join(__dirname, 'uploads'));
 const mimeTypes = { '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.webp': 'image/webp' };

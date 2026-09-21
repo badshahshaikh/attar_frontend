@@ -1,13 +1,13 @@
-const test = require('node:test');
-const assert = require('node:assert/strict');
-const jwt = require('jsonwebtoken');
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import jwt from 'jsonwebtoken';
 
 process.env.DATABASE_URL = process.env.DATABASE_URL || 'postgresql://user:password@localhost:5432/database';
 process.env.JWT_SECRET = process.env.JWT_SECRET || 'test-secret';
 
-const { createContainer } = require('../../../src/composition/container');
-const { authenticate } = require('../../../src/shared/middleware/authenticate');
-const { config } = require('../../../src/config/env');
+import { createContainer } from '../../../src/composition/container.js';
+import { authenticate } from '../../../src/shared/middleware/authenticate.js';
+import { config } from '../../../src/config/env.js';
 
 test('container wires the PUT route to authentication before the controller handler', () => {
     const { productRouter } = createContainer();

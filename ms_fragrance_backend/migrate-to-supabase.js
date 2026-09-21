@@ -1,8 +1,8 @@
 require('dotenv').config();
-const { open } = require('sqlite');
-const sqlite3 = require('sqlite3');
-const path = require('path');
-const { query, withTransaction, closeDb } = require('./src/db');
+import { open } from 'sqlite';
+import sqlite3 from 'sqlite3';
+import path from 'path';
+import { query, withTransaction, closeDb } from './src/db.js';
 
 const sqlitePath = process.env.SQLITE_PATH || path.join(__dirname, 'data', 'ms_fragrance.db');
 const jsonFields = ['size_pricing', 'sizes', 'top_notes', 'heart_notes', 'base_notes'];

@@ -1,6 +1,6 @@
-const test = require('node:test');
-const assert = require('node:assert/strict');
-const { parseProductPayload, parseProductIdParam } = require('../../../src/modules/products/product.validator');
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { parseProductPayload, parseProductIdParam } from '../../../src/modules/products/product.validator.js';
 
 const validPayload = {
     name: 'Verification Attar', price: '99', brand: 'Surrati', fragranceFamily: 'Oud',

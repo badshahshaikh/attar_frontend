@@ -1,4 +1,4 @@
-// const { createClient } = require('@supabase/supabase-js');
+// import { createClient } from '@supabase/supabase-js';
 import { createClient } from '@supabase/supabase-js';
 
 import { config } from '../../config/env.js';
@@ -50,3 +50,4 @@ async function removeProductImage(imageUrl) {
 }
 
 export { bucket, getSupabase, uploadProductImage, removeProductImage, getStoragePath };
+export default { bucket, getSupabase, uploadProductImage, removeProductImage, getStoragePath };

@@ -1,6 +1,6 @@
-const express = require('express');
-const { authenticate } = require('../../shared/middleware/authenticate');
-const { asyncHandler } = require('../../shared/middleware/async-handler');
+import express from 'express';
+import { authenticate } from '../../shared/middleware/authenticate.js';
+import { asyncHandler } from '../../shared/middleware/async-handler.js';
 
 function createSettingsRouter(controller) {
     const router = express.Router();

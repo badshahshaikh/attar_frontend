@@ -1,7 +1,7 @@
-const express = require('express');
-const { authenticate } = require('../../shared/middleware/authenticate');
-const { asyncHandler } = require('../../shared/middleware/async-handler');
-const { upload } = require('./product.upload');
+import express from 'express';
+import { authenticate } from '../../shared/middleware/authenticate.js';
+import { asyncHandler } from '../../shared/middleware/async-handler.js';
+import { upload } from './product.upload.js';
 
 function createProductRouter(controller) {
     const router = express.Router();
@@ -17,4 +17,6 @@ function createProductRouter(controller) {
     return router;
 }
 
-module.exports = { createProductRouter };
+export {
+  createProductRouter
+};

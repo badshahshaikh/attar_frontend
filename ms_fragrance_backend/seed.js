@@ -6,10 +6,10 @@
  * into the backend SQLite database, avoiding duplicates.
  */
 
-const { getDb } = require('./src/db');
+import { getDb } from './src/db.js';
 
 // Import mockProducts from frontend
-const mockProducts = require('../src/data/mockProducts.js').mockProducts;
+import mockProducts from '../src/data/mockProducts.js';.mockProducts;
 
 const navigationProducts = [
     ['Royal Oud Reserve', 'Surrati', 'Oud', 899, ['Saffron', 'Bergamot'], ['Oud', 'Rose'], ['Amber', 'Leather']],

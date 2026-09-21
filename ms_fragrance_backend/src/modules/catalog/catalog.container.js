@@ -1,16 +1,16 @@
 
 import { createCatalogRepository } from './catalog.repository.js';
-const GetBrandsUseCase = require('./application/use-cases/GetBrandsUseCase.js');
-const GetCategoriesUseCase = require('./application/use-cases/GetCategoriesUseCase.js');
-const CreateBrandUseCase = require('./application/use-cases/CreateBrandUseCase');
-const UpdateBrandUseCase = require('./application/use-cases/UpdateBrandUseCase');
-const DeleteBrandUseCase = require('./application/use-cases/DeleteBrandUseCase');
+import GetBrandsUseCase from './application/use-cases/GetBrandsUseCase.js';
+import GetCategoriesUseCase from './application/use-cases/GetCategoriesUseCase.js';
+import CreateBrandUseCase from './application/use-cases/CreateBrandUseCase.js';
+import UpdateBrandUseCase from './application/use-cases/UpdateBrandUseCase.js';
+import DeleteBrandUseCase from './application/use-cases/DeleteBrandUseCase.js';
 
-const CreateCategoryUseCase = require('./application/use-cases/CreateCategoryUseCase');
-const UpdateCategoryUseCase = require('./application/use-cases/UpdateCategoryUseCase');
-const DeleteCategoryUseCase = require('./application/use-cases/DeleteCategoryUseCase');
-const { createCatalogController } = require('./catalog.controller');
-const { createCatalogRouter } = require('./catalog.routes');
+import CreateCategoryUseCase from './application/use-cases/CreateCategoryUseCase.js';
+import UpdateCategoryUseCase from './application/use-cases/UpdateCategoryUseCase.js';
+import DeleteCategoryUseCase from './application/use-cases/DeleteCategoryUseCase.js';
+import { createCatalogController } from './catalog.controller.js';
+import { createCatalogRouter } from './catalog.routes.js';
 
 /**
  * CatalogContainer - Dependency injection container for catalog module
@@ -29,8 +29,10 @@ const { createCatalogRouter } = require('./catalog.routes');
  * CatalogRouter
  */
 
+import databaseModule from '../../infrastructure/database/postgres-database.js';
+
 function createCatalogContainer(dependencies = {}) {
-    const database = dependencies.database || require('../../infrastructure/database/postgres-database');
+    const database = dependencies.database || databaseModule;
 
     // Repository layer
     const catalogRepository = createCatalogRepository({

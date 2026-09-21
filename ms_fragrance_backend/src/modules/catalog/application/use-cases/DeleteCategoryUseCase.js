@@ -1,5 +1,5 @@
-const NotFoundError = require('../../../../core/errors/NotFoundError');
-const { logger } = require('../../../../shared/logging/logger');
+import NotFoundError from '../../../../core/errors/NotFoundError.js';
+import { logger } from '../../../../shared/logging/logger.js';
 
 class DeleteCategoryUseCase {
     constructor(catalogRepository) {
@@ -24,4 +24,4 @@ class DeleteCategoryUseCase {
     }
 }
 
-module.exports = DeleteCategoryUseCase;
+export default DeleteCategoryUseCase;

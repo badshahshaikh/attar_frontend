@@ -94,4 +94,6 @@ function toPersistenceValues(payload) {
     return persistenceValues;
 }
 
-module.exports = { toProduct, toPersistenceValues };
+export {
+  toProduct, toPersistenceValues
+};

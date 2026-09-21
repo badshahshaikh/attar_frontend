@@ -1,6 +1,6 @@
-const { toProduct, toPersistenceValues } = require('../../product.mapper');
-const { parseProductPayload, ensureSizeConsistency } = require('../../product.validator');
-const { logger } = require('../../../../shared/logging/logger');
+import { toProduct, toPersistenceValues } from '../../product.mapper.js';
+import { parseProductPayload, ensureSizeConsistency } from '../../product.validator.js';
+import { logger } from '../../../../shared/logging/logger.js';
 
 /**
  * CreateProductUseCase - Business logic for creating a new product
@@ -40,4 +40,4 @@ class CreateProductUseCase {
     }
 }
 
-module.exports = CreateProductUseCase;
+export default CreateProductUseCase;

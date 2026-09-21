@@ -1,4 +1,4 @@
-const assert = require('assert');
+import assert from 'assert';
 
 async function testUpload() {
     console.log('Testing Image Upload Security...');

@@ -1,6 +1,6 @@
-const { toProduct } = require('../../product.mapper');
-const NotFoundError = require('../../../../core/errors/NotFoundError');
-const { logger } = require('../../../../shared/logging/logger');
+import { toProduct } from '../../product.mapper.js';
+import NotFoundError from '../../../../core/errors/NotFoundError.js';
+import { logger } from '../../../../shared/logging/logger.js';
 
 /**
  * GetProductByIdUseCase - Business logic for retrieving a single product by ID
@@ -34,4 +34,4 @@ class GetProductByIdUseCase {
     }
 }
 
-module.exports = GetProductByIdUseCase;
+export default GetProductByIdUseCase;

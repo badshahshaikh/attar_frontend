@@ -1,7 +1,7 @@
-const { parseProductIdParam, parseListQuery } = require('./product.validator');
-const { FRAGRANCE_FAMILIES } = require('./product.constants');
-const { logger } = require('../../shared/logging/logger');
-const AppError = require('../../core/errors/AppError');
+import { parseProductIdParam, parseListQuery } from './product.validator.js';
+import { FRAGRANCE_FAMILIES } from './product.constants.js';
+import { logger } from '../../shared/logging/logger.js';
+import AppError from '../../core/errors/AppError.js';
 
 function createProductController({
     getProductsUseCase,
@@ -153,4 +153,6 @@ function createProductController({
     };
 }
 
-module.exports = { createProductController };
+export {
+  createProductController
+};

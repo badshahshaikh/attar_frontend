@@ -1,8 +1,8 @@
-const { createSettingsRepository } = require('./settings.repository');
-const GetFooterSettingsUseCase = require('./application/use-cases/GetFooterSettingsUseCase');
-const UpdateFooterSettingsUseCase = require('./application/use-cases/UpdateFooterSettingsUseCase');
-const { createSettingsController } = require('./settings.controller');
-const { createSettingsRouter } = require('./settings.routes');
+import { createSettingsRepository } from './settings.repository.js';
+import GetFooterSettingsUseCase from './application/use-cases/GetFooterSettingsUseCase.js';
+import UpdateFooterSettingsUseCase from './application/use-cases/UpdateFooterSettingsUseCase.js';
+import { createSettingsController } from './settings.controller.js';
+import { createSettingsRouter } from './settings.routes.js';
 
 /**
  * SettingsContainer - Dependency injection container for settings module
@@ -22,8 +22,10 @@ const { createSettingsRouter } = require('./settings.routes');
  * SettingsRouter
  */
 
+import databaseModule from '../../infrastructure/database/postgres-database.js';
+
 function createSettingsContainer(dependencies = {}) {
-    const database = dependencies.database || require('../../infrastructure/database/postgres-database');
+    const database = dependencies.database || databaseModule;
 
     // Repository layer
     const settingsRepository = createSettingsRepository({

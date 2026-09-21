@@ -1,15 +1,17 @@
-const test = require('node:test');
+import test from 'node:test';
+
+import assert from 'node:assert/strict';
+import jwt from 'jsonwebtoken';
+import app from '../../../src/app.js';
+import database from '../../../src/infrastructure/database/postgres-database.js';
+const { query, closeDb } = database;
+import { config } from '../../../src/config/env.js';
 
 test('real authenticated PUT persists through GET and restores the exact database row', {
     skip: process.env.RUN_PRODUCT_PUT_E2E !== 'true',
 }, async () => {
     // This test is intentionally opt-in. It requires a local, disposable database and a valid
     // DATABASE_URL/JWT_SECRET. It must never be pointed at production data.
-    const assert = require('node:assert/strict');
-    const jwt = require('jsonwebtoken');
-    const app = require('../../../src/app');
-    const { query, closeDb } = require('../../../src/infrastructure/database/postgres-database');
-    const { config } = require('../../../src/config/env');
     let token;
     const original = (await query('SELECT * FROM products ORDER BY id ASC LIMIT 1')).rows[0];
     const user = (await query('SELECT id, username, role FROM users ORDER BY id ASC LIMIT 1')).rows[0];

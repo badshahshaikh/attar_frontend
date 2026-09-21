@@ -1,6 +1,6 @@
-const test = require('node:test');
-const assert = require('node:assert/strict');
-const { toPersistenceValues } = require('../../../src/modules/products/product.mapper');
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { toPersistenceValues } from '../../../src/modules/products/product.mapper.js';
 
 test('maps normalized API payloads to the 24 repository values in column order', () => {
     const values = toPersistenceValues({

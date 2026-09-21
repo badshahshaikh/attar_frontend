@@ -91,3 +91,9 @@ export {
     withTransaction,
     closeDb,
 };
+export default {
+    initializeDatabase,
+    query,
+    withTransaction,
+    closeDb,
+};

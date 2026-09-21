@@ -1,4 +1,4 @@
-const { config } = require('../../config/env');
+import { config } from '../../config/env.js';
 
 function setAuthCookie(res, token) {
     res.cookie(config.auth.cookie.name, token, config.auth.cookie);

@@ -1,4 +1,4 @@
-const ValidationError = require('../../../../core/errors/ValidationError');
+import ValidationError from '../../../../core/errors/ValidationError.js';
 
 /**
  * FooterSettingsValidator - Validation logic for footer settings
@@ -125,8 +125,8 @@ function getDefaultFooterSettings() {
     return JSON.parse(JSON.stringify(DEFAULT_FOOTER_SETTINGS));
 }
 
-module.exports = {
-    validateFooterSettings,
+export {
+  validateFooterSettings,
     getDefaultFooterSettings,
     isValidEmail,
     isValidPhone,

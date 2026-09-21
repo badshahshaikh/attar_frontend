@@ -1,4 +1,4 @@
-const { logger } = require('../../../../shared/logging/logger');
+import { logger } from '../../../../shared/logging/logger.js';
 
 /**
  * UploadProductImageUseCase - Business logic for uploading product images
@@ -55,4 +55,4 @@ class UploadProductImageUseCase {
     }
 }
 
-module.exports = UploadProductImageUseCase;
+export default UploadProductImageUseCase;

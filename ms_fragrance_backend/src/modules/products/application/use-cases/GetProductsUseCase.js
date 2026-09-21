@@ -1,5 +1,5 @@
-const { toProduct } = require('../../product.mapper');
-const { logger } = require('../../../../shared/logging/logger');
+import { toProduct } from '../../product.mapper.js';
+import { logger } from '../../../../shared/logging/logger.js';
 
 /**
  * GetProductsUseCase - Business logic for retrieving products with filtering
@@ -40,4 +40,4 @@ class GetProductsUseCase {
     }
 }
 
-module.exports = GetProductsUseCase;
+export default GetProductsUseCase;

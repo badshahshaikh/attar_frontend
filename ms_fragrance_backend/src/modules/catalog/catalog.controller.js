@@ -1,4 +1,4 @@
-const { logger } = require('../../shared/logging/logger');
+import { logger } from '../../shared/logging/logger.js';
 
 function createCatalogController({
     getBrandsUseCase,
@@ -119,4 +119,6 @@ function createCatalogController({
     };
 }
 
-module.exports = { createCatalogController };
+export {
+  createCatalogController
+};

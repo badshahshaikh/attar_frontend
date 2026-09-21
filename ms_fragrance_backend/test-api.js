@@ -1,4 +1,4 @@
-const assert = require('assert');
+import assert from 'assert';
 
 async function runTests() {
     console.log('Running API security tests...');

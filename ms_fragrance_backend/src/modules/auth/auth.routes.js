@@ -1,7 +1,7 @@
-const express = require('express');
-const rateLimit = require('express-rate-limit');
-const { authenticate } = require('../../shared/middleware/authenticate');
-const { asyncHandler } = require('../../shared/middleware/async-handler');
+import express from 'express';
+import rateLimit from 'express-rate-limit';
+import { authenticate } from '../../shared/middleware/authenticate.js';
+import { asyncHandler } from '../../shared/middleware/async-handler.js';
 
 const loginLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,

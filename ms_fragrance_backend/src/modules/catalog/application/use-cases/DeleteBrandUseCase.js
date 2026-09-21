@@ -1,5 +1,5 @@
-const NotFoundError = require('../../../../core/errors/NotFoundError');
-const { logger } = require('../../../../shared/logging/logger');
+import NotFoundError from '../../../../core/errors/NotFoundError.js';
+import { logger } from '../../../../shared/logging/logger.js';
 
 class DeleteBrandUseCase {
     constructor(catalogRepository) {
@@ -24,4 +24,4 @@ class DeleteBrandUseCase {
     }
 }
 
-module.exports = DeleteBrandUseCase;
+export default DeleteBrandUseCase;

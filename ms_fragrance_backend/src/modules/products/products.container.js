@@ -2,13 +2,13 @@ import { createProductRepository } from './product.repository.js';
 import { createProductRouter } from './product.routes.js';
 import { createProductController } from './product.controller.js';
 
-const GetProductsUseCase = require('./application/use-cases/GetProductsUseCase.js');
-const GetProductByIdUseCase = require('./application/use-cases/GetProductByIdUseCase.js');
-const CreateProductUseCase = require('./application/use-cases/CreateProductUseCase.js');
-const UpdateProductUseCase = require('./application/use-cases/UpdateProductUseCase.js');
-const DeleteProductUseCase = require('./application/use-cases/DeleteProductUseCase.js');
-const BulkUpsertProductsUseCase = require('./application/use-cases/BulkUpsertProductsUseCase.js');
-const UploadProductImageUseCase = require('./application/use-cases/UploadProductImageUseCase.js');
+import GetProductsUseCase from './application/use-cases/GetProductsUseCase.js';
+import GetProductByIdUseCase from './application/use-cases/GetProductByIdUseCase.js';
+import CreateProductUseCase from './application/use-cases/CreateProductUseCase.js';
+import UpdateProductUseCase from './application/use-cases/UpdateProductUseCase.js';
+import DeleteProductUseCase from './application/use-cases/DeleteProductUseCase.js';
+import BulkUpsertProductsUseCase from './application/use-cases/BulkUpsertProductsUseCase.js';
+import UploadProductImageUseCase from './application/use-cases/UploadProductImageUseCase.js';
 
 
 /**
@@ -29,9 +29,12 @@ const UploadProductImageUseCase = require('./application/use-cases/UploadProduct
  * ProductRouter
  */
 
+import databaseModule from '../../infrastructure/database/postgres-database.js';
+import storageModule from '../../infrastructure/storage/supabase-storage.adapter.js';
+
 function createProductsContainer(dependencies = {}) {
-    const database = dependencies.database || require('../../infrastructure/database/postgres-database');
-    const storage = dependencies.storage || require('../../infrastructure/storage/supabase-storage.adapter');
+    const database = dependencies.database || databaseModule;
+    const storage = dependencies.storage || storageModule;
 
     // Repository layer
     const productRepository = createProductRepository({

@@ -1,5 +1,5 @@
-const jwt = require('jsonwebtoken');
-const { config } = require('../../config/env');
+import jwt from 'jsonwebtoken';
+import { config } from '../../config/env.js';
 
 function authenticate(req, res, next) {
     const token = req.cookies[config.auth.cookie.name];
@@ -16,4 +16,6 @@ function authenticate(req, res, next) {
     }
 }
 
-module.exports = { authenticate };
+export {
+  authenticate
+};
