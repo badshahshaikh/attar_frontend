@@ -67,7 +67,7 @@ const Shop = () => {
     const [searchParams, setSearchParams] = useSearchParams();
     const searchQuery = searchParams.get('search') || '';
     const collection = searchParams.get('collection') || '';
-    const brand = searchParams.get('brand') || '';
+    const brandsFromUrl = searchParams.getAll('brand');
     const category = searchParams.get('category') || '';
 
     // ── Local search input ──────────────────────────────────────────────────
@@ -135,11 +135,11 @@ const Shop = () => {
         limit: PRODUCTS_PER_PAGE,
         search: searchQuery,
         categories: filters.categories,
+        brands: filters.brands || [],
         sizes: filters.sizes,
         minPrice: debouncedPrice.minPrice,
         maxPrice: debouncedPrice.maxPrice,
         inStockOnly: filters.inStockOnly,
-        brand,
         category,
     };
     useEffect(() => {
@@ -185,7 +185,7 @@ const Shop = () => {
         filters.inStockOnly,
         debouncedPrice.minPrice,
         debouncedPrice.maxPrice,
-        brand,
+        filters.brands,
         category,
         loadProducts,
     ]);
@@ -244,6 +244,28 @@ const Shop = () => {
         });
     }, [searchParams, setFilters]);
 
+    useEffect(() => {
+        const brandsFromUrl = searchParams.getAll('brand');
+
+        setFilters(previous => {
+            const currentBrands = previous.brands || [];
+
+            const areSame =
+                currentBrands.length === brandsFromUrl.length &&
+                currentBrands.every(
+                    (value, index) => value === brandsFromUrl[index]
+                );
+
+            if (areSame) {
+                return previous;
+            }
+
+            return {
+                ...previous,
+                brands: brandsFromUrl,
+            };
+        });
+    }, [searchParams, setFilters]);
 
     // ── Facets ──────────────────────────────────────────────────────────────
 
@@ -313,6 +335,30 @@ const Shop = () => {
         setSearchParams(params);
     };
 
+    const handleBrandFilterChange = (value) => {
+        const currentBrands = filters.brands || [];
+
+        const updatedBrands = currentBrands.includes(value)
+            ? currentBrands.filter(item => item !== value)
+            : [...currentBrands, value];
+
+        setFilters(previous => ({
+            ...previous,
+            brands: updatedBrands,
+        }));
+
+        const params = new URLSearchParams(searchParams);
+
+        params.delete('brand');
+
+        updatedBrands.forEach(item => {
+            params.append('brand', item);
+        });
+
+        params.delete('page');
+        setSearchParams(params);
+    };
+
 
 
     return (
@@ -347,6 +393,7 @@ const Shop = () => {
                         filters={filters}
                         handleFilterChange={handleFilterChange}
                         handleFragranceFilterChange={handleFragranceFilterChange}
+                        handleBrandFilterChange={handleBrandFilterChange}
                         handlePriceChange={handlePriceChange}
                         resetFilters={resetFilters}
                         availableCategories={availableFragranceFamilies}
@@ -357,12 +404,26 @@ const Shop = () => {
                     {/* Product Area */}
                     <div style={{ flex: 1, minWidth: 0 }}>
                         {/* Active URL filters indicator */}
-                        {(searchQuery || collection || brand || category) && (
+                        {(searchQuery || brandsFromUrl.length > 0 || collection || category) && (
                             <div className="shop-filters">
-                                {searchQuery && <span>Search: &ldquo;{searchQuery}&rdquo;</span>}
-                                {collection && <span>Collection: {collection}</span>}
-                                {brand && <span>Brand: {brand}</span>}
-                                {category && <span>Category: {category}</span>}
+                                {searchQuery && (
+                                    <span>Search: &ldquo;{searchQuery}&rdquo;</span>
+                                )}
+
+                                {collection && (
+                                    <span>Collection: {collection}</span>
+                                )}
+
+                                {brandsFromUrl.length > 0 && (
+                                    <span>
+                                        Brand: {brandsFromUrl.join(', ')}
+                                    </span>
+                                )}
+
+                                {category && (
+                                    <span>Category: {category}</span>
+                                )}
+
                                 <button
                                     className="btn btn-outline btn-small"
                                     onClick={() => setSearchParams({})}

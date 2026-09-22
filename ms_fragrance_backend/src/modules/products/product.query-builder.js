@@ -16,14 +16,10 @@ export function buildProductWhere(filters) {
         filters.search
     );
 
-    // Single-value brand filter
-    if (filters.brand) {
-        builder.add('brand = ?', String(filters.brand));
-    }
+    builder.addIn('brand', filters.brands);
 
     // Multi-select filters
     builder.addIn('category', filters.categories);
-    builder.addIn('brand', filters.brands);
     builder.addIn('fragrance_type', filters.fragranceFamily);
 
     // Boolean filters

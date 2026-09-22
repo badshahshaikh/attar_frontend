@@ -32,6 +32,7 @@ export async function fetchProducts({
     limit,
     search,
     categories,
+    brands,
     minPrice,
     maxPrice,
     sizes,
@@ -62,6 +63,15 @@ export async function fetchProducts({
                         'fragranceFamily',
                         category
                     );
+                }
+            });
+        }
+
+        // Brands
+        if (Array.isArray(brands)) {
+            brands.forEach((brand) => {
+                if (brand) {
+                    params.append('brand', brand);
                 }
             });
         }
@@ -125,6 +135,7 @@ export async function fetchProducts({
             limit ||
             search ||
             categories?.length ||
+            brands?.length ||
             sizes?.length ||
             minPrice !== undefined ||
             maxPrice !== undefined ||
@@ -153,10 +164,10 @@ export async function fetchProductFacets() {
         fetch(`${API_URL}/api/products/fragrance-families`),
     ]);
     if (!brandsResponse.ok || !categoriesResponse.ok || !familiesResponse.ok) throw new Error('Unable to load product navigation');
-    return { 
-        brands: await brandsResponse.json(), 
+    return {
+        brands: await brandsResponse.json(),
         categories: await categoriesResponse.json(),
-        fragranceFamilies: await familiesResponse.json() 
+        fragranceFamilies: await familiesResponse.json()
     };
 }
 

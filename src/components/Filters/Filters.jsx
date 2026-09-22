@@ -33,6 +33,7 @@ const Filters = ({
     filters,
     handleFilterChange,
     handleFragranceFilterChange,
+    handleBrandFilterChange,
     handlePriceChange,
     resetFilters,
     availableCategories,
@@ -90,11 +91,11 @@ const Filters = ({
 
                     {/* Brand */}
                     {availableBrands && availableBrands.length > 0 && (
-                        <FilterSection title="Brand" defaultOpen={false}>
+                        <FilterSection title="Brand" defaultOpen>
                             <CheckboxFilter
                                 options={availableBrands}
-                                selected={filters.brands}
-                                onChange={value => handleFilterChange('brands', value)}
+                                selected={filters.brands || []}
+                                onChange={handleBrandFilterChange}
                             />
                         </FilterSection>
                     )}

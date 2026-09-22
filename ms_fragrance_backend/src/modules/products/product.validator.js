@@ -184,7 +184,7 @@ export function parseListQuery(query) {
         limit,
 
         search: query.search,
-        brand: query.brand,
+        brands: toArray(query.brand),
 
         fragranceFamily: toArray(query.fragranceFamily),
         category: toArray(query.category),

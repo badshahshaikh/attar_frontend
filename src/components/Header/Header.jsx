@@ -40,7 +40,7 @@ const Header = () => {
 
     const brandOptions = brands.map((brand) => ({
         name: brand.name,
-        value: brand.id,
+        value: brand.name,
         exclusive: false,
     }));
     const fragranceOptions = fragranceFamilies.map(family => ({ name: family, value: family }));
@@ -140,12 +140,11 @@ const Header = () => {
         setIsBrandsDropdownOpen(false);
     };
 
-    const handleBrandClick = (brandValue, isExclusive = false) => {
+    const handleBrandClick = (brandValue) => {
         const params = new URLSearchParams();
+
         params.set('brand', brandValue);
-        if (isExclusive) {
-            params.set('collection', 'exclusive');
-        }
+
         navigate(`/shop?${params.toString()}`);
         setIsBrandsDropdownOpen(false);
     };
@@ -218,7 +217,7 @@ const Header = () => {
                                         <button
                                             key={brand.value}
                                             className="brand-dropdown-item"
-                                            onClick={() => handleBrandClick(brand.value, brand.exclusive)}
+                                            onClick={() => handleBrandClick(brand.value)}
                                         >
                                             {brand.name}
                                         </button>

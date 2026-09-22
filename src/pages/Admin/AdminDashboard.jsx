@@ -7,7 +7,18 @@ export default function AdminDashboard() {
     const [error, setError] = useState('');
 
     useEffect(() => {
-        fetchProducts().then(data => setTotal(data.pagination?.totalProducts ?? data.products?.length ?? data.length)).catch(() => setError('Unable to load product totals.'));
+        fetchProducts({ page: 1, limit: 10 })
+            .then(data => {
+
+                setTotal(
+                    data.pagination?.totalProducts ??
+                    data.products?.length ??
+                    0
+                );
+            })
+            .catch(() => {
+                setError('Unable to load product totals.');
+            });
     }, []);
 
     return (
@@ -18,15 +29,32 @@ export default function AdminDashboard() {
                     <h1>Dashboard</h1>
                     <p>Manage the catalog that powers your storefront.</p>
                 </div>
-                <Link className="btn btn-primary" to="/admin/products">Manage products</Link>
+
+                <Link className="btn btn-primary" to="/admin/products">
+                    Manage products
+                </Link>
             </div>
+
             <div className="admin-summary">
-                <div><span>Total products</span><strong>{error ? '-' : total ?? '...'}</strong></div>
-                <div><span>Catalog status</span><strong>Live</strong></div>
+                <div>
+                    <span>Total products</span>
+                    <strong>{error ? '-' : total ?? '...'}</strong>
+                </div>
+
+                <div>
+                    <span>Catalog status</span>
+                    <strong>Live</strong>
+                </div>
             </div>
+
             <div className="admin-quick-links">
-                <Link to="/admin/products">View product catalog <span>→</span></Link>
-                <Link to="/admin/products/new">Add a new product <span>→</span></Link>
+                <Link to="/admin/products">
+                    View product catalog <span>→</span>
+                </Link>
+
+                <Link to="/admin/products/new">
+                    Add a new product <span>→</span>
+                </Link>
             </div>
         </section>
     );

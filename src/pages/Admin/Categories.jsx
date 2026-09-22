@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { fetchJson } from '../../utils/api';
 import './Admin.css';
+import './Categories.css';
 
 export default function Categories() {
     const [categories, setCategories] = useState([]);
@@ -14,9 +16,11 @@ export default function Categories() {
         setLoading(true);
         setError('');
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/catalog/categories`);
-            if (!response.ok) throw new Error('Failed to load categories');
-            const data = await response.json();
+            // const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/catalog/categories`);
+            // if (!response.ok) throw new Error('Failed to load categories');
+            // const data = await response.json();
+            // setCategories(data);
+            const data = await fetchJson('/api/catalog/categories');
             setCategories(data);
         } catch (err) {
             setError(err.message);
@@ -34,11 +38,11 @@ export default function Categories() {
         if (!newCategoryName.trim()) return;
 
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/catalog/categories`, {
+            await fetchJson('/api/catalog/categories', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify({ name: newCategoryName.trim() }),
+                body: JSON.stringify({
+                    name: newCategoryName.trim(),
+                }),
             });
             if (!response.ok) {
                 const error = await response.json();
@@ -57,12 +61,21 @@ export default function Categories() {
         if (!editingCategory || !editingCategory.name.trim()) return;
 
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/catalog/categories/${editingCategory.id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify({ name: editingCategory.name.trim() }),
-            });
+            // const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/catalog/categories/${editingCategory.id}`, {
+            //     method: 'PUT',
+            //     headers: { 'Content-Type': 'application/json' },
+            //     credentials: 'include',
+            //     body: JSON.stringify({ name: editingCategory.name.trim() }),
+            // });
+            await fetchJson(
+                `/api/catalog/categories/${editingCategory.id}`,
+                {
+                    method: 'PUT',
+                    body: JSON.stringify({
+                        name: editingCategory.name.trim(),
+                    }),
+                }
+            );
             if (!response.ok) {
                 const error = await response.json();
                 throw new Error(error.error || 'Failed to update category');
@@ -78,9 +91,12 @@ export default function Categories() {
         if (!window.confirm('Delete this category? This will not affect existing products.')) return;
 
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/catalog/categories/${id}`, {
+            // const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/catalog/categories/${id}`, {
+            //     method: 'DELETE',
+            //     credentials: 'include',
+            // });
+            await fetchJson(`/api/catalog/categories/${id}`, {
                 method: 'DELETE',
-                credentials: 'include',
             });
             if (!response.ok) {
                 const error = await response.json();
@@ -95,16 +111,25 @@ export default function Categories() {
     if (loading) return <div className="admin-state">Loading categories...</div>;
 
     return (
-        <section className="admin-page">
+
+        <section className="admin-page categories-page">
             <div className="admin-page-heading">
                 <div>
                     <p className="admin-eyebrow">Catalog</p>
                     <h1>Categories</h1>
                     <p>Manage product categories</p>
                 </div>
-                <div style={{ display: 'flex', gap: '10px' }}>
-                    <Link className="btn btn-outline" to="/admin">← Back</Link>
-                    <button className="btn btn-primary" onClick={() => setShowAddForm(!showAddForm)}>
+
+                {/* Header action buttons */}
+                <div className="categories-header-actions">
+                    <Link className="btn btn-outline" to="/admin">
+                        ← Back
+                    </Link>
+
+                    <button
+                        className="btn btn-primary"
+                        onClick={() => setShowAddForm(!showAddForm)}
+                    >
                         {showAddForm ? 'Cancel' : '+ Add Category'}
                     </button>
                 </div>
@@ -124,41 +149,103 @@ export default function Categories() {
                             autoFocus
                         />
                     </div>
+
                     <div className="admin-form-actions">
-                        <button type="button" className="btn btn-outline" onClick={() => setShowAddForm(false)}>Cancel</button>
-                        <button type="submit" className="btn btn-primary">Add Category</button>
+                        <button
+                            type="button"
+                            className="btn btn-outline"
+                            onClick={() => setShowAddForm(false)}
+                        >
+                            Cancel
+                        </button>
+
+                        <button type="submit" className="btn btn-primary">
+                            Add Category
+                        </button>
                     </div>
                 </form>
             )}
 
-            <div className="admin-list">
+            {/* Updated Categories Table */}
+            <div className="admin-table-container">
                 {categories.length === 0 ? (
                     <div className="admin-state">No categories found</div>
                 ) : (
-                    categories.map((category) => (
-                        <div key={category.id} className="admin-list-item">
-                            {editingCategory?.id === category.id ? (
-                                <form onSubmit={handleEdit} style={{ display: 'flex', gap: '10px', flex: 1 }}>
-                                    <input
-                                        type="text"
-                                        value={editingCategory.name}
-                                        onChange={(e) => setEditingCategory({ ...editingCategory, name: e.target.value })}
-                                        autoFocus
-                                    />
-                                    <button type="submit" className="btn btn-primary btn-small">Save</button>
-                                    <button type="button" className="btn btn-outline btn-small" onClick={() => setEditingCategory(null)}>Cancel</button>
-                                </form>
-                            ) : (
-                                <>
-                                    <span>{category.name}</span>
-                                    <div style={{ display: 'flex', gap: '5px' }}>
-                                        <button className="btn btn-outline btn-small" onClick={() => setEditingCategory(category)}>Edit</button>
-                                        <button className="btn btn-danger btn-small" onClick={() => handleDelete(category.id)}>Delete</button>
-                                    </div>
-                                </>
-                            )}
-                        </div>
-                    ))
+                    <table className="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Category Name</th>
+                                <th className="text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {categories.map((category) => (
+                                <tr key={category.id} className="category-row">
+                                    {editingCategory?.id === category.id ? (
+                                        /* Edit form inside table row */
+                                        <td colSpan="2">
+                                            <form
+                                                onSubmit={handleEdit}
+                                                className="category-edit-form"
+                                            >
+                                                <input
+                                                    type="text"
+                                                    value={editingCategory.name}
+                                                    onChange={(e) =>
+                                                        setEditingCategory({
+                                                            ...editingCategory,
+                                                            name: e.target.value,
+                                                        })
+                                                    }
+                                                    autoFocus
+                                                />
+
+                                                <div className="category-actions">
+                                                    <button
+                                                        type="submit"
+                                                        className="btn btn-primary btn-small"
+                                                    >
+                                                        Save
+                                                    </button>
+
+                                                    <button
+                                                        type="button"
+                                                        className="btn btn-outline btn-small"
+                                                        onClick={() => setEditingCategory(null)}
+                                                    >
+                                                        Cancel
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </td>
+                                    ) : (
+                                        <>
+                                            <td className="category-name-cell">
+                                                {category.name}
+                                            </td>
+                                            <td className="category-actions-cell text-right">
+                                                <div className="category-actions">
+                                                    <button
+                                                        className="btn btn-outline btn-small"
+                                                        onClick={() => setEditingCategory(category)}
+                                                    >
+                                                        Edit
+                                                    </button>
+
+                                                    <button
+                                                        className="btn btn-danger btn-small"
+                                                        onClick={() => handleDelete(category.id)}
+                                                    >
+                                                        Delete
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </>
+                                    )}
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
                 )}
             </div>
         </section>
