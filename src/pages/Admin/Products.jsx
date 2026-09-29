@@ -12,8 +12,26 @@ export default function Products() {
     const [error, setError] = useState('');
 
     const load = async () => {
-        setLoading(true); setError('');
-        try { setData(await fetchProducts({ page, limit: 10, search })); } catch (loadError) { setError(loadError.status === 401 ? 'Your session has expired.' : 'Unable to load products.'); } finally { setLoading(false); }
+        setLoading(true);
+        setError('');
+
+        try {
+            const result = await fetchProducts({
+                page,
+                limit: 10,
+                search
+            });
+
+            setData(result);
+        } catch (loadError) {
+            setError(
+                loadError.status === 401
+                    ? 'Your session has expired.'
+                    : 'Unable to load products.'
+            );
+        } finally {
+            setLoading(false);
+        }
     };
     useEffect(() => { load(); }, [page, search]);
 
@@ -32,16 +50,33 @@ export default function Products() {
                     <h1>Products</h1>
                     <p>{pagination.totalProducts ?? data.products.length} products in your catalog.</p>
                 </div>
-                <div style={{ display: 'flex', gap: '10px' }}>
-                    <Link className="btn btn-outline" to="/admin/products/bulk">Bulk Manage</Link>
-                    <Link className="btn btn-primary" to="/admin/products/new">Create product</Link>
+                <div className="admin-page-actions">
+                    <Link className="btn btn-outline" to="/admin/products/bulk">
+                        Bulk Manage
+                    </Link>
+
+                    <Link className="btn btn-primary" to="/admin/products/new">
+                        Create product
+                    </Link>
                 </div>
             </div>
             <div className="admin-toolbar">
-                <label htmlFor="product-search">Search products</label>
-                <input id="product-search" value={search} onChange={event => { setPage(1); setSearch(event.target.value); }} placeholder="Name, brand or fragrance family" />
+                <div className="admin-search">
+                    <label htmlFor="product-search">Search products</label>
+                    <input
+                        id="product-search"
+                        type="search"
+                        value={search}
+                        onChange={event => {
+                            setPage(1);
+                            setSearch(event.target.value);
+                        }}
+                        placeholder="Search by name, brand or fragrance family..."
+                    />
+                </div>
             </div>
             {error && <div className="admin-alert">{error}</div>}
+
             {loading ? <div className="admin-state">Loading products...</div> : data.products.length ? <ProductTable products={data.products} deletingId={deletingId} onDelete={handleDelete} /> : <div className="admin-state"><h2>No products found</h2><p>Try another search or add your first product.</p></div>}
             <div className="admin-pagination">
                 <button className="btn btn-outline btn-small" disabled={!pagination.hasPreviousPage || loading} onClick={() => setPage(value => value - 1)}>Previous</button>

@@ -12,6 +12,7 @@ export default function ProductFormFields({ values, onChange }) {
     const [brands, setBrands] = useState([]);
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
+    
 
     useEffect(() => {
         const loadCatalog = async () => {
@@ -91,8 +92,12 @@ export default function ProductFormFields({ values, onChange }) {
         );
     };
 
+
+
     return (
         <div className="admin-form-grid">
+
+
             {textFields.map(([name, label, required]) => {
                 const isDescription =
                     name === 'description' ||

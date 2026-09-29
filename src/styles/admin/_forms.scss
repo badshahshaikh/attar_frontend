@@ -1,0 +1,68 @@
+.admin-form {
+    background: var(--color-white);
+    border: 1px solid var(--color-border);
+    padding: clamp(20px, 4vw, 44px);
+}
+
+.admin-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px 18px;
+}
+
+.admin-field {
+    display: grid;
+    gap: 7px;
+    color: var(--color-text-secondary);
+    font-size: .8rem;
+
+    input,
+    select,
+    textarea {
+        border: 1px solid var(--color-border);
+        background: var(--color-bg-primary);
+        padding: 11px 12px;
+        color: var(--color-text-primary);
+        font: inherit;
+        border-radius: var(--radius-sm);
+
+        &:focus {
+            outline: 2px solid rgba(142, 122, 99, .25);
+            border-color: var(--color-accent);
+        }
+    }
+
+    textarea {
+        resize: vertical;
+    }
+}
+
+.admin-field-wide {
+    grid-column: 1 / -1;
+}
+
+.admin-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 30px;
+    padding-top: 22px;
+    border-top: 1px solid var(--color-border);
+}
+
+.admin-field-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 12px;
+}
+
+.admin-empty-field {
+    padding: 14px;
+    border: 1px dashed var(--color-border);
+    border-radius: 6px;
+    color: var(--color-text-secondary);
+    font-size: .85rem;
+    text-align: center;
+}

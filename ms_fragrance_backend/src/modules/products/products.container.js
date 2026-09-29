@@ -9,6 +9,12 @@ import UpdateProductUseCase from './application/use-cases/UpdateProductUseCase.j
 import DeleteProductUseCase from './application/use-cases/DeleteProductUseCase.js';
 import BulkUpsertProductsUseCase from './application/use-cases/BulkUpsertProductsUseCase.js';
 import UploadProductImageUseCase from './application/use-cases/UploadProductImageUseCase.js';
+import AiFillProductUseCase from './application/use-cases/aiFillProductUseCase.js';
+import ProductAiService from '../../shared/ai/product-ai.service.js';
+import openai from '../../shared/ai/openai.client.js';
+
+
+
 
 
 /**
@@ -53,6 +59,15 @@ function createProductsContainer(dependencies = {}) {
     // Get catalog use cases from dependencies (injected from main container)
     const getBrandsUseCase = dependencies.getBrandsUseCase;
     const getCategoriesUseCase = dependencies.getCategoriesUseCase;
+    const productAiService =
+        dependencies.productAiService ||
+        new ProductAiService({
+            client: openai
+        });
+
+    const aiFillProductUseCase =
+        new AiFillProductUseCase(productAiService);
+
 
     // Presentation layer
     const productController = createProductController({
@@ -64,7 +79,8 @@ function createProductsContainer(dependencies = {}) {
         bulkUpsertProductsUseCase,
         uploadProductImageUseCase,
         getBrandsUseCase,
-        getCategoriesUseCase
+        getCategoriesUseCase,
+        aiFillProductUseCase
     });
 
     const productRouter = createProductRouter(productController);
@@ -78,7 +94,8 @@ function createProductsContainer(dependencies = {}) {
         updateProductUseCase,
         deleteProductUseCase,
         bulkUpsertProductsUseCase,
-        uploadProductImageUseCase
+        uploadProductImageUseCase,
+        aiFillProductUseCase
     });
 }
 

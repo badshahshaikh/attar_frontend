@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
-import './Admin.css';
+import '../../components/admin/admin.css';
 
 const Admin = () => {
     const { user, logout } = useAuth();

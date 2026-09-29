@@ -1,0 +1,14 @@
+.admin-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 20px;
+
+    span {
+        min-width: 100px;
+        text-align: center;
+        font-size: .8rem;
+        color: var(--color-text-secondary);
+    }
+}

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useFooterSettings } from '../../features/footer-settings/hooks/useFooterSettings';
-import './Admin.css';
+import '../../components/admin/admin.css';
 
 export default function FooterSettings() {
     const {

@@ -131,34 +131,92 @@ export default function Brands() {
                 </form>
             )}
 
-            <div className="admin-list">
+            <div className="admin-table-container">
                 {brands.length === 0 ? (
-                    <div className="admin-state">No brands found</div>
+                    <div className="admin-state">
+                        No brands found
+                    </div>
                 ) : (
-                    brands.map((brand) => (
-                        <div key={brand.id} className="admin-list-item">
-                            {editingBrand?.id === brand.id ? (
-                                <form onSubmit={handleEdit} style={{ display: 'flex', gap: '10px', flex: 1 }}>
-                                    <input
-                                        type="text"
-                                        value={editingBrand.name}
-                                        onChange={(e) => setEditingBrand({ ...editingBrand, name: e.target.value })}
-                                        autoFocus
-                                    />
-                                    <button type="submit" className="btn btn-primary btn-small">Save</button>
-                                    <button type="button" className="btn btn-outline btn-small" onClick={() => setEditingBrand(null)}>Cancel</button>
-                                </form>
-                            ) : (
-                                <>
-                                    <span>{brand.name}</span>
-                                    <div style={{ display: 'flex', gap: '5px' }}>
-                                        <button className="btn btn-outline btn-small" onClick={() => setEditingBrand(brand)}>Edit</button>
-                                        <button className="btn btn-danger btn-small" onClick={() => handleDelete(brand.id)}>Delete</button>
-                                    </div>
-                                </>
-                            )}
-                        </div>
-                    ))
+                    <table className="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Brand Name</th>
+                                <th className="text-right">Actions</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {brands.map((brand) => (
+                                <tr key={brand.id}>
+                                    {editingBrand?.id === brand.id ? (
+                                        <td colSpan="2">
+                                            <form
+                                                onSubmit={handleEdit}
+                                                className="category-edit-form"
+                                            >
+                                                <input
+                                                    type="text"
+                                                    value={editingBrand.name}
+                                                    onChange={(e) =>
+                                                        setEditingBrand({
+                                                            ...editingBrand,
+                                                            name: e.target.value,
+                                                        })
+                                                    }
+                                                    autoFocus
+                                                />
+
+                                                <div className="category-actions">
+                                                    <button
+                                                        type="submit"
+                                                        className="btn btn-primary btn-small"
+                                                    >
+                                                        Save
+                                                    </button>
+
+                                                    <button
+                                                        type="button"
+                                                        className="btn btn-outline btn-small"
+                                                        onClick={() => setEditingBrand(null)}
+                                                    >
+                                                        Cancel
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </td>
+                                    ) : (
+                                        <>
+                                            <td className="category-name-cell">
+                                                {brand.name}
+                                            </td>
+
+                                            <td className="category-actions-cell text-right">
+                                                <div className="category-actions">
+                                                    <button
+                                                        className="btn btn-outline btn-small"
+                                                        onClick={() =>
+                                                            setEditingBrand(brand)
+                                                        }
+                                                    >
+                                                        Edit
+                                                    </button>
+
+                                                    <button
+                                                        className="btn btn-danger btn-small"
+                                                        onClick={() =>
+                                                            handleDelete(brand.id)
+                                                        }
+                                                    >
+                                                        Delete
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </>
+                                    )}
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
                 )}
             </div>
         </section>

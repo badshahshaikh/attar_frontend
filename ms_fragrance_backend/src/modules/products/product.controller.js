@@ -12,7 +12,8 @@ function createProductController({
     bulkUpsertProductsUseCase,
     uploadProductImageUseCase,
     getBrandsUseCase,
-    getCategoriesUseCase
+    getCategoriesUseCase,
+    aiFillProductUseCase
 }) {
     return {
         async list(req, res) {
@@ -150,9 +151,41 @@ function createProductController({
                 return res.status(500).json({ error: 'Failed to save products. No database changes were made.' });
             }
         },
+        async aiFill(req, res) {
+            try {
+                const { name } = req.body;
+
+                if (!name || !name.trim()) {
+                    return res.status(400).json({
+                        error: 'Product name is required'
+                    });
+                }
+
+                const product = await aiFillProductUseCase.execute({
+                    name: name.trim()
+                });
+
+                return res.json({
+                    product
+                });
+            } catch (error) {
+                logger.error('[PRODUCT_AI_FILL_ERROR]', {
+                    errorMessage: error.message
+                });
+
+                const statusCode = error.statusCode || 500;
+                const message = error.isOperational
+                    ? error.message
+                    : 'Failed to generate product information';
+
+                return res.status(statusCode).json({
+                    error: message
+                });
+            }
+        },
     };
 }
 
 export {
-  createProductController
+    createProductController
 };

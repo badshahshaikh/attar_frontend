@@ -1,0 +1,55 @@
+.btn-small {
+    padding: 8px 12px;
+    font-size: .72rem;
+}
+
+.btn-danger {
+    color: var(--color-sale);
+    border: 1px solid #e4c9c4;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+
+    &:hover {
+        border-color: var(--color-sale);
+    }
+}
+
+.btn:disabled {
+    opacity: .5;
+    cursor: not-allowed;
+}
+
+.admin-add-button {
+    border: 1px solid var(--color-border);
+    background: var(--color-bg-primary);
+    color: var(--color-text-primary);
+    padding: 7px 12px;
+    border-radius: 6px;
+    font-size: .8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+
+    &:hover {
+        background: var(--color-text-primary);
+        color: var(--color-bg-primary);
+    }
+}
+
+.admin-remove-button {
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--color-border);
+    background: transparent;
+    color: var(--color-text-secondary);
+    border-radius: 6px;
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+
+    &:hover {
+        color: #b42318;
+        border-color: #b42318;
+    }
+}

@@ -22,6 +22,7 @@ function createContainer(dependencies = {}) {
         storage: dependencies.storage || storage,
         getBrandsUseCase: catalogContainer.getBrandsUseCase,
         getCategoriesUseCase: catalogContainer.getCategoriesUseCase,
+        productAiService: dependencies.productAiService
     });
 
     const userRepository = createUserRepository({ query });

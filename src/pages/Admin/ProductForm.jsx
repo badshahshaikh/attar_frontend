@@ -1,11 +1,19 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+
 import { Link, useParams } from 'react-router-dom';
 import ProductFormFields from '../../components/admin/ProductFormFields';
 import ImageUpload from '../../components/admin/ImageUpload';
 import { useProductForm } from '../../features/products/hooks/useProductForm';
-import './Admin.css';
+import '../../components/admin/admin.css';
+import { generateProductWithAI } from '../../services/productService';
+
+// D:\attar_frontend\src\components\admin\admin.css
 
 export default function ProductForm() {
+
+    const [aiProductName, setAiProductName] = useState('');
+    const [aiLoading, setAiLoading] = useState(false);
+
     const { id } = useParams();
     const {
         values,
@@ -18,8 +26,51 @@ export default function ProductForm() {
         setValues
     } = useProductForm();
 
+    const handleAIFill = async () => {
+        if (!aiProductName.trim()) {
+            return;
+        }
+
+        try {
+            setAiLoading(true);
+
+            const product = await generateProductWithAI(
+                aiProductName.trim()
+            );
+
+            setValues(current => ({
+                ...current,
+                ...product
+            }));
+        } catch (error) {
+            console.error('AI fill error:', error);
+        } finally {
+            setAiLoading(false);
+        }
+    };
+
+
     return (
         <section className="admin-page">
+
+            <div className="admin-ai-product">
+                <input
+                    type="text"
+                    placeholder="Enter product name"
+                    value={aiProductName}
+                    onChange={(e) => setAiProductName(e.target.value)}
+                />
+
+                <button
+                    type="button"
+                    className="btn btn-outline"
+                    onClick={handleAIFill}
+                    disabled={aiLoading}
+                >
+                    {aiLoading ? 'Finding product...' : '✨ Fill with AI'}
+                </button>
+            </div>
+
             <div className="admin-page-heading">
                 <div>
                     <p className="admin-eyebrow">Catalog</p>

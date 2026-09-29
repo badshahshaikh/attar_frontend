@@ -238,3 +238,35 @@ export async function bulkUpsertProducts({ create = [], update = [] }) {
     });
     return parseResponse(response);
 }
+
+/**
+ * Generate product information using AI
+ */
+export async function generateProductWithAI(name) {
+    try {
+        const response = await fetch(
+            `${API_URL}/api/products/ai-fill`,
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include',
+                body: JSON.stringify({
+                    name
+                })
+            }
+        );
+
+        const data = await parseResponse(response);
+
+        return data.product;
+    } catch (error) {
+        console.error(
+            'Error generating product with AI:',
+            error
+        );
+
+        throw error;
+    }
+}

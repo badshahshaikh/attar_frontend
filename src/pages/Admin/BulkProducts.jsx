@@ -2,7 +2,7 @@ import React, { useCallback, useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { fetchProducts, bulkUpsertProducts } from '../../services/productService';
 import './BulkProducts.css';
-
+import '../../components/admin/admin.css';
 // ─── constants ────────────────────────────────────────────────────────────────
 const SIZE_KEYS = ['3ml', '6ml', '12ml', '50ml', '100ml'];
 const FRAGRANCE_FAMILIES = ['Oud', 'Musk', 'Amber', 'Shamama', 'Floral', 'French', 'Khas', 'Dehn Al Oud'];
