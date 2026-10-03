@@ -5,7 +5,7 @@ import ProductFormFields from '../../components/admin/ProductFormFields';
 import ImageUpload from '../../components/admin/ImageUpload';
 import { useProductForm } from '../../features/products/hooks/useProductForm';
 import '../../components/admin/admin.css';
-import { generateProductWithAI } from '../../services/productService';
+import { generateProductWithAI, generateProductImageWithAI } from '../../services/productService';
 
 // D:\attar_frontend\src\components\admin\admin.css
 
@@ -13,6 +13,8 @@ export default function ProductForm() {
 
     const [aiProductName, setAiProductName] = useState('');
     const [aiLoading, setAiLoading] = useState(false);
+    const [aiImage, setAiImage] = useState(null);
+    const [aiImageLoading, setAiImageLoading] = useState(false);
 
     const { id } = useParams();
     const {
@@ -49,27 +51,36 @@ export default function ProductForm() {
         }
     };
 
+    const handleAIImage = async () => {
+        try {
+            setAiImageLoading(true);
+
+
+            const image = await generateProductImageWithAI({
+                name: values.name,
+                description: values.description,
+                fragranceFamily: values.fragranceFamily,
+                topNotes: values.topNotes,
+                heartNotes: values.heartNotes,
+                baseNotes: values.baseNotes
+            });
+
+            setAiImage(image);
+
+            // handle image preview here
+        } catch (error) {
+            console.error('AI image generation error:', error);
+        } finally {
+            setAiImageLoading(false);
+        }
+
+    };
+
 
     return (
         <section className="admin-page">
 
-            <div className="admin-ai-product">
-                <input
-                    type="text"
-                    placeholder="Enter product name"
-                    value={aiProductName}
-                    onChange={(e) => setAiProductName(e.target.value)}
-                />
 
-                <button
-                    type="button"
-                    className="btn btn-outline"
-                    onClick={handleAIFill}
-                    disabled={aiLoading}
-                >
-                    {aiLoading ? 'Finding product...' : '✨ Fill with AI'}
-                </button>
-            </div>
 
             <div className="admin-page-heading">
                 <div>
@@ -79,11 +90,62 @@ export default function ProductForm() {
                 </div>
                 <Link className="btn btn-outline" to="/admin/products">Cancel</Link>
             </div>
+
+            <div className="admin-ai-product">
+                <div className="admin-ai-product-content">
+                    <div className="admin-ai-product-label">
+                        <span className="admin-ai-icon">✦</span>
+                        <div>
+                            <strong>AI Product Assistant</strong>
+                            <span>Enter a product name to automatically fill known details.</span>
+                        </div>
+                    </div>
+
+                    <div className="admin-ai-product-input">
+                        <input
+                            type="text"
+                            placeholder="e.g. Aseel Attar"
+                            value={aiProductName}
+                            onChange={(e) => setAiProductName(e.target.value)}
+                        />
+
+                        <button
+                            type="button"
+                            className="btn btn-primary"
+                            onClick={handleAIFill}
+                            disabled={aiLoading || !aiProductName.trim()}
+                        >
+                            {aiLoading ? 'Finding product...' : '✦ Fill with AI'}
+                        </button>
+                    </div>
+                </div>
+            </div>
             {loading ? <div className="admin-state">Loading product...</div> : (
                 <form className="admin-form" onSubmit={handleSubmit}>
                     <ProductFormFields values={values} onChange={setValues} />
                     <div className="admin-field admin-field-wide">
                         <span>Product image</span>
+                        <div className="admin-field admin-field-wide">
+                            <span>AI Product Image</span>
+
+                            <button
+                                type="button"
+                                className="btn btn-outline"
+                                onClick={handleAIImage}
+                                disabled={aiImageLoading || !values.name}
+                            >
+                                {aiImageLoading ? 'Generating image...' : '✦ Generate with AI'}
+                            </button>
+
+                            {aiImage && (
+                                <div className="admin-ai-image-preview">
+                                    <img
+                                        src={`data:image/png;base64,${aiImage}`}
+                                        alt="AI generated product preview"
+                                    />
+                                </div>
+                            )}
+                        </div>
                         <ImageUpload imageUrl={values.imageUrl} productId={id} onUploaded={imageUrl => setValues(current => ({ ...current, imageUrl }))} />
                     </div>
                     {error && <div className="admin-alert">{error}</div>}

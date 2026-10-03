@@ -157,6 +157,29 @@ export async function fetchProducts({
     }
 }
 
+export async function generateProductImageWithAI(productData) {
+    try {
+        const response = await fetch(
+            `${API_URL}/api/products/ai-image`,
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include',
+                body: JSON.stringify(productData)
+            }
+        );
+
+        const data = await parseResponse(response);
+
+        return data.image;
+    } catch (error) {
+        console.error('Error generating product image with AI:', error);
+        throw error;
+    }
+}
+
 export async function fetchProductFacets() {
     const [brandsResponse, categoriesResponse, familiesResponse] = await Promise.all([
         fetch(`${API_URL}/api/catalog/brands`),

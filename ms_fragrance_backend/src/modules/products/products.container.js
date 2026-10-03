@@ -10,6 +10,7 @@ import DeleteProductUseCase from './application/use-cases/DeleteProductUseCase.j
 import BulkUpsertProductsUseCase from './application/use-cases/BulkUpsertProductsUseCase.js';
 import UploadProductImageUseCase from './application/use-cases/UploadProductImageUseCase.js';
 import AiFillProductUseCase from './application/use-cases/aiFillProductUseCase.js';
+import AiGenerateProductImageUseCase from './application/use-cases/AiGenerateProductImageUseCase.js';
 import ProductAiService from '../../shared/ai/product-ai.service.js';
 import openai from '../../shared/ai/openai.client.js';
 
@@ -68,7 +69,8 @@ function createProductsContainer(dependencies = {}) {
     const aiFillProductUseCase =
         new AiFillProductUseCase(productAiService);
 
-
+    const aiGenerateProductImageUseCase =
+        new AiGenerateProductImageUseCase(productAiService);
     // Presentation layer
     const productController = createProductController({
         getProductsUseCase,
@@ -80,10 +82,13 @@ function createProductsContainer(dependencies = {}) {
         uploadProductImageUseCase,
         getBrandsUseCase,
         getCategoriesUseCase,
-        aiFillProductUseCase
+        aiFillProductUseCase,
+        aiGenerateProductImageUseCase
     });
 
     const productRouter = createProductRouter(productController);
+
+
 
     return Object.freeze({
         productRouter,
@@ -95,7 +100,8 @@ function createProductsContainer(dependencies = {}) {
         deleteProductUseCase,
         bulkUpsertProductsUseCase,
         uploadProductImageUseCase,
-        aiFillProductUseCase
+        aiFillProductUseCase,
+        aiGenerateProductImageUseCase
     });
 }
 

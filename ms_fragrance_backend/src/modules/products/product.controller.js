@@ -13,7 +13,8 @@ function createProductController({
     uploadProductImageUseCase,
     getBrandsUseCase,
     getCategoriesUseCase,
-    aiFillProductUseCase
+    aiFillProductUseCase,
+    aiGenerateProductImageUseCase
 }) {
     return {
         async list(req, res) {
@@ -180,6 +181,23 @@ function createProductController({
 
                 return res.status(statusCode).json({
                     error: message
+                });
+            }
+        },
+        async generateProductImage(req, res) {
+            try {
+                const image = await aiGenerateProductImageUseCase.execute(
+                    req.body
+                );
+
+                res.json({ image });
+            } catch (error) {
+                logger.error('[AI_PRODUCT_IMAGE_ERROR]', {
+                    errorMessage: error.message
+                });
+
+                res.status(500).json({
+                    error: 'Failed to generate product image'
                 });
             }
         },

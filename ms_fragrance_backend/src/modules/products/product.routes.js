@@ -13,6 +13,11 @@ function createProductRouter(controller) {
     authenticate,
     asyncHandler(controller.aiFill)
   );
+  router.post(
+    '/ai-image',
+    authenticate,
+    asyncHandler(controller.generateProductImage)
+  );
   router.post('/upload-image', authenticate, upload.single('image'), asyncHandler(controller.uploadImage));
   router.post('/bulk-upsert', authenticate, asyncHandler(controller.bulkUpsert));
   router.get('/:id', asyncHandler(controller.getById));
