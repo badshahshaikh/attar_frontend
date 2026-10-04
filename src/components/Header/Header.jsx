@@ -96,10 +96,14 @@ const Header = () => {
 
     useEffect(() => {
         const handleClickOutside = (e) => {
-            if (desktopSearchRef.current && !desktopSearchRef.current.contains(e.target)) {
-                setIsSearchOpen(false);
-            }
-            if (mobileSearchRef.current && !mobileSearchRef.current.contains(e.target)) {
+            const insideDesktopSearch = desktopSearchRef.current && desktopSearchRef.current.contains(e.target);
+            const insideMobileSearch = mobileSearchRef.current && mobileSearchRef.current.contains(e.target);
+
+            // Only close the search overlay when the click is outside BOTH the
+            // desktop and mobile search containers. Closing it on a mousedown that
+            // lands on a search result would unmount the result <Link> before the
+            // click event fires, so selecting a result would never navigate.
+            if (!insideDesktopSearch && !insideMobileSearch) {
                 setIsSearchOpen(false);
             }
             if (brandsDropdownRef.current && !brandsDropdownRef.current.contains(e.target)) {
