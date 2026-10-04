@@ -311,7 +311,7 @@ const Header = () => {
                                                         }}
                                                     >
                                                         <img
-                                                            src={product.imageUrl}
+                                                            src={product.imageUrl || '/placeholder-product.jpg'}
                                                             alt={product.name}
                                                         />
 
@@ -404,7 +404,7 @@ const Header = () => {
                                                                 setSearchQuery('');
                                                             }}
                                                         >
-                                                            <img src={product.imageUrl} alt={product.name} />
+                                                            <img src={product.imageUrl || '/placeholder-product.jpg'} alt={product.name} />
                                                             <div className="search-result-info">
                                                                 <h4>{product.name}</h4>
                                                                 <span>{product.fragranceType}</span>
