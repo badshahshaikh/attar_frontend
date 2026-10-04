@@ -17,11 +17,22 @@ async function parseResponse(response) {
     return data;
 }
 
-function normalizeProducts(products) {
-    return products.map(product => ({
+function toAbsoluteUrl(url) {
+    return url && url.startsWith('/') ? `${API_URL}${url}` : url;
+}
+
+function normalizeProduct(product) {
+    return {
         ...product,
-        imageUrl: product.imageUrl && product.imageUrl.startsWith('/') ? `${API_URL}${product.imageUrl}` : product.imageUrl,
-    }));
+        imageUrl: toAbsoluteUrl(product.imageUrl),
+        imageUrls: Array.isArray(product.imageUrls)
+            ? product.imageUrls.map(toAbsoluteUrl)
+            : [],
+    };
+}
+
+function normalizeProducts(products) {
+    return products.map(normalizeProduct);
 }
 
 /**
@@ -159,25 +170,47 @@ export async function fetchProducts({
 
 export async function generateProductImageWithAI(productData) {
     try {
-        const response = await fetch(
-            `${API_URL}/api/products/ai-image`,
-            {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                credentials: 'include',
-                body: JSON.stringify(productData)
-            }
-        );
+        const response = await fetch(`${API_URL}/api/products/ai-image`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            credentials: 'include',
+            body: JSON.stringify(productData)
+        });
 
         const data = await parseResponse(response);
+
+        if (!data.image) {
+            throw new Error('No product image was generated.');
+        }
 
         return data.image;
     } catch (error) {
         console.error('Error generating product image with AI:', error);
         throw error;
     }
+}
+
+function base64ToPngFile(image, filename) {
+    const binary = atob(image);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i += 1) {
+        bytes[i] = binary.charCodeAt(i);
+    }
+    return new File([bytes], filename, { type: 'image/png' });
+}
+
+export async function uploadGeneratedProductImages(images, productId) {
+    const urls = [];
+
+    for (let index = 0; index < images.length; index += 1) {
+        const file = base64ToPngFile(images[index], `ai-product-${index + 1}.png`);
+        const uploaded = await uploadProductImage(file, productId);
+        urls.push(uploaded.imageUrl);
+    }
+
+    return urls;
 }
 
 export async function fetchProductFacets() {
@@ -204,7 +237,7 @@ export async function fetchProductById(id) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
-        return { ...data, imageUrl: data.imageUrl && data.imageUrl.startsWith('/') ? `${API_URL}${data.imageUrl}` : data.imageUrl };
+        return normalizeProduct(data);
     } catch (error) {
         console.error('Error fetching product:', error);
         throw error;

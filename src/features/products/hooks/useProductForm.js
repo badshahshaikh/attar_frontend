@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { createProduct, fetchProductById, updateProduct } from '../../../services/productService';
+import { createProduct, fetchProductById, updateProduct, uploadGeneratedProductImages } from '../../../services/productService';
 import { EMPTY_PRODUCT } from '../constants/productConstants';
 import { productToForm, formToProductPayload } from '../utils/productHelpers';
 import { validateProductForm } from '../validators/productValidator';
@@ -38,28 +38,46 @@ export function useProductForm() {
         setValues(prev => ({ ...prev, [field]: value }));
     };
 
-    const handleSubmit = async (event) => {
+    const handleSubmit = async (event, { pendingAiImage } = {}) => {
         event.preventDefault();
         setError('');
 
         // Validate form
         const validation = validateProductForm(values);
+
         if (!validation.isValid) {
             setError(Object.values(validation.errors).join(', '));
             return;
         }
 
-        // Parse size pricing JSON
-
-
         setSaving(true);
+
         try {
-            const payload = formToProductPayload(values);
+            let formValues = values;
+
+            // Upload the AI-generated image (single image) and attach it to the product
+            if (pendingAiImage) {
+                const [imageUrl] = await uploadGeneratedProductImages([pendingAiImage], id);
+
+                if (imageUrl) {
+                    formValues = {
+                        ...values,
+                        imageUrl,
+                        imageUrls: [imageUrl]
+                    };
+
+                    setValues(formValues);
+                }
+            }
+
+            const payload = formToProductPayload(formValues);
+
             console.log('=== PRODUCT SAVE DEBUG ===');
             console.log('Form sizePricing:', values.sizePricing);
             console.log('Final sizePricing:', payload.sizePricing);
             console.log('Full payload:', payload);
             console.log('==========================');
+
             if (editing) {
                 await updateProduct(id, payload);
             } else {
@@ -67,22 +85,24 @@ export function useProductForm() {
             }
 
             navigate('/admin/products');
+
         } catch (saveError) {
             console.error('PRODUCT SAVE ERROR:', saveError);
             console.error('Status:', saveError?.status);
             console.error('Message:', saveError?.message);
 
-
             setError(
-                saveError.status === 401 ? 'Your session has expired. Please sign in again.' :
-                    saveError.status === 400 ? saveError.message :
-                        'Unable to save product. Please check the form and try again.'
+                saveError.status === 401
+                    ? 'Your session has expired. Please sign in again.'
+                    : saveError.status === 400
+                        ? saveError.message
+                        : 'Unable to save product. Please check the form and try again.'
             );
+
         } finally {
             setSaving(false);
         }
     };
-
     return {
         // State
         values,

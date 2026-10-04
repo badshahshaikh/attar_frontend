@@ -902,10 +902,16 @@
     }
 }
 
-.admin-ai-image-preview {
-    width: 220px;
-    height: 220px;
+.admin-ai-image-previews {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
     margin-top: 1rem;
+}
+
+.admin-ai-image-preview {
+    width: 180px;
+    margin-top: 0;
     border: 1px solid #e6e1d9;
     border-radius: 8px;
     overflow: hidden;
@@ -914,7 +920,14 @@
 
 .admin-ai-image-preview img {
     width: 100%;
-    height: 100%;
+    height: 180px;
     display: block;
     object-fit: cover;
+}
+
+.admin-ai-image-preview small {
+    display: block;
+    padding: 0.4rem 0.5rem;
+    font-size: 0.75rem;
+    color: #6b645b;
 }

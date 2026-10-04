@@ -84,12 +84,20 @@ class UpdateProductUseCase {
                 throw new NotFoundError(`Product with ID ${id} not found`);
             }
 
-            const imageChanged = Boolean(
-                previous && previous.image_url !== row.image_url
-            );
+            const previousUrls = [
+                previous?.image_url,
+                ...(Array.isArray(previous?.image_urls) ? previous.image_urls : [])
+            ].filter(Boolean);
+            const nextUrls = new Set([
+                row.image_url,
+                ...(Array.isArray(row.image_urls) ? row.image_urls : [])
+            ].filter(Boolean));
+            const imageChanged = previousUrls.some(url => !nextUrls.has(url));
 
-            if (imageChanged) {
-                await this.cleanupImage(previous.image_url, id);
+            for (const url of new Set(previousUrls)) {
+                if (!nextUrls.has(url)) {
+                    await this.cleanupImage(url, id);
+                }
             }
 
             logger.info('[PRODUCT_UPDATE]', {

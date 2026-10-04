@@ -1,4 +1,3 @@
-
 import { Pool } from 'pg';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -14,9 +13,16 @@ if (!config.database.url) {
 
 function connectionStringWithoutSslParameters(databaseUrl) {
     const connectionUrl = new URL(databaseUrl);
+
     const conflictingParameters = new Set([
-        'sslmode', 'ssl', 'require', 'verify-full',
-        'sslcert', 'sslkey', 'sslrootcert', 'sslpassword',
+        'sslmode',
+        'ssl',
+        'require',
+        'verify-full',
+        'sslcert',
+        'sslkey',
+        'sslrootcert',
+        'sslpassword',
     ]);
 
     for (const parameter of [...connectionUrl.searchParams.keys()]) {
@@ -39,28 +45,41 @@ const pool = new Pool({
     keepAlive: true,
 });
 
+pool.on('error', (error) => {
+    console.error('[PG_POOL_ERROR]', {
+        message: error.message,
+        code: error.code,
+        stack: error.stack,
+    });
+});
+
 console.log(
-    `[database] environment=${config.environment} sslEnabled=${Boolean(config.database.ssl)}`
+    `[database] environment=${config.environment} sslEnabled=${Boolean(
+        config.database.ssl
+    )}`
 );
 
-let schemaPromise;
-
 async function initializeDatabase() {
-    if (!schemaPromise) {
-        const schema = fs.readFileSync(
-            path.join(__dirname, '../../../schema.sql'),
-            'utf8'
-        );
+    try {
+        await pool.query('SELECT 1');
 
-        schemaPromise = pool.query(schema);
+        console.log('[database] connection established');
+
+        return pool;
+    } catch (error) {
+        console.error('[database] connection failed', {
+            message: error.message,
+            code: error.code,
+            stack: error.stack,
+        });
+
+        throw error;
     }
-
-    await schemaPromise;
-    return pool;
 }
 
 async function query(text, values) {
     const database = await initializeDatabase();
+
     return database.query(text, values);
 }
 
@@ -70,8 +89,11 @@ async function withTransaction(callback) {
 
     try {
         await client.query('BEGIN');
+
         const result = await callback(client);
+
         await client.query('COMMIT');
+
         return result;
     } catch (error) {
         await client.query('ROLLBACK');
@@ -91,6 +113,7 @@ export {
     withTransaction,
     closeDb,
 };
+
 export default {
     initializeDatabase,
     query,

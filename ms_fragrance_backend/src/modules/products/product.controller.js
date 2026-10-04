@@ -197,7 +197,7 @@ function createProductController({
                 });
 
                 res.status(500).json({
-                    error: 'Failed to generate product image'
+                    error: 'Failed to generate product images'
                 });
             }
         },

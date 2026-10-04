@@ -24,9 +24,12 @@ CREATE TABLE IF NOT EXISTS products (
     stock_quantity INTEGER NOT NULL DEFAULT 0,
     slug TEXT,
     image_url TEXT,
+    image_urls JSONB NOT NULL DEFAULT '[]'::jsonb,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+ALTER TABLE products ADD COLUMN IF NOT EXISTS image_urls JSONB NOT NULL DEFAULT '[]'::jsonb;
 
 CREATE INDEX IF NOT EXISTS products_brand_idx ON products (brand);
 CREATE INDEX IF NOT EXISTS products_fragrance_type_idx ON products (fragrance_type);

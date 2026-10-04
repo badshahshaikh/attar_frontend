@@ -46,7 +46,14 @@ class DeleteProductUseCase {
             
             // Cleanup image
             if (existing) {
-                await this.cleanupImage(existing.image_url, id);
+                const urls = [
+                    existing.image_url,
+                    ...(Array.isArray(existing.image_urls) ? existing.image_urls : [])
+                ].filter(Boolean);
+
+                for (const url of new Set(urls)) {
+                    await this.cleanupImage(url, id);
+                }
             }
             
             logger.info('[DELETE_PRODUCT]', { productId: id });

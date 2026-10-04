@@ -55,7 +55,8 @@ export function parseProductPayload(body) {
             'sizes',
             'topNotes',
             'heartNotes',
-            'baseNotes'
+            'baseNotes',
+            'imageUrls'
         ]
     );
 

@@ -143,7 +143,7 @@ function rowFromProduct(p) {
         topNotes: Array.isArray(p.topNotes) ? p.topNotes.join(', ') : '',
         heartNotes: Array.isArray(p.heartNotes) ? p.heartNotes.join(', ') : '',
         baseNotes: Array.isArray(p.baseNotes) ? p.baseNotes.join(', ') : '',
-        imageUrl: p.imageUrl || '', slug: p.slug || '',
+        imageUrl: p.imageUrl || '', imageUrls: Array.isArray(p.imageUrls) ? p.imageUrls : [], slug: p.slug || '',
         _originalSnapshot: null,
     });
 }

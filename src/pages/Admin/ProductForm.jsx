@@ -55,25 +55,21 @@ export default function ProductForm() {
         try {
             setAiImageLoading(true);
 
-
             const image = await generateProductImageWithAI({
                 name: values.name,
                 description: values.description,
-                fragranceFamily: values.fragranceFamily,
+                fragranceFamily: values.fragranceFamily || values.fragranceType,
                 topNotes: values.topNotes,
                 heartNotes: values.heartNotes,
                 baseNotes: values.baseNotes
             });
 
             setAiImage(image);
-
-            // handle image preview here
         } catch (error) {
             console.error('AI image generation error:', error);
         } finally {
             setAiImageLoading(false);
         }
-
     };
 
 
@@ -121,7 +117,7 @@ export default function ProductForm() {
                 </div>
             </div>
             {loading ? <div className="admin-state">Loading product...</div> : (
-                <form className="admin-form" onSubmit={handleSubmit}>
+                <form className="admin-form" onSubmit={(event) => handleSubmit(event, { pendingAiImage: aiImage })}>
                     <ProductFormFields values={values} onChange={setValues} />
                     <div className="admin-field admin-field-wide">
                         <span>Product image</span>
@@ -134,19 +130,32 @@ export default function ProductForm() {
                                 onClick={handleAIImage}
                                 disabled={aiImageLoading || !values.name}
                             >
-                                {aiImageLoading ? 'Generating image...' : '✦ Generate with AI'}
+                                {aiImageLoading ? 'Generating images...' : '✦ Generate with AI'}
                             </button>
 
                             {aiImage && (
-                                <div className="admin-ai-image-preview">
-                                    <img
-                                        src={`data:image/png;base64,${aiImage}`}
-                                        alt="AI generated product preview"
-                                    />
+                                <div className="admin-ai-image-previews">
+                                    <div className="admin-ai-image-preview">
+                                        <img
+                                            src={`data:image/png;base64,${aiImage}`}
+                                            alt="AI generated product"
+                                        />
+                                        <small>AI Generated Image</small>
+                                    </div>
                                 </div>
                             )}
                         </div>
-                        <ImageUpload imageUrl={values.imageUrl} productId={id} onUploaded={imageUrl => setValues(current => ({ ...current, imageUrl }))} />
+                        <ImageUpload
+                            imageUrl={values.imageUrl}
+                            productId={id}
+                            onUploaded={imageUrl => setValues(current => ({
+                                ...current,
+                                imageUrl,
+                                // Keep the gallery in sync with the primary image
+                                imageUrls: [imageUrl, ...(Array.isArray(current.imageUrls) ? current.imageUrls : [])]
+                                    .filter((url, index, urls) => url && urls.indexOf(url) === index)
+                            }))}
+                        />
                     </div>
                     {error && <div className="admin-alert">{error}</div>}
                     <div className="admin-form-actions">

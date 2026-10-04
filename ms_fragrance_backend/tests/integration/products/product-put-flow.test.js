@@ -4,7 +4,7 @@ import { createProductRepository } from '../../../src/modules/products/product.r
 import UpdateProductUseCase from '../../../src/modules/products/application/use-cases/UpdateProductUseCase.js';
 import { toPersistenceValues } from '../../../src/modules/products/product.mapper.js';
 
-test('useCase invokes the repository UPDATE with 24 ordered values followed by the id', async () => {
+test('useCase invokes the repository UPDATE with 25 ordered values followed by the id', async () => {
     const calls = [];
     const row = { id: 42, name: 'Verification Attar', category: 'Attar', fragrance_type: 'Oud', price: '99', original_price: null, size_pricing: {}, sizes: [], top_notes: [], heart_notes: [], base_notes: [], in_stock: true, is_new: false, brand: 'Surrati', is_best_seller: false, is_exclusive: false, featured: false, stock_quantity: 1, created_at: '2026-01-01T00:00:00Z', updated_at: '2026-01-01T00:00:00Z' };
     const repository = createProductRepository({
@@ -23,6 +23,6 @@ test('useCase invokes the repository UPDATE with 24 ordered values followed by t
     assert.equal(result.product.id, 42);
     assert.equal(calls.length, 2);
     assert.match(calls[1].sql, /^UPDATE products SET /);
-    assert.match(calls[1].sql, /WHERE id = \$25 RETURNING/);
+    assert.match(calls[1].sql, /WHERE id = \$26 RETURNING/);
     assert.deepEqual(calls[1].values, [...toPersistenceValues(payload), 42]);
 });

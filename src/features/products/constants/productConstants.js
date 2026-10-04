@@ -31,5 +31,6 @@ export const EMPTY_PRODUCT = {
     isBestSeller: false,
     isExclusive: false,
     featured: false,
-    imageUrl: ''
+    imageUrl: '',
+    imageUrls: []
 };

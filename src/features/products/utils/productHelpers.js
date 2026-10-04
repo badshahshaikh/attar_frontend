@@ -44,6 +44,7 @@ export function productToForm(product, emptyProduct) {
 
         originalPrice: product.originalPrice ?? '',
         imageUrl: product.imageUrl || '',
+        imageUrls: Array.isArray(product.imageUrls) ? product.imageUrls : [],
     };
 }
 
@@ -94,7 +95,8 @@ export function formToProductPayload(values) {
 
         topNotes: csvToArray(values.topNotes),
         heartNotes: csvToArray(values.heartNotes),
-        baseNotes: csvToArray(values.baseNotes)
+        baseNotes: csvToArray(values.baseNotes),
+        imageUrls: Array.isArray(values.imageUrls) ? values.imageUrls : []
     };
 }
 
@@ -146,6 +148,7 @@ export function buildBulkPayload(row, sizeKeys) {
         baseNotes: toArr(row.baseNotes),
         longevity: row.longevity || '',
         imageUrl: row.imageUrl || '',
+        imageUrls: Array.isArray(row.imageUrls) ? row.imageUrls : [],
         slug: row.slug || '',
     };
 }

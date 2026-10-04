@@ -1,4 +1,4 @@
-const JSON_FIELDS = new Set(['size_pricing', 'sizes', 'top_notes', 'heart_notes', 'base_notes']);
+const JSON_FIELDS = new Set(['size_pricing', 'sizes', 'top_notes', 'heart_notes', 'base_notes', 'image_urls']);
 
 function toProduct(row) {
     return {
@@ -14,6 +14,7 @@ function toProduct(row) {
         isBestSeller: Boolean(row.is_best_seller), isExclusive: Boolean(row.is_exclusive),
         featured: Boolean(row.featured), stockQuantity: Number(row.stock_quantity || 0),
         slug: row.slug || '', imageUrl: row.image_url || '',
+        imageUrls: Array.isArray(row.image_urls) ? row.image_urls : [],
         createdAt: row.created_at, updatedAt: row.updated_at,
     };
 }
@@ -46,6 +47,7 @@ function toPersistenceValues(payload) {
             : (payload.inStock === false ? 0 : 1),
         payload.slug || null,
         payload.imageUrl || null,
+        Array.isArray(payload.imageUrls) ? payload.imageUrls : [],
     ];
 
     const columns = [
@@ -72,7 +74,8 @@ function toPersistenceValues(payload) {
         'featured',
         'stock_quantity',
         'slug',
-        'image_url'
+        'image_url',
+        'image_urls'
     ];
 
     const persistenceValues = values.map((value, index) =>

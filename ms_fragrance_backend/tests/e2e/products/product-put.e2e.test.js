@@ -23,7 +23,7 @@ test('real authenticated PUT persists through GET and restores the exact databas
     const baseUrl = `http://127.0.0.1:${server.address().port}`;
     token = jwt.sign({ id: user.id, username: user.username, role: user.role }, config.auth.jwtSecret, { expiresIn: config.auth.jwtExpiresIn });
     const cookie = `${config.auth.cookie.name}=${token}`;
-    const fields = ['name', 'category', 'fragrance_type', 'description', 'full_description', 'rating', 'reviews', 'price', 'original_price', 'size_pricing', 'sizes', 'top_notes', 'heart_notes', 'base_notes', 'longevity', 'in_stock', 'is_new', 'brand', 'is_best_seller', 'is_exclusive', 'featured', 'stock_quantity', 'slug', 'image_url', 'created_at', 'updated_at'];
+    const fields = ['name', 'category', 'fragrance_type', 'description', 'full_description', 'rating', 'reviews', 'price', 'original_price', 'size_pricing', 'sizes', 'top_notes', 'heart_notes', 'base_notes', 'longevity', 'in_stock', 'is_new', 'brand', 'is_best_seller', 'is_exclusive', 'featured', 'stock_quantity', 'slug', 'image_url', 'image_urls', 'created_at', 'updated_at'];
     try {
         const before = await fetch(`${baseUrl}/api/products/${original.id}`);
         assert.equal(before.status, 200);
@@ -34,7 +34,7 @@ test('real authenticated PUT persists through GET and restores the exact databas
         assert.equal(after.status, 200);
         assert.equal((await after.json()).id, original.id);
     } finally {
-        const jsonFields = new Set(['size_pricing', 'sizes', 'top_notes', 'heart_notes', 'base_notes']);
+        const jsonFields = new Set(['size_pricing', 'sizes', 'top_notes', 'heart_notes', 'base_notes', 'image_urls']);
         const values = fields.map(field => jsonFields.has(field) ? JSON.stringify(original[field]) : original[field]);
         await query(`UPDATE products SET ${fields.map((field, index) => `${field} = $${index + 1}`).join(', ')} WHERE id = $${fields.length + 1}`, [...values, original.id]);
         await new Promise(resolve => server.close(resolve));

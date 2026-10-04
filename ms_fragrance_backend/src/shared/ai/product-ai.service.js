@@ -25,7 +25,7 @@ Rules:
 - If information is uncertain, return an empty string.
 - Do not generate fields that are not requested.
 - Return only the structured JSON data.
-      `,
+            `,
 
             input: `Generate product information for:
 
@@ -38,6 +38,7 @@ ${name}`,
                     strict: true,
                     schema: {
                         type: 'object',
+
                         properties: {
                             name: {
                                 type: 'string'
@@ -79,6 +80,7 @@ ${name}`,
                                 type: 'string'
                             }
                         },
+
                         required: [
                             'name',
                             'description',
@@ -91,6 +93,7 @@ ${name}`,
                             'heartNotes',
                             'baseNotes'
                         ],
+
                         additionalProperties: false
                     }
                 }
@@ -100,7 +103,7 @@ ${name}`,
         return JSON.parse(response.output_text);
     }
 
-    async generateProductImage({
+    buildProductImagePrompt({
         name,
         description,
         fragranceFamily,
@@ -108,33 +111,44 @@ ${name}`,
         heartNotes,
         baseNotes
     }) {
-        const prompt = `
-        Create a premium ecommerce product photograph for the attar/perfume:
+        return `
+Create a single premium ecommerce product photograph for this attar/perfume:
 
-        Product: ${name}
-        Description: ${description}
-        Fragrance family: ${fragranceFamily}
-        Top notes: ${topNotes}
-        Heart notes: ${heartNotes}
-        Base notes: ${baseNotes}
+Product name: ${name}
+Description: ${description}
+Fragrance family: ${fragranceFamily}
+Top notes: ${topNotes}
+Heart notes: ${heartNotes}
+Base notes: ${baseNotes}
 
-        Requirements:
-        - Luxury attar product photography
-        - Elegant premium glass attar bottle
-        - Premium Middle Eastern fragrance aesthetic
-        - Sophisticated studio lighting
-        - Clean, minimal luxury background
-        - Product centered and clearly visible
-        - Photorealistic
-        - No people
-        - Display the exact MS Fragrance brand logo 
-        - Display the exact product name "${name}" clearly on the bottle
-        - Keep the logo and product name simple, elegant, and professionally printed
-        - Do not create, modify, redesign, or invent the MS Fragrance logo
-        - Do not add any other brand names or unnecessary text
-        - Bottle labeling should look realistic and physically printed on the bottle
-        - Suitable for a premium ecommerce product listing
-        `;
+Requirements:
+
+- Create ONE product image only.
+- Luxury attar product photography.
+- Elegant premium glass attar bottle.
+- Premium Middle Eastern fragrance aesthetic.
+- Sophisticated studio lighting.
+- Clean, minimal luxury background.
+- Product centered and clearly visible.
+- Photorealistic.
+- No people.
+- No unrelated objects.
+- Front-facing ecommerce hero shot.
+- Show the product name "${name}" clearly on the bottle.
+- The bottle label must contain ONLY the product name.
+- Do NOT display "MS Fragrance".
+- Do NOT display any brand logo.
+- Do NOT display any brand name.
+- Do NOT add slogans, descriptions, ingredients, certifications, prices, or decorative text.
+- Do NOT invent additional text.
+- Keep the product name simple, elegant, and professionally printed.
+- Make the text look physically printed on the bottle or label.
+- Use a realistic premium bottle design suitable for an attar product.
+- Keep the composition clean and suitable for an ecommerce product listing.
+`;
+    }
+
+    async generatePng(prompt) {
         const result = await this.client.images.generate({
             model: 'gpt-image-2',
             prompt,
@@ -142,6 +156,19 @@ ${name}`,
         });
 
         return result.data[0].b64_json;
+    }
+
+    async generateProductImage(productData) {
+        const prompt = this.buildProductImagePrompt(productData);
+
+        return await this.generatePng(`
+            ${prompt}
+
+            Camera:
+            Primary front-facing ecommerce hero shot.
+            Show the complete bottle clearly.
+            Keep the bottle centered with enough clean space around it.
+        `);
     }
 }
 
