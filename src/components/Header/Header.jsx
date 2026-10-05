@@ -1,15 +1,17 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, Heart, ShoppingBag, Menu, X, ChevronDown } from 'lucide-react';
+import { Search, Heart, ShoppingBag, User, Menu, X, ChevronDown } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
 import { useWishlist } from '../../context/WishlistContext';
 import { useProducts } from '../../context/ProductContext';
+import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import './Header.css';
 
 const Header = () => {
     const { cartCount } = useCart();
     const { wishlistItems } = useWishlist();
     const { products, brands, fragranceFamilies, searchProducts } = useProducts();
+    const { user: customer } = useCustomerAuth();
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -332,6 +334,13 @@ const Header = () => {
                             )}
                         </div>
 
+                        <Link
+                            to={customer ? '/account' : '/login'}
+                            className="action-btn"
+                            aria-label={customer ? 'My account' : 'Sign in'}
+                        >
+                            <User size={20} strokeWidth={1.5} />
+                        </Link>
                         <Link to="/wishlist" className="action-btn cart-btn" aria-label="Wishlist">
                             <Heart size={20} strokeWidth={1.5} />
                             {wishlistItems.length > 0 && <span className="cart-count wishlist-count">{wishlistItems.length}</span>}
@@ -518,7 +527,13 @@ const Header = () => {
                         >
                             MS Fragrance
                         </button>
-                        <Link to="/wishlist" onClick={() => setIsMobileMenuOpen(false)}>Wishlist</Link>
+                        <Link
+                                to={customer ? '/account' : '/login'}
+                                onClick={() => setIsMobileMenuOpen(false)}
+                            >
+                                {customer ? 'My account' : 'Sign in'}
+                            </Link>
+                            <Link to="/wishlist" onClick={() => setIsMobileMenuOpen(false)}>Wishlist</Link>
                         <Link to="/cart" onClick={() => setIsMobileMenuOpen(false)}>Cart</Link>
                     </nav>
                 </div>

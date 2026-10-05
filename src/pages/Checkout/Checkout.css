@@ -177,6 +177,109 @@
     line-height: 1.4;
 }
 
+.whatsapp-help-text a {
+    color: var(--text-color);
+    text-decoration: underline;
+}
+
+/* Signed-in delivery picker + order status */
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    font-size: 0.95rem;
+    color: var(--text-color);
+}
+
+.summary-divider {
+    height: 1px;
+    background-color: var(--border-color);
+    margin: 8px 0;
+}
+
+.summary-row.total-row {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.checkout-delivery {
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border-color);
+}
+
+.checkout-delivery-label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: var(--text-color);
+}
+
+.checkout-address-select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--bg-color);
+    font-family: inherit;
+    font-size: 0.9rem;
+    color: var(--text-color);
+    cursor: pointer;
+}
+
+.checkout-address-select:focus {
+    outline: none;
+    border-color: var(--text-color);
+}
+
+.checkout-delivery-hint {
+    font-size: 0.85rem;
+    color: var(--text-light);
+    line-height: 1.5;
+}
+
+.checkout-delivery-hint a {
+    color: var(--text-color);
+    text-decoration: underline;
+}
+
+.checkout-error {
+    margin-top: 20px;
+    padding: 0.75rem;
+    background-color: rgba(156, 82, 72, 0.1);
+    border-radius: 4px;
+    font-size: 0.875rem;
+    color: #9c5248;
+}
+
+/* Order placed confirmation */
+.checkout-success-icon {
+    color: #25d366;
+    margin-bottom: 16px;
+}
+
+.checkout-success-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.checkout-success-continue {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9rem;
+    color: var(--text-light);
+    text-decoration: none;
+}
+
+.checkout-success-continue:hover {
+    color: var(--text-color);
+}
+
 /* Responsive */
 @media (max-width: 992px) {
     .checkout-layout {

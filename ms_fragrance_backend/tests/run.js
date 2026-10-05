@@ -1,6 +1,11 @@
 import './unit/products/product.validator.test.js';
 import './unit/products/product.mapper.test.js';
 import './unit/products/product.controller.test.js';
+import './unit/auth/require-role.test.js';
+import './unit/auth/customer-validator.test.js';
+import './unit/auth/customer-auth.test.js';
 import './integration/products/product-put-flow.test.js';
+import './unit/customer/customer-validator.test.js';
+import './unit/customer/customer-service.test.js';
 import './integration/products/product-route-wiring.test.js';
 import './e2e/products/product-put.e2e.test.js';

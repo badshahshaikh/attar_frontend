@@ -10,7 +10,7 @@ import { createContainer } from './composition/container.js';
 import { checkDatabaseConnection } from './shared/database/index.js';
 
 const app = express();
-const { productRouter, catalogRouter, authRouter, settingsRouter } = createContainer();
+const { productRouter, catalogRouter, authRouter, settingsRouter, customerRouter } = createContainer();
 const uploadDir = config.uploads.directory;
 
 app.use(cors(corsOptions));
@@ -24,6 +24,7 @@ app.use('/api/products', productRouter);
 app.use('/api/catalog', catalogRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/settings', settingsRouter);
+app.use('/api/customer', customerRouter);
 
 app.get('/api/health', (req, res) => {
     res.json({

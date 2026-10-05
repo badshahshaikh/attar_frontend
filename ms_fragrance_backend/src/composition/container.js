@@ -9,6 +9,7 @@ import { createAuthService } from '../modules/auth/auth.service.js';
 import { createAuthController } from '../modules/auth/auth.controller.js';
 import { createAuthRouter } from '../modules/auth/auth.routes.js';
 import { createSettingsContainer } from '../modules/settings/settings.container.js';
+import { createCustomerContainer } from '../modules/customer/customer.container.js';
 
 function createContainer(dependencies = {}) {
     const query = dependencies.query || database.query;
@@ -32,11 +33,15 @@ function createContainer(dependencies = {}) {
     // Settings module
     const settingsContainer = createSettingsContainer({ query });
 
+    // Customer accounts module (addresses + orders)
+    const customerContainer = createCustomerContainer({ query });
+
     return Object.freeze({
         productRouter: productsContainer.productRouter,
         catalogRouter: catalogContainer.catalogRouter,
         authRouter: createAuthRouter(authController),
         settingsRouter: settingsContainer.settingsRouter,
+        customerRouter: customerContainer.customerRouter,
     });
 }
 

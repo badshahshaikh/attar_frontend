@@ -13,4 +13,22 @@ function clearAuthCookie(res) {
     });
 }
 
-export { setAuthCookie, clearAuthCookie };
+function setCustomerCookie(res, token) {
+    res.cookie(config.auth.customerCookie.name, token, config.auth.customerCookie);
+}
+
+function clearCustomerCookie(res) {
+    const cookie = config.auth.customerCookie;
+    res.clearCookie(cookie.name, {
+        httpOnly: cookie.httpOnly,
+        secure: cookie.secure,
+        sameSite: cookie.sameSite,
+    });
+}
+
+export {
+  setAuthCookie,
+  clearAuthCookie,
+  setCustomerCookie,
+  clearCustomerCookie
+};

@@ -13,7 +13,9 @@ const ProtectedRoute = ({ children }) => {
         );
     }
 
-    if (!user) {
+    // The admin area is restricted to the 'admin' role. An authenticated
+    // customer must not be able to render admin screens.
+    if (!user || user.role !== 'admin') {
         return <Navigate to="/admin/login" replace />;
     }
 

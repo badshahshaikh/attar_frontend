@@ -44,12 +44,22 @@ const config = Object.freeze({
     auth: Object.freeze({
         jwtSecret: process.env.JWT_SECRET,
         jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
+        customerJwtExpiresIn: process.env.CUSTOMER_JWT_EXPIRES_IN || '30d',
         cookie: Object.freeze({
             name: 'jwt',
             httpOnly: true,
             secure: isProduction,
             sameSite: isProduction ? 'None' : 'Lax',
             maxAge: 7 * 24 * 60 * 60 * 1000,
+        }),
+        // Customer sessions live in a separate cookie so signing into the
+        // storefront never overwrites an admin session, and vice versa.
+        customerCookie: Object.freeze({
+            name: 'customer_jwt',
+            httpOnly: true,
+            secure: isProduction,
+            sameSite: isProduction ? 'None' : 'Lax',
+            maxAge: 30 * 24 * 60 * 60 * 1000,
         }),
     }),
     storage: Object.freeze({

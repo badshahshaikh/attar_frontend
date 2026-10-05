@@ -10,6 +10,8 @@
         "test": "node tests/run.js",
         "migrate:supabase": "node migrate-to-supabase.js",
         "migrate:images": "node migrate-images-to-supabase.js",
+        "migrate:role": "node migrate-user-role-default.js",
+        "migrate:customers": "node migrate-customers.js",
         "create:admin": "node create-admin.js"
     },
     "dependencies": {
