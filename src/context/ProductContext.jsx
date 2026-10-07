@@ -22,7 +22,10 @@ export function ProductProvider({ children }) {
         fragranceFamilies: []
     });
 
-    const loadProducts = useCallback(async (params = {}) => {
+    const loadProducts = useCallback(async (
+        params = {},
+        { append = false } = {}
+    ) => {
         try {
             setLoading(true);
             setError(null);
@@ -33,7 +36,22 @@ export function ProductProvider({ children }) {
                 ? result
                 : result.products || [];
 
-            setProducts(productList);
+            setProducts(previousProducts => {
+                if (!append) {
+                    return productList;
+                }
+
+                // Avoid duplicate products when appending
+                const existingIds = new Set(
+                    previousProducts.map(product => String(product.id))
+                );
+
+                const newProducts = productList.filter(
+                    product => !existingIds.has(String(product.id))
+                );
+
+                return [...previousProducts, ...newProducts];
+            });
 
             return result;
         } catch (err) {
