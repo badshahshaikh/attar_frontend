@@ -238,7 +238,6 @@
 .cart-count {
     position: absolute;
     top: -4px;
-    right: -2px;
     background-color: var(--color-accent);
     color: var(--color-white);
     font-size: 0.62rem;

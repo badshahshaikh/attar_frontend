@@ -454,15 +454,17 @@ const Shop = () => {
                                 ))}
                             </div>
                         )}
+
+                        <LoadMoreButton
+                            onClick={handleLoadMore}
+                            loading={loading}
+                            hasMore={hasMore}
+                        />
+
                     </div>
                 </div>
 
-                <LoadMoreButton
-                    onClick={handleLoadMore}
-                    loading={loading}
-                    hasMore={hasMore}
-                />
-
+                
             </div>
         </main>
     );
