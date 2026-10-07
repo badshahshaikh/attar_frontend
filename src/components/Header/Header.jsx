@@ -431,6 +431,13 @@ const Header = () => {
                         </div>
 
                         <div className="mobile-actions-right">
+                            <Link
+                                to={customer ? '/account' : '/login'}
+                                className="action-btn"
+                                aria-label={customer ? 'My account' : 'Sign in'}
+                            >
+                                <User size={20} strokeWidth={1.5} />
+                            </Link>
                             <Link to="/wishlist" className="action-btn cart-btn" aria-label="Wishlist">
                                 <Heart size={20} strokeWidth={1.5} />
                                 {wishlistItems.length > 0 && <span className="cart-count wishlist-count">{wishlistItems.length}</span>}

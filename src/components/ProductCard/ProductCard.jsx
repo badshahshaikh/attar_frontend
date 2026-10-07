@@ -2,11 +2,36 @@ import React from 'react';
 import { Heart, Eye, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useWishlist } from '../../context/WishlistContext';
+import { useCart } from '../../context/CartContext';
 import './ProductCard.css';
 
 const ProductCard = ({ product }) => {
     const { toggleWishlist, isInWishlist } = useWishlist();
+    const { dispatch } = useCart();
     const inWishlist = isInWishlist(product.id);
+
+    // Same cart item shape and default size selection as ProductDetails.handleAddToCart
+    const handleAddToCart = (e) => {
+        // This is an action button, not a link — never navigate
+        e.preventDefault();
+        e.stopPropagation();
+
+        const selectedSize = product.sizes[0] || '';
+        const currentPrice = product.sizePricing[selectedSize] || product.price || 0;
+
+        dispatch({
+            type: 'ADD_TO_CART',
+            payload: {
+                productId: product.id,
+                name: product.name,
+                size: selectedSize,
+                quantity: 1,
+                price: currentPrice,
+                total: currentPrice,
+                image: product.imageUrl
+            }
+        });
+    };
 
     return (
         <div className="product-card group">
@@ -97,9 +122,14 @@ const ProductCard = ({ product }) => {
                     ))}
                 </div>
 
-                <Link to={`/product/${product.id}`} className="btn btn-outline add-to-cart-btn" style={{ display: 'flex', justifyContent: 'center' }}>
-                    Choose Options
-                </Link>
+                <button
+                    type="button"
+                    className="btn btn-outline add-to-cart-btn"
+                    style={{ display: 'flex', justifyContent: 'center' }}
+                    onClick={handleAddToCart}
+                >
+                    Add to Cart
+                </button>
             </div>
         </div>
     );
