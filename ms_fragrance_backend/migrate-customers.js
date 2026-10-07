@@ -44,6 +44,9 @@ const TABLES = {
             shipping_address JSONB NOT NULL,
             notes TEXT,
             source VARCHAR(20) NOT NULL DEFAULT 'whatsapp',
+            payment_status VARCHAR(20) NOT NULL DEFAULT 'unpaid',
+            razorpay_order_id TEXT,
+            razorpay_payment_id TEXT,
             created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
             updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
         )
@@ -118,6 +121,11 @@ async function migrate() {
     await query('ALTER TABLE public.users ADD COLUMN IF NOT EXISTS full_name TEXT');
     await query('ALTER TABLE public.users ADD COLUMN IF NOT EXISTS phone VARCHAR(20)');
     await query('ALTER TABLE public.users ADD COLUMN IF NOT EXISTS last_login_at TIMESTAMPTZ');
+
+    // Online payments (Razorpay): safe to re-run on an existing orders table.
+    await query("ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS payment_status VARCHAR(20) NOT NULL DEFAULT 'unpaid'");
+    await query('ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS razorpay_order_id TEXT');
+    await query('ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS razorpay_payment_id TEXT');
 
     for (const [name, ddl] of Object.entries(TABLES)) {
         await query(ddl);

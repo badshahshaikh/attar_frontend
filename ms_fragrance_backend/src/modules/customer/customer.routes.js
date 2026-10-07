@@ -19,6 +19,10 @@ function createCustomerRouter(controller) {
     router.post('/orders', asyncHandler(controller.createOrder));
     router.get('/orders/:orderNumber', asyncHandler(controller.getOrder));
 
+    // Online payment (Razorpay)
+    router.post('/orders/:orderNumber/payment', asyncHandler(controller.createPaymentSession));
+    router.post('/orders/:orderNumber/payment/verify', asyncHandler(controller.verifyPayment));
+
     return router;
 }
 

@@ -1,6 +1,7 @@
 import AppError from '../../core/errors/AppError.js';
 import { logger } from '../../shared/logging/logger.js';
 import { toCamelAddress, toCamelOrder } from './customer.mapper.js';
+import { createRazorpayClient, rupeesToPaise, verifyCheckoutSignature } from './razorpay.client.js';
 
 // Mirrors the storefront checkout rule: free over 5000, otherwise a flat 150.
 const FREE_SHIPPING_THRESHOLD = 5000;
@@ -23,7 +24,12 @@ function buildOrderNumber(date = new Date()) {
     return `MSF-${stamp}-${suffix}`;
 }
 
-function createCustomerService({ addressRepository, orderRepository }) {
+function createCustomerService({ addressRepository, orderRepository, razorpayKeyId, razorpayKeySecret }) {
+    // Key material is injected by the container; when it is missing the client
+    // refuses to create orders (503 PAYMENTS_DISABLED) instead of failing
+    // halfway through a checkout.
+    const razorpay = createRazorpayClient({ keyId: razorpayKeyId, keySecret: razorpayKeySecret });
+
     // Pricing always comes from the products table so a tampered client payload
     // cannot change what a customer is charged.
     function priceForSize(product, size) {
@@ -89,6 +95,36 @@ function createCustomerService({ addressRepository, orderRepository }) {
         }
 
         return { fullName: contactName, phone: contactPhone };
+    }
+
+    // Loads an order that belongs to this customer, or 404s exactly like the
+    // GET /orders/:orderNumber handler does.
+    async function loadOrder(userId, orderNumber) {
+        const order = await orderRepository.findByOrderNumber(userId, orderNumber);
+
+        if (!order) {
+            throw new AppError('Order not found', 404, 'ORDER_NOT_FOUND');
+        }
+
+        return order;
+    }
+
+    // Webhook lookup + validation: the order must exist for the Razorpay order
+    // id we stored when the payment session was created, and the captured
+    // amount (paise) must equal the server-side total (rupees), so a forged
+    // webhook can never flip an order to paid.
+    async function resolveWebhookOrder({ razorpayOrderId, amountPaise }) {
+        const order = await orderRepository.findByRazorpayOrderId(razorpayOrderId);
+
+        if (!order) {
+            throw new AppError('Payment does not match any order', 404, 'ORDER_NOT_FOUND');
+        }
+
+        if (rupeesToPaise(order.total) !== Number(amountPaise)) {
+            throw new AppError('Payment amount does not match the order total', 400, 'PAYMENT_AMOUNT_MISMATCH');
+        }
+
+        return order;
     }
 
     return {
@@ -203,6 +239,104 @@ function createCustomerService({ addressRepository, orderRepository }) {
             }
 
             throw new AppError('Unable to create your order right now', 500, 'ORDER_FAILED');
+        },
+
+        async createPaymentSession(userId, orderNumber) {
+            const order = await loadOrder(userId, orderNumber);
+
+            if (order.payment_status === 'paid') {
+                throw new AppError('This order has already been paid', 400, 'ORDER_ALREADY_PAID');
+            }
+
+            // Razorpay speaks paise; the orders table stores rupees.
+            const amountPaise = rupeesToPaise(order.total);
+
+            const razorpayOrder = await razorpay.createOrder({
+                amountPaise,
+                receipt: order.order_number,
+            });
+
+            // Record which Razorpay order belongs to our order so the verify
+            // endpoint and webhooks can match the payment back to it.
+            const linked = await orderRepository.linkRazorpayOrder(userId, orderNumber, razorpayOrder.id);
+
+            if (!linked) {
+                throw new AppError('Order not found', 404, 'ORDER_NOT_FOUND');
+            }
+
+            return {
+                order: toCamelOrder(linked),
+                razorpayOrderId: razorpayOrder.id,
+                amountPaise,
+                currency: razorpayOrder.currency || 'INR',
+                keyId: razorpayKeyId,
+            };
+        },
+
+        async verifyPayment(userId, proof) {
+            const order = await loadOrder(userId, proof.orderNumber);
+
+            const signatureValid = verifyCheckoutSignature({
+                keySecret: razorpayKeySecret,
+                razorpayOrderId: proof.razorpayOrderId,
+                razorpayPaymentId: proof.razorpayPaymentId,
+                razorpaySignature: proof.razorpaySignature,
+            });
+
+            if (!signatureValid) {
+                throw new AppError('Payment verification failed', 400, 'PAYMENT_VERIFICATION_FAILED');
+            }
+
+            // The Checkout proof must belong to the Razorpay order we linked
+            // to this order when the payment session was created.
+            if (!proof.razorpayOrderId || proof.razorpayOrderId !== order.razorpay_order_id) {
+                throw new AppError('Payment does not match this order', 400, 'PAYMENT_ORDER_MISMATCH');
+            }
+
+            // markPaid() is idempotent, so re-verifying an already-paid order
+            // returns the current row untouched instead of failing.
+            const paid = await orderRepository.markPaid({
+                orderId: order.id,
+                razorpayOrderId: order.razorpay_order_id,
+                razorpayPaymentId: proof.razorpayPaymentId,
+            });
+
+            return toCamelOrder(paid || order);
+        },
+
+        async verifyWebhookPayment({ razorpayOrderId, razorpayPaymentId, amountPaise }) {
+            const order = await resolveWebhookOrder({ razorpayOrderId, amountPaise });
+
+            // Already paid (duplicate or out-of-order webhook): do not re-mark.
+            if (order.payment_status === 'paid') {
+                return false;
+            }
+
+            const paid = await orderRepository.markPaid({
+                orderId: order.id,
+                razorpayOrderId,
+                razorpayPaymentId,
+            });
+
+            return Boolean(paid);
+        },
+
+        async recordWebhookPayment({ razorpayOrderId, razorpayPaymentId, amountPaise }) {
+            const order = await resolveWebhookOrder({ razorpayOrderId, amountPaise });
+
+            // markPaid() only updates rows that are not paid yet, so a repeated
+            // webhook returns the existing row instead of recording twice.
+            const paid = await orderRepository.markPaid({
+                orderId: order.id,
+                razorpayOrderId,
+                razorpayPaymentId,
+            });
+
+            if (!paid) {
+                throw new AppError('Unable to record this payment', 400, 'PAYMENT_RECORD_FAILED');
+            }
+
+            return toCamelOrder(paid);
         },
     };
 }

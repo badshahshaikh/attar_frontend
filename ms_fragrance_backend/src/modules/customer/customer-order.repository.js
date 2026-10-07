@@ -1,7 +1,8 @@
 import { logger } from '../../shared/logging/logger.js';
 
 const ORDER_COLUMNS = `id, order_number, status, subtotal, shipping, total,
-    contact_name, contact_phone, shipping_address, notes, source, created_at, updated_at`;
+    contact_name, contact_phone, shipping_address, notes, source,
+    payment_status, razorpay_order_id, razorpay_payment_id, created_at, updated_at`;
 
 const ITEM_COLUMNS = `id, order_id, product_id, product_name, size, quantity, unit_price, line_total`;
 
@@ -50,6 +51,54 @@ function createCustomerOrderRepository({ query, withTransaction }) {
                 `SELECT ${ORDER_COLUMNS} FROM public.orders WHERE user_id = $1 AND order_number = $2`,
                 [userId, orderNumber]
             );
+            const order = result.rows[0];
+
+            if (!order) return null;
+
+            const items = await query(
+                `SELECT ${ITEM_COLUMNS} FROM public.order_items WHERE order_id = $1 ORDER BY id ASC`,
+                [order.id]
+            );
+
+            return stitchItems([order], items.rows)[0];
+        },
+
+        // Records the Razorpay order id against our order when a payment is
+        // initiated. Returns the updated row, or null when the order does not
+        // belong to this user (the service turns that into a 404).
+        async linkRazorpayOrder(userId, orderNumber, razorpayOrderId) {
+            try {
+                const result = await query(
+                    `UPDATE public.orders
+                        SET razorpay_order_id = $3, updated_at = NOW()
+                      WHERE user_id = $1 AND order_number = $2
+                      RETURNING ${ORDER_COLUMNS}`,
+                    [userId, orderNumber, razorpayOrderId]
+                );
+
+                const order = result.rows[0];
+
+                if (!order) return null;
+
+                const items = await query(
+                    `SELECT ${ITEM_COLUMNS} FROM public.order_items WHERE order_id = $1 ORDER BY id ASC`,
+                    [order.id]
+                );
+
+                return stitchItems([order], items.rows)[0];
+            } catch (error) {
+                logger.error('[CUSTOMER_ORDER_LINK_ERROR]', { userId, orderNumber, errorMessage: error.message });
+                throw error;
+            }
+        },
+
+        // Webhook lookup: no user session here, so match on the Razorpay
+        // order id we stored when the payment session was created.
+        async findByRazorpayOrderId(razorpayOrderId) {
+            const result = await query(
+                `SELECT ${ORDER_COLUMNS} FROM public.orders WHERE razorpay_order_id = $1`,
+                [razorpayOrderId]
+            );
 
             const order = result.rows[0];
 
@@ -61,6 +110,48 @@ function createCustomerOrderRepository({ query, withTransaction }) {
             );
 
             return stitchItems([order], items.rows)[0];
+        },
+
+        // Marks an order paid. Idempotent: paying an already-paid order is a
+        // no-op returning the current row, so retries and duplicate webhooks
+        // can never double-apply a payment.
+        async markPaid({ orderId, razorpayOrderId, razorpayPaymentId }) {
+            try {
+                const result = await query(
+                    `UPDATE public.orders
+                        SET payment_status = 'paid',
+                            status = 'paid',
+                            razorpay_order_id = COALESCE($2, razorpay_order_id),
+                            razorpay_payment_id = $3,
+                            updated_at = NOW()
+                      WHERE id = $1 AND payment_status <> 'paid'
+                      RETURNING ${ORDER_COLUMNS}`,
+                    [orderId, razorpayOrderId || null, razorpayPaymentId]
+                );
+
+                const order = result.rows[0];
+
+                if (!order) {
+                    const current = await query(
+                        `SELECT ${ORDER_COLUMNS} FROM public.orders WHERE id = $1`,
+                        [orderId]
+                    );
+
+                    if (current.rows[0]?.payment_status === 'paid') return current.rows[0];
+
+                    return null;
+                }
+
+                const items = await query(
+                    `SELECT ${ITEM_COLUMNS} FROM public.order_items WHERE order_id = $1 ORDER BY id ASC`,
+                    [order.id]
+                );
+
+                return stitchItems([order], items.rows)[0];
+            } catch (error) {
+                logger.error('[CUSTOMER_ORDER_PAID_ERROR]', { orderId, errorMessage: error.message });
+                throw error;
+            }
         },
 
         async create(userId, { orderNumber, address, contactName, contactPhone, notes, source, lines, subtotal, shipping, total }) {

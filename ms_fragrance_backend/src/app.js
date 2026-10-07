@@ -7,14 +7,24 @@ import { config } from './config/env.js';
 import { corsOptions } from './config/cors.js';
 import { errorHandler } from './shared/errors/error-handler.js';
 import { createContainer } from './composition/container.js';
+import { createCustomerContainer } from './modules/customer/customer.container.js';
+import { createPaymentWebhookRouter } from './modules/customer/payment-webhook.router.js';
 import { checkDatabaseConnection } from './shared/database/index.js';
 
 const app = express();
 const { productRouter, catalogRouter, authRouter, settingsRouter, customerRouter } = createContainer();
 const uploadDir = config.uploads.directory;
 
+// Webhook router needs the raw body before express.json() strips it.
+const customerContainer = createCustomerContainer();
+const paymentWebhook = createPaymentWebhookRouter(customerContainer.customerService, config.razorpay.webhookSecret);
+
 app.use(cors(corsOptions));
 app.use(cookieParser());
+
+// Raw-body webhook route (must come before express.json).
+app.use('/api/webhooks', paymentWebhook);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

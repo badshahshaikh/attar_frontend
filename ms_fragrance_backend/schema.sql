@@ -194,6 +194,9 @@ CREATE TABLE IF NOT EXISTS orders (
     shipping_address JSONB NOT NULL,
     notes TEXT,
     source VARCHAR(20) NOT NULL DEFAULT 'whatsapp',
+    payment_status VARCHAR(20) NOT NULL DEFAULT 'unpaid',
+    razorpay_order_id TEXT,
+    razorpay_payment_id TEXT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );

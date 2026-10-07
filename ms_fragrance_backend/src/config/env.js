@@ -67,6 +67,11 @@ const config = Object.freeze({
         serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
         bucket: process.env.SUPABASE_STORAGE_BUCKET || 'product-images',
     }),
+    razorpay: Object.freeze({
+        keyId: process.env.RAZORPAY_KEY_ID || '',
+        keySecret: process.env.RAZORPAY_KEY_SECRET || '',
+        webhookSecret: process.env.RAZORPAY_WEBHOOK_SECRET || '',
+    }),
     uploads: Object.freeze({
         directory: path.resolve(
             process.env.UPLOAD_DIR || path.join(__dirname, '../../uploads')

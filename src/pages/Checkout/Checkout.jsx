@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { MessageCircle, ArrowLeft, CircleCheck } from 'lucide-react';
+import { MessageCircle, ArrowLeft, CircleCheck, CreditCard } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
-import { fetchAddresses, createOrder } from '../../services/customerService';
+import { fetchAddresses, createOrder, verifyPayment } from '../../services/customerService';
+import { openRazorpayCheckout } from '../../services/paymentRazorpay';
 import { WHATSAPP_NUMBER } from '../../config/constants';
 import './Checkout.css';
 
@@ -28,6 +29,7 @@ const Checkout = () => {
     const [error, setError] = useState('');
     const [placedOrder, setPlacedOrder] = useState(null);
     const [whatsappUrl, setWhatsappUrl] = useState('');
+    const [paying, setPaying] = useState(false);
 
     // Load saved addresses for signed-in customers so checkout is one tap.
     // All setState calls happen in the promise callback, never synchronously.
@@ -140,6 +142,58 @@ const Checkout = () => {
         }
     };
 
+    const handlePayOnline = async () => {
+        setError('');
+
+        let order = placedOrder;
+
+        // Place the order first if it hasn't been placed yet.
+        if (!order && user) {
+            setSaving(true);
+            try {
+                order = await createOrder({
+                    addressId: addresses.length > 0 && addressId ? Number(addressId) : null,
+                    contactName: user.fullName || undefined,
+                    contactPhone: user.phone || undefined,
+                    source: 'web',
+                    items: items.map((item) => ({
+                        productId: item.productId,
+                        size: item.size,
+                        quantity: item.quantity,
+                    })),
+                });
+                setPlacedOrder(order);
+                setWhatsappUrl(openWhatsApp(buildOrderMessage(order)));
+                dispatch({ type: 'CLEAR_CART' });
+            } catch (err) {
+                setError(err.message || 'Could not place your order.');
+                setSaving(false);
+                return;
+            }
+        }
+
+        if (!order || !user) return;
+
+        setPaying(true);
+        try {
+            await openRazorpayCheckout({
+                orderNumber: order.orderNumber,
+                customer: user,
+                onSuccess: async (proof) => {
+                    const paid = await verifyPayment(order.orderNumber, proof);
+                    setPlacedOrder(paid);
+                    setError('');
+                },
+            });
+        } catch (err) {
+            if (err.code !== 'PAYMENT_FAILED') {
+                setError(err.message || 'Payment session could not be started.');
+            }
+        } finally {
+            setPaying(false);
+        }
+    };
+
     if (placedOrder) {
         return (
             <main className="checkout-page container empty-checkout-container">
@@ -147,17 +201,27 @@ const Checkout = () => {
                     <CircleCheck size={48} className="checkout-success-icon" />
                     <h2>Order {placedOrder.orderNumber} placed</h2>
                     <p>
-                        Your order has been saved to your account. We will confirm
-                        availability and payment details with you on WhatsApp.
+                        {placedOrder.paymentStatus === 'paid'
+                            ? 'Your payment has been received. We will confirm the order shortly.'
+                            : 'Your order has been saved to your account. You can pay online below or continue on WhatsApp.'}
                     </p>
                     <div className="checkout-success-actions">
+                        {placedOrder.paymentStatus !== 'paid' && (
+                            <button
+                                className="btn btn-primary btn-lg"
+                                onClick={handlePayOnline}
+                                disabled={paying}
+                            >
+                                {paying ? 'Opening payment…' : 'Pay Online (UPI / Cards)'}
+                            </button>
+                        )}
                         <a
                             className="btn btn-whatsapp btn-lg"
                             href={whatsappUrl}
                             target="_blank"
                             rel="noreferrer"
                         >
-                            <MessageCircle size={20} /> Open WhatsApp again
+                            <MessageCircle size={20} /> {placedOrder.paymentStatus === 'paid' ? 'Open WhatsApp' : 'Continue on WhatsApp'}
                         </a>
                         <Link to="/account" className="btn btn-primary btn-lg">
                             View my orders
@@ -286,6 +350,19 @@ const Checkout = () => {
                                     <Link to="/login">Sign in</Link> to save this order to your
                                     account.
                                 </p>
+                            )}
+                            {user && (
+                                <>
+                                    <button
+                                        className="btn btn-primary btn-lg"
+                                        onClick={handlePayOnline}
+                                        disabled={paying}
+                                    >
+                                        <CreditCard size={20} />
+                                        {paying ? 'Opening payment…' : 'Pay Online (UPI / Cards)'}
+                                    </button>
+                                    <p className="whatsapp-help-text">Pay via UPI, card, or netbanking. Your order and address are saved.</p>
+                                </>
                             )}
                         </div>
                     </div>

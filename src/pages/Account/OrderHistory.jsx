@@ -106,6 +106,17 @@ const OrderHistory = () => {
                                     <div className="order-total-row order-total-row--grand">
                                         <span>Total</span>
                                         <span>{formatMoney(order.total)}</span>
+                                        {order.paymentStatus && (
+                                            <span
+                                                className={`order-payment order-payment--${order.paymentStatus}`}
+                                            >
+                                                {order.paymentStatus === 'paid'
+                                                    ? 'Paid'
+                                                    : order.paymentStatus === 'pending'
+                                                    ? 'Unpaid'
+                                                    : order.paymentStatus}
+                                            </span>
+                                        )}
                                     </div>
                                 </div>
 

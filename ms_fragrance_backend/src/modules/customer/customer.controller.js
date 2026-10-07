@@ -155,6 +155,41 @@ function createCustomerController({ customerService }) {
                 return fail(res, error, 'Unable to place your order');
             }
         },
+
+        async createPaymentSession(req, res) {
+            const orderNumber = String(req.params.orderNumber || '').trim();
+
+            if (!orderNumber) {
+                return res.status(400).json({ success: false, message: 'Order number is required' });
+            }
+
+            try {
+                const session = await customerService.createPaymentSession(req.customer.id, orderNumber);
+                res.json({ success: true, ...session });
+            } catch (error) {
+                return fail(res, error, 'Unable to start payment session');
+            }
+        },
+
+        async verifyPayment(req, res) {
+            const orderNumber = String(req.params.orderNumber || '').trim();
+
+            if (!orderNumber) {
+                return res.status(400).json({ success: false, message: 'Order number is required' });
+            }
+
+            try {
+                const order = await customerService.verifyPayment(req.customer.id, {
+                    orderNumber,
+                    razorpayOrderId: req.body.razorpay_order_id,
+                    razorpayPaymentId: req.body.razorpay_payment_id,
+                    razorpaySignature: req.body.razorpay_signature,
+                });
+                res.json({ success: true, order });
+            } catch (error) {
+                return fail(res, error, 'Payment verification failed');
+            }
+        },
     };
 }
 

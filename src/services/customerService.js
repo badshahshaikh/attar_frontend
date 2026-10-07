@@ -116,3 +116,22 @@ export async function createOrder(payload) {
     const data = await sendAccount('/orders', { method: 'POST', body: payload });
     return data.order;
 }
+
+/** Creates a Razorpay order on the server (amount taken from DB total). */
+export async function createPaymentSession(orderNumber) {
+    const data = await sendAccount(`/orders/${encodeURIComponent(orderNumber)}/payment`, { method: 'POST' });
+    return data;
+}
+
+/** Verifies the HMAC and marks the local order paid. */
+export async function verifyPayment(orderNumber, proof) {
+    const data = await sendAccount(`/orders/${encodeURIComponent(orderNumber)}/payment/verify`, {
+        method: 'POST',
+        body: {
+            razorpay_order_id: proof.razorpayOrderId,
+            razorpay_payment_id: proof.razorpayPaymentId,
+            razorpay_signature: proof.razorpaySignature,
+        },
+    });
+    return data.order;
+}
