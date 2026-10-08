@@ -32,6 +32,7 @@ const Admin = () => {
                     <Link to="/admin/brands" className="btn btn-outline">Brands</Link>
                     <Link to="/admin/categories" className="btn btn-outline">Categories</Link>
                     <Link to="/admin/customers" className="btn btn-outline">Customers</Link>
+                    <Link to="/admin/orders" className="btn btn-outline">Orders</Link>
                     <Link to="/admin/footer" className="btn btn-outline">Footer Settings</Link>
                 </div>
                 <div style={{ marginTop: '2rem' }}>

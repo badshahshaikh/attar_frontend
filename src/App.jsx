@@ -23,6 +23,7 @@ const FooterSettings = lazy(() => import('./pages/Admin/FooterSettings'));
 const Brands = lazy(() => import('./pages/Admin/Brands'));
 const Categories = lazy(() => import('./pages/Admin/Categories'));
 const Customers = lazy(() => import('./pages/Admin/Customers'));
+const Orders = lazy(() => import('./pages/Admin/Orders'));
 
 const PublicLayout = lazy(() => import('./components/layouts/PublicLayout'));
 const AdminLayout = lazy(() => import('./components/admin/AdminLayout'));
@@ -85,6 +86,7 @@ function App() {
                             <Route path="/admin/brands" element={<Brands />} />
                             <Route path="/admin/categories" element={<Categories />} />
                             <Route path="/admin/customers" element={<Customers />} />
+                            <Route path="/admin/orders" element={<Orders />} />
                             <Route path="/admin/footer-settings" element={<FooterSettings />} />
                           </Route>
                         </Route>

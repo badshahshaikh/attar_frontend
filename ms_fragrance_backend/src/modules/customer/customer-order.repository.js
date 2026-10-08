@@ -154,6 +154,95 @@ function createCustomerOrderRepository({ query, withTransaction }) {
             }
         },
 
+        // ── Admin listing ───────────────────────────────────────────────────
+        // All orders across every customer, LEFT JOINed to the owning account
+        // for name/email/phone. user_id is nullable (history survives account
+        // deletion), so contact_* remains the fallback. Explicit columns only —
+        // u.password_hash is never selected.
+        async findAllAdmin({ search = '', status = '', paymentStatus = '', page = 1, limit = 50 } = {}) {
+            const conditions = [];
+            const values = [];
+
+            const term = String(search || '').trim();
+            if (term) {
+                values.push(`%${term}%`);
+                conditions.push(`(o.order_number ILIKE $1
+                    OR u.full_name ILIKE $1
+                    OR u.email ILIKE $1
+                    OR u.phone ILIKE $1
+                    OR o.contact_name ILIKE $1
+                    OR o.contact_phone ILIKE $1)`);
+            }
+
+            if (status) {
+                values.push(status);
+                conditions.push(`o.status = $${values.length}`);
+            }
+
+            if (paymentStatus) {
+                values.push(paymentStatus);
+                conditions.push(`o.payment_status = $${values.length}`);
+            }
+
+            const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+
+            const countResult = await query(
+                `SELECT COUNT(*)::int AS total
+                 FROM public.orders o
+                 LEFT JOIN public.users u ON u.id = o.user_id
+                 ${where}`,
+                values
+            );
+
+            const limitIndex = values.length + 1;
+            const offsetIndex = values.length + 2;
+
+            const result = await query(
+                `SELECT o.id, o.order_number, o.user_id, o.status, o.payment_status,
+                        o.subtotal, o.shipping, o.total,
+                        o.contact_name, o.contact_phone, o.created_at, o.updated_at,
+                        u.full_name, u.email, u.phone
+                 FROM public.orders o
+                 LEFT JOIN public.users u ON u.id = o.user_id
+                 ${where}
+                 ORDER BY o.created_at DESC, o.id DESC
+                 LIMIT $${limitIndex}
+                 OFFSET $${offsetIndex}`,
+                [...values, limit, (page - 1) * limit]
+            );
+
+            return {
+                rows: result.rows,
+                total: countResult.rows[0].total
+            };
+        },
+
+        // Single order for the admin View action: full order columns + the
+        // joined account, then stitched with its order_items rows.
+        async findByIdAdmin(id) {
+            const result = await query(
+                `SELECT o.id, o.order_number, o.user_id, o.status, o.payment_status,
+                        o.subtotal, o.shipping, o.total,
+                        o.contact_name, o.contact_phone, o.shipping_address, o.notes, o.source,
+                        o.created_at, o.updated_at,
+                        u.full_name, u.email, u.phone
+                 FROM public.orders o
+                 LEFT JOIN public.users u ON u.id = o.user_id
+                 WHERE o.id = $1`,
+                [id]
+            );
+
+            const order = result.rows[0];
+            if (!order) return null;
+
+            const items = await query(
+                `SELECT ${ITEM_COLUMNS} FROM public.order_items WHERE order_id = $1 ORDER BY id ASC`,
+                [id]
+            );
+
+            return stitchItems([order], items.rows)[0];
+        },
+
         async create(userId, { orderNumber, address, contactName, contactPhone, notes, source, lines, subtotal, shipping, total }) {
             try {
                 return await withTransaction(async (client) => {
