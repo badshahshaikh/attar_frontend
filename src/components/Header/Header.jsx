@@ -295,6 +295,7 @@ const Header = () => {
                                         <div className="search-results">
                                             {searchLoading ? (
                                                 <div className="search-loading">
+                                                    <span className="search-spinner" aria-hidden="true"></span>
                                                     Searching...
                                                 </div>
                                             ) : searchResults.length > 0 ? (
@@ -303,10 +304,6 @@ const Header = () => {
                                                         key={product.id}
                                                         to={`/product/${product.id}`}
                                                         className="search-result-item"
-                                                        style={{
-                                                            display: 'flex',
-                                                            textDecoration: 'none'
-                                                        }}
                                                         onClick={() => {
                                                             setIsSearchOpen(false);
                                                             setSearchQuery('');
@@ -321,11 +318,19 @@ const Header = () => {
                                                             <h4>{product.name}</h4>
                                                             <span>{product.fragranceType}</span>
                                                         </div>
+
+                                                        {product.price != null && (
+                                                            <span className="search-result-price">
+                                                                ₹{product.price.toLocaleString()}
+                                                            </span>
+                                                        )}
                                                     </Link>
                                                 ))
                                             ) : (
                                                 <div className="search-no-results">
-                                                    No products found.
+                                                    <Search size={22} strokeWidth={1.5} />
+                                                    <p>No products found</p>
+                                                    <span>Try a different keyword or check the spelling.</span>
                                                 </div>
                                             )}
                                         </div>
@@ -401,14 +406,18 @@ const Header = () => {
 
                                         {searchQuery.trim() && (
                                             <div className="search-results">
-                                                {searchResults.length > 0 ? (
+                                                {searchLoading ? (
+                                                    <div className="search-loading">
+                                                        <span className="search-spinner" aria-hidden="true"></span>
+                                                        Searching...
+                                                    </div>
+                                                ) : searchResults.length > 0 ? (
                                                     searchResults.map(product => (
                                                         <Link
                                                             key={product.id}
                                                             to={`/product/${product.id}`}
                                                             className="search-result-item"
-                                                            style={{ display: 'flex', textDecoration: 'none' }}
-                                                            onClick={(e) => {
+                                                            onClick={() => {
                                                                 setIsSearchOpen(false);
                                                                 setSearchQuery('');
                                                             }}
@@ -418,10 +427,19 @@ const Header = () => {
                                                                 <h4>{product.name}</h4>
                                                                 <span>{product.fragranceType}</span>
                                                             </div>
+                                                            {product.price != null && (
+                                                                <span className="search-result-price">
+                                                                    ₹{product.price.toLocaleString()}
+                                                                </span>
+                                                            )}
                                                         </Link>
                                                     ))
                                                 ) : (
-                                                    <div className="search-no-results">No products found.</div>
+                                                    <div className="search-no-results">
+                                                        <Search size={22} strokeWidth={1.5} />
+                                                        <p>No products found</p>
+                                                        <span>Try a different keyword or check the spelling.</span>
+                                                    </div>
                                                 )}
                                             </div>
                                         )}
