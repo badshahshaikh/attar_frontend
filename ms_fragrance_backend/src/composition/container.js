@@ -10,6 +10,7 @@ import { createAuthController } from '../modules/auth/auth.controller.js';
 import { createAuthRouter } from '../modules/auth/auth.routes.js';
 import { createSettingsContainer } from '../modules/settings/settings.container.js';
 import { createCustomerContainer } from '../modules/customer/customer.container.js';
+import { createUsersContainer } from '../modules/users/users.container.js';
 
 function createContainer(dependencies = {}) {
     const query = dependencies.query || database.query;
@@ -36,12 +37,16 @@ function createContainer(dependencies = {}) {
     // Customer accounts module (addresses + orders)
     const customerContainer = createCustomerContainer({ query });
 
+    // Registered users (customers) admin module — reuses the auth user repository
+    const usersContainer = createUsersContainer({ userRepository });
+
     return Object.freeze({
         productRouter: productsContainer.productRouter,
         catalogRouter: catalogContainer.catalogRouter,
         authRouter: createAuthRouter(authController),
         settingsRouter: settingsContainer.settingsRouter,
         customerRouter: customerContainer.customerRouter,
+        usersRouter: usersContainer.usersRouter,
     });
 }
 

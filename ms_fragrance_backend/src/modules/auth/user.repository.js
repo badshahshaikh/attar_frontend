@@ -64,6 +64,44 @@ function createUserRepository({ query }) {
         async touchLastLogin(id) {
             await query('UPDATE users SET last_login_at = NOW() WHERE id = $1', [id]);
         },
+
+        // Admin listing: paginated search across name/email/phone.
+        // Selects only CUSTOMER_COLUMNS so password material can never leak.
+        async findAllCustomers({ search = '', page = 1, limit = 50 } = {}) {
+            const values = [];
+            const conditions = [`role = 'customer'`];
+
+            const term = String(search || '').trim();
+            if (term) {
+                values.push(`%${term}%`);
+                conditions.push('(full_name ILIKE $1 OR email ILIKE $1 OR phone ILIKE $1)');
+            }
+
+            const where = `WHERE ${conditions.join(' AND ')}`;
+
+            const countResult = await query(
+                `SELECT COUNT(*)::int AS total FROM users ${where}`,
+                values
+            );
+
+            const limitIndex = values.length + 1;
+            const offsetIndex = values.length + 2;
+
+            const result = await query(
+                `SELECT ${CUSTOMER_COLUMNS}
+                 FROM users
+                 ${where}
+                 ORDER BY created_at DESC, id DESC
+                 LIMIT $${limitIndex}
+                 OFFSET $${offsetIndex}`,
+                [...values, limit, (page - 1) * limit]
+            );
+
+            return {
+                rows: result.rows,
+                total: countResult.rows[0].total
+            };
+        },
     };
 }
 
