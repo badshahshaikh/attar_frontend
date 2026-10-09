@@ -309,3 +309,26 @@
         padding: 24px 20px;
     }
 }
+
+.cart-item-out-of-stock {
+    display: inline-block;
+    margin-top: 4px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: #fdecea;
+    color: #c0392b;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.cart-stock-warning {
+    margin-top: 10px;
+    font-size: 13px;
+    color: #c0392b;
+    text-align: center;
+}
+
+.cart-checkout-blocked .checkout-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}

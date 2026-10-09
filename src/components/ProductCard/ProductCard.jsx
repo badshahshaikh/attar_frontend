@@ -3,18 +3,24 @@ import { Heart, Eye, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useWishlist } from '../../context/WishlistContext';
 import { useCart } from '../../context/CartContext';
+import { isProductAvailable } from '../../utils/stock';
 import './ProductCard.css';
 
 const ProductCard = ({ product }) => {
     const { toggleWishlist, isInWishlist } = useWishlist();
     const { dispatch } = useCart();
     const inWishlist = isInWishlist(product.id);
+    const available = isProductAvailable(product);
 
     // Same cart item shape and default size selection as ProductDetails.handleAddToCart
     const handleAddToCart = (e) => {
         // This is an action button, not a link — never navigate
         e.preventDefault();
         e.stopPropagation();
+
+        if (!available) {
+            return;
+        }
 
         const selectedSize = product.sizes[0] || '';
         const currentPrice = product.sizePricing[selectedSize] || product.price || 0;
@@ -28,7 +34,9 @@ const ProductCard = ({ product }) => {
                 quantity: 1,
                 price: currentPrice,
                 total: currentPrice,
-                image: product.imageUrl
+                image: product.imageUrl,
+                inStock: product.inStock,
+                stockQuantity: product.stockQuantity
             }
         });
     };
@@ -36,7 +44,7 @@ const ProductCard = ({ product }) => {
     return (
         <div className="product-card group">
             <Link to={`/product/${product.id}`} className="product-image-container" style={{ display: 'block' }}>
-                {!product.inStock ? (
+                {!available ? (
                     <span className="product-badge sold-out">Sold Out</span>
                 ) : product.isNew ? (
                     <span className="product-badge new">New</span>
@@ -127,8 +135,9 @@ const ProductCard = ({ product }) => {
                     className="btn btn-outline add-to-cart-btn"
                     style={{ display: 'flex', justifyContent: 'center' }}
                     onClick={handleAddToCart}
+                    disabled={!available}
                 >
-                    Add to Cart
+                    {available ? 'Add to Cart' : 'Out of Stock'}
                 </button>
             </div>
         </div>

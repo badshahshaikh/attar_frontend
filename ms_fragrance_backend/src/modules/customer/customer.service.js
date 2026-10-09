@@ -57,7 +57,37 @@ function createCustomerService({ addressRepository, orderRepository, razorpayKey
                 throw new AppError('One of the products in your cart no longer exists', 400, 'PRODUCT_MISSING');
             }
 
+            // Early, friendly availability check so the shopper gets a clear
+            // message before the order is attempted. The database transaction is
+            // still the authoritative guard against overselling; this only
+            // improves the error for the common "sold out while I was browsing"
+            // case and mirrors the frontend availability rule (in_stock AND
+            // stock_quantity > 0).
+            const stockQuantity = Number(product.stock_quantity);
+            const available = product.in_stock === true && Number.isFinite(stockQuantity) && stockQuantity > 0;
+
+            if (!available) {
+                throw new AppError(
+                    `"${product.name}" is currently out of stock`,
+                    409,
+                    'INSUFFICIENT_STOCK'
+                );
+            }
+
+            if (item.quantity > stockQuantity) {
+                throw new AppError(
+                    `Sorry, "${product.name}" has only ${stockQuantity} unit${stockQuantity === 1 ? '' : 's'} left`,
+                    409,
+                    'INSUFFICIENT_STOCK'
+                );
+            }
+
             const unitPrice = priceForSize(product, item.size);
+
+            // Frontend guards are advisory only. The authoritative, race-safe
+            // deduction (and final overselling guard) happens inside the
+            // repository transaction; the checks above fail fast with a clear
+            // message for the common "sold out while I was browsing" case.
 
             return {
                 productId: item.productId,

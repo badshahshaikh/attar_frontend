@@ -1,4 +1,5 @@
 import { logger } from '../../shared/logging/logger.js';
+import AppError from '../../core/errors/AppError.js';
 
 const ORDER_COLUMNS = `id, order_number, status, subtotal, shipping, total,
     contact_name, contact_phone, shipping_address, notes, source,
@@ -12,7 +13,7 @@ function createCustomerOrderRepository({ query, withTransaction }) {
         // always read from the database, never from the request.
         async findProductsByIds(ids) {
             const result = await query(
-                'SELECT id, name, price, size_pricing FROM public.products WHERE id = ANY($1::bigint[])',
+                'SELECT id, name, price, size_pricing, in_stock, stock_quantity FROM public.products WHERE id = ANY($1::bigint[])',
                 [ids]
             );
             return result.rows;
@@ -246,6 +247,62 @@ function createCustomerOrderRepository({ query, withTransaction }) {
         async create(userId, { orderNumber, address, contactName, contactPhone, notes, source, lines, subtotal, shipping, total }) {
             try {
                 return await withTransaction(async (client) => {
+                    // Atomically reserve stock BEFORE inserting the order. Each
+                    // product row is locked FOR UPDATE so two customers buying
+                    // the last unit serialise; the UPDATE only succeeds when
+                    // stock_quantity is still >= the requested amount, so an
+                    // overselling race loses and the thrown error rolls the
+                    // whole transaction back (no partial order, no partial
+                    // deduction). in_stock is kept in sync: false at zero,
+                    // true whenever positive stock remains.
+                    for (const line of lines) {
+                        const needed = Number(line.quantity) || 0;
+                        const locked = await client.query(
+                            `SELECT id, name, in_stock, stock_quantity FROM public.products WHERE id = $1 FOR UPDATE`,
+                            [line.productId]
+                        );
+                        const product = locked.rows[0];
+
+                        if (!product) {
+                            throw new AppError(
+                                'One of the products in your cart no longer exists',
+                                400,
+                                'PRODUCT_MISSING'
+                            );
+                        }
+
+                        const deducted = await client.query(
+                            `UPDATE public.products
+                                SET stock_quantity = stock_quantity - $2,
+                                    in_stock = (stock_quantity - $2) > 0,
+                                    updated_at = NOW()
+                              WHERE id = $1 AND stock_quantity >= $2 AND in_stock = TRUE
+                              RETURNING stock_quantity`,
+                            [line.productId, needed]
+                        );
+
+                        if (deducted.rows.length === 0) {
+                            // Distinguish the two guard failures: the product was
+                            // disabled by an admin (in_stock FALSE) or there are
+                            // genuinely not enough units. Both roll the whole
+                            // transaction back with a clear 409.
+                            if (product.in_stock === false) {
+                                throw new AppError(
+                                    `Sorry, "${product.name}" is currently out of stock`,
+                                    409,
+                                    'INSUFFICIENT_STOCK'
+                                );
+                            }
+
+                            const available = Number(product.stock_quantity) || 0;
+                            throw new AppError(
+                                `Sorry, "${product.name}" has only ${available} unit${available === 1 ? '' : 's'} left`,
+                                409,
+                                'INSUFFICIENT_STOCK'
+                            );
+                        }
+                    }
+
                     const inserted = await client.query(
                         `INSERT INTO public.orders
                             (order_number, user_id, status, subtotal, shipping, total,

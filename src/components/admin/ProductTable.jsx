@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { isProductAvailable } from '../../utils/stock';
 
 export default function ProductTable({ products, deletingId, onDelete }) {
     return (
@@ -20,7 +21,7 @@ export default function ProductTable({ products, deletingId, onDelete }) {
                             <td>{product.brand || '-'}</td>
                             <td>{product.fragranceType || product.category || '-'}</td>
                             <td>Rs. {Number(product.price || 0).toLocaleString('en-IN')}</td>
-                            <td><span className={product.inStock ? 'status status-good' : 'status'}>{product.inStock ? 'In stock' : 'Out of stock'}</span></td>
+                            <td><span className={isProductAvailable(product) ? 'status status-good' : 'status'}>{isProductAvailable(product) ? 'In stock' : 'Out of stock'}</span></td>
                             <td >
                                 <div className="admin-row-actions" >
                                     <Link className="btn btn-outline btn-small" to={`/admin/products/${product.id}/edit`}>Edit</Link>

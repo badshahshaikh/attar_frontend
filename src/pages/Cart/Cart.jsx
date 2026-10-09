@@ -1,12 +1,58 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Trash2, Plus, Minus, ArrowLeft } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
+import { hasStockMetadata } from '../../context/cartReducer';
+import { getAvailableStock, isProductAvailable } from '../../utils/stock';
+import { fetchProductById } from '../../services/productService';
 import './Cart.css';
 
 const Cart = () => {
     const { state, dispatch, cartSubtotal } = useCart();
     const { items } = state;
+
+    // Revalidate stock against the backend: the basket is persisted in
+    // localStorage, so its inStock/stockQuantity snapshot can be stale (the
+    // product may have sold out in another tab or on another device). A failed
+    // refresh keeps the stored values - the server re-validates stock again,
+    // atomically, when the order is placed.
+    const cartProductKey = items.map(item => item.productId).join(',');
+    useEffect(() => {
+        if (!cartProductKey) return undefined;
+
+        let cancelled = false;
+        const ids = [...new Set(cartProductKey.split(',').map(Number))];
+
+        Promise.all(
+            ids.map(id =>
+                fetchProductById(id)
+                    .then(product => ({
+                        productId: Number(product.id),
+                        inStock: product.inStock,
+                        stockQuantity: product.stockQuantity,
+                    }))
+                    .catch(() => null)
+            )
+        ).then(snapshots => {
+            if (cancelled) return;
+            const fresh = snapshots.filter(Boolean);
+            if (fresh.length > 0) {
+                dispatch({ type: 'REFRESH_STOCK', payload: fresh });
+            }
+        });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [cartProductKey, dispatch]);
+
+    // Known-unavailable = the line carries a stock snapshot and that snapshot
+    // either fails the availability rule (inStock AND quantity > 0) or has been
+    // clamped to zero. Lines without metadata are left alone until the refresh
+    // above delivers a snapshot; the backend rejects them regardless.
+    const isKnownUnavailable = (item) =>
+        hasStockMetadata(item) && (!isProductAvailable(item) || item.quantity < 1);
+    const hasUnavailableItem = items.some(isKnownUnavailable);
 
     const shippingCharge = items.length > 0 ? (cartSubtotal > 5000 ? 0 : 150) : 0;
     const finalTotal = cartSubtotal + shippingCharge;
@@ -72,6 +118,9 @@ const Cart = () => {
                                     <div className="cart-item-details">
                                         <Link to={`/product/${item.productId}`} className="cart-item-name">{item.name}</Link>
                                         <span className="cart-item-size">Size: {item.size}</span>
+                                        {isKnownUnavailable(item) && (
+                                            <span className="cart-item-out-of-stock">Out of Stock</span>
+                                        )}
                                         {/* Mobile only elements */}
                                         <div className="mobile-price">₹{item.price.toLocaleString()}</div>
                                         <button
@@ -89,11 +138,11 @@ const Cart = () => {
 
                                 <div className="cart-item-qty">
                                     <div className="qty-selector small">
-                                        <button onClick={() => handleQuantityChange(item.productId, item.size, 'dec', item.quantity)}>
+                                        <button onClick={() => handleQuantityChange(item.productId, item.size, 'dec', item.quantity)} disabled={item.quantity <= 1}>
                                             <Minus size={14} />
                                         </button>
                                         <span>{item.quantity}</span>
-                                        <button onClick={() => handleQuantityChange(item.productId, item.size, 'inc', item.quantity)}>
+                                        <button onClick={() => handleQuantityChange(item.productId, item.size, 'inc', item.quantity)} disabled={item.quantity >= getAvailableStock(item)}>
                                             <Plus size={14} />
                                         </button>
                                     </div>
@@ -139,9 +188,20 @@ const Cart = () => {
                             <span>₹{finalTotal.toLocaleString()}</span>
                         </div>
 
-                        <Link to="/checkout" className="btn btn-primary checkout-btn btn-lg w-100" style={{ display: 'flex', justifyContent: 'center' }}>
-                            Proceed to Checkout
-                        </Link>
+                        {hasUnavailableItem ? (
+                            <div className="cart-checkout-blocked">
+                                <button className="btn btn-primary checkout-btn btn-lg w-100" disabled>
+                                    Proceed to Checkout
+                                </button>
+                                <p className="cart-stock-warning">
+                                    Some items in your cart are out of stock. Remove them to continue.
+                                </p>
+                            </div>
+                        ) : (
+                            <Link to="/checkout" className="btn btn-primary checkout-btn btn-lg w-100" style={{ display: 'flex', justifyContent: 'center' }}>
+                                Proceed to Checkout
+                            </Link>
+                        )}
 
                         <div className="secure-checkout">
                             <span>Secured & Encrypted checkout</span>

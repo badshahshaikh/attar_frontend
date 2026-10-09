@@ -11,6 +11,8 @@ const MOGRA = {
     name: 'Mogra Attar',
     price: 500,
     size_pricing: { '3ml': 249, '6ml': 449 },
+    in_stock: true,
+    stock_quantity: 10,
 };
 
 const SAVED_ADDRESS = {
@@ -123,7 +125,7 @@ test('shipping is 150 under the threshold and free above it', async () => {
 
     const rich = build({
         orderRepository: {
-            findProductsByIds: async () => [{ id: 9, name: 'Oud', price: 9000, size_pricing: {} }],
+            findProductsByIds: async () => [{ id: 9, name: 'Oud', price: 9000, size_pricing: {}, in_stock: true, stock_quantity: 10 }],
         },
     });
     const richOrder = await rich.service.createOrder(1, {
@@ -225,4 +227,75 @@ test('a duplicate order number is retried', async () => {
 
     assert.equal(attempts, 2, 'the first collision should be retried');
     assert.ok(order.orderNumber);
+});
+
+// ── Service-level stock pre-check (buildLines) ──────────────────────────────
+// The database transaction is the authoritative guard against overselling, but
+// the service performs an early, friendly availability check so a shopper whose
+// item sold out while browsing gets a clear message before the order is
+// attempted. These pin the availability rule (in_stock AND stock_quantity > 0)
+// and the per-item quantity ceiling at the service layer.
+
+function buildWithProducts(products) {
+    return build({ orderRepository: { findProductsByIds: async () => products } });
+}
+
+test('checkout rejects a product flagged in stock but with zero quantity', async () => {
+    const { service } = buildWithProducts([
+        { id: 3, name: 'Mogra Attar', price: 500, size_pricing: { '3ml': 249 }, in_stock: true, stock_quantity: 0 },
+    ]);
+
+    await assert.rejects(
+        () => service.createOrder(1, {
+            addressId: 11,
+            items: [{ productId: 3, size: '3ml', quantity: 1 }],
+            source: 'web',
+        }),
+        error => error.statusCode === 409 && error.code === 'INSUFFICIENT_STOCK' && /out of stock/i.test(error.message)
+    );
+});
+
+test('checkout rejects a product flagged out of stock even with quantity', async () => {
+    const { service } = buildWithProducts([
+        { id: 3, name: 'Mogra Attar', price: 500, size_pricing: { '3ml': 249 }, in_stock: false, stock_quantity: 5 },
+    ]);
+
+    await assert.rejects(
+        () => service.createOrder(1, {
+            addressId: 11,
+            items: [{ productId: 3, size: '3ml', quantity: 1 }],
+            source: 'web',
+        }),
+        error => error.code === 'INSUFFICIENT_STOCK'
+    );
+});
+
+test('checkout rejects a quantity larger than the available stock', async () => {
+    const { service } = buildWithProducts([
+        { id: 3, name: 'Mogra Attar', price: 500, size_pricing: { '3ml': 249 }, in_stock: true, stock_quantity: 3 },
+    ]);
+
+    await assert.rejects(
+        () => service.createOrder(1, {
+            addressId: 11,
+            items: [{ productId: 3, size: '3ml', quantity: 5 }],
+            source: 'web',
+        }),
+        error => error.statusCode === 409 && error.code === 'INSUFFICIENT_STOCK' && /only 3 units/.test(error.message)
+    );
+});
+
+test('checkout accepts a quantity equal to the available stock (low stock)', async () => {
+    const { service, created } = buildWithProducts([
+        { id: 3, name: 'Mogra Attar', price: 500, size_pricing: { '3ml': 249 }, in_stock: true, stock_quantity: 2 },
+    ]);
+
+    const order = await service.createOrder(1, {
+        addressId: 11,
+        items: [{ productId: 3, size: '3ml', quantity: 2 }],
+        source: 'web',
+    });
+
+    assert.equal(created[0].lines[0].quantity, 2);
+    assert.equal(order.items[0].quantity, 2);
 });

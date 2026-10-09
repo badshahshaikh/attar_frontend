@@ -5,6 +5,7 @@ import ProductGrid from '../../components/ProductGrid/ProductGrid';
 import { useCart } from '../../context/CartContext';
 import { useWishlist } from '../../context/WishlistContext';
 import { useProducts } from '../../context/ProductContext';
+import { isProductAvailable, getAvailableStock, clampQuantity } from '../../utils/stock';
 import './ProductDetails.css';
 
 const ProductDetails = () => {
@@ -26,7 +27,7 @@ const ProductDetails = () => {
             const firstSize = foundProduct.sizes[0] || '';
             setSelectedSize(firstSize);
             setCurrentPrice(foundProduct.sizePricing[firstSize] || foundProduct.price || 0);
-            setQuantity(1);
+            setQuantity(clampQuantity(1, foundProduct));
             const galleryImages = Array.isArray(foundProduct.imageUrls) && foundProduct.imageUrls.length > 0
                 ? foundProduct.imageUrls
                 : (foundProduct.imageUrl ? [foundProduct.imageUrl] : []);
@@ -51,23 +52,42 @@ const ProductDetails = () => {
         setCurrentPrice(product.sizePricing[size] || product.price || 0);
     };
 
+    // A product is sellable only when it is flagged in stock AND has a positive
+    // quantity. Never let the picker exceed what is actually available.
+    const available = isProductAvailable(product);
+    const maxStock = getAvailableStock(product);
+    const atStockLimit = quantity >= maxStock;
+
     const handleQuantityChange = (type) => {
         if (type === 'inc') {
-            setQuantity(prev => prev + 1);
+            setQuantity(prev => clampQuantity(prev + 1, product));
         } else if (type === 'dec' && quantity > 1) {
             setQuantity(prev => prev - 1);
         }
     };
 
     const handleAddToCart = () => {
+        // Re-check availability at the moment of adding; clamp to stock so a
+        // stale quantity can never push more units into the cart than exist.
+        if (!available) {
+            return;
+        }
+
+        const safeQuantity = clampQuantity(quantity, product);
+        if (safeQuantity < 1) {
+            return;
+        }
+
         const cartItem = {
             productId: product.id,
             name: product.name,
             size: selectedSize,
-            quantity: quantity,
+            quantity: safeQuantity,
             price: currentPrice,
-            total: currentPrice * quantity,
-            image: product.imageUrl
+            total: currentPrice * safeQuantity,
+            image: product.imageUrl,
+            inStock: product.inStock,
+            stockQuantity: product.stockQuantity
         };
         dispatch({ type: 'ADD_TO_CART', payload: cartItem });
         navigate('/cart');
@@ -149,16 +169,16 @@ const ProductDetails = () => {
 
                     <div className="action-row">
                         <div className="qty-selector">
-                            <button onClick={() => handleQuantityChange('dec')}><Minus size={16} /></button>
+                            <button onClick={() => handleQuantityChange('dec')} disabled={!available || quantity <= 1}><Minus size={16} /></button>
                             <span>{quantity}</span>
-                            <button onClick={() => handleQuantityChange('inc')}><Plus size={16} /></button>
+                            <button onClick={() => handleQuantityChange('inc')} disabled={!available || atStockLimit}><Plus size={16} /></button>
                         </div>
                         <button
                             className="btn btn-primary add-to-cart-large"
                             onClick={handleAddToCart}
-                            disabled={!product.inStock}
+                            disabled={!available}
                         >
-                            {product.inStock ? `Add to Cart - ₹${(currentPrice * quantity).toLocaleString()}` : 'Out of Stock'}
+                            {available ? `Add to Cart - ₹${(currentPrice * quantity).toLocaleString()}` : 'Out of Stock'}
                         </button>
                         <button
                             className="btn-icon wishlist-btn-lg"

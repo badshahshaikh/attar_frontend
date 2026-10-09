@@ -7,5 +7,8 @@ import './unit/auth/customer-auth.test.js';
 import './integration/products/product-put-flow.test.js';
 import './unit/customer/customer-validator.test.js';
 import './unit/customer/customer-service.test.js';
+import './unit/customer/stock.util.test.js';
+import './unit/customer/cart.reducer.test.js';
+import './integration/customer/order-stock-deduction.test.js';
 import './integration/products/product-route-wiring.test.js';
 import './e2e/products/product-put.e2e.test.js';
