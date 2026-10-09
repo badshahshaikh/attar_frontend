@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { MessageCircle, ArrowLeft, CircleCheck, CreditCard } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
@@ -31,6 +31,13 @@ const Checkout = () => {
     const [whatsappUrl, setWhatsappUrl] = useState('');
     const [paying, setPaying] = useState(false);
 
+    // Refs mirror the in-flight flags synchronously. State updates are async,
+    // so without these two rapid clicks could both pass the `saving`/`paying`
+    // checks and fire duplicate createOrder calls (duplicate orders + double
+    // stock deduction). Refs flip immediately and close that race window.
+    const placingRef = useRef(false);
+    const payingRef = useRef(false);
+
     // Load saved addresses for signed-in customers so checkout is one tap.
     // All setState calls happen in the promise callback, never synchronously.
     useEffect(() => {
@@ -59,9 +66,31 @@ const Checkout = () => {
     const shippingCharge = cartSubtotal > 5000 ? 0 : 150;
     const finalTotal = cartSubtotal + shippingCharge;
 
-    const openWhatsApp = (message) => {
-        const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
-        window.open(url, '_blank');
+    const buildWhatsAppUrl = (message) =>
+        `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+
+    // WhatsApp must open synchronously inside the click handler. Browsers
+    // block `window.open` calls that happen after an `await` (the user-gesture
+    // context is lost), so we open a blank tab up-front and navigate it to
+    // the real URL once the order exists. If the popup is blocked entirely,
+    // `window.open` returns null and the stored URL keeps the on-page
+    // "Continue on WhatsApp" link working as a fallback.
+    const openWhatsAppTab = () => {
+        try {
+            const tab = window.open('', '_blank', 'noopener');
+            return tab;
+        } catch {
+            return null;
+        }
+    };
+
+    const navigateTab = (tab, message) => {
+        const url = buildWhatsAppUrl(message);
+        if (tab && !tab.closed) {
+            tab.location.href = url;
+        } else {
+            window.open(url, '_blank');
+        }
         return url;
     };
 
@@ -105,92 +134,148 @@ const Checkout = () => {
         return message;
     };
 
+    // Single shared order-creation path used by both checkout buttons, so the
+    // payload (and the one server-side stock deduction) can never diverge
+    // between the WhatsApp flow and the Pay-Online flow.
+    const placeOrderOnce = () => createOrder({
+        // Only trust the picker when it belongs to the current customer;
+        // otherwise fall through to the profile contact details.
+        addressId: addresses.length > 0 && addressId ? Number(addressId) : null,
+        // Without a saved address the server requires contact details,
+        // so fall back to what is on the profile.
+        contactName: user.fullName || undefined,
+        contactPhone: user.phone || undefined,
+        source: 'web',
+        items: items.map((item) => ({
+            productId: item.productId,
+            size: item.size,
+            quantity: item.quantity,
+        })),
+    });
+
     const handlePlaceOrder = async () => {
         setError('');
 
         // Guest: nothing is recorded server-side, keep the original flow.
+        // No async work happens first, so the user gesture is intact and the
+        // popup cannot be blocked.
         if (!user) {
-            openWhatsApp(buildGuestMessage());
+            window.open(buildWhatsAppUrl(buildGuestMessage()), '_blank');
             return;
         }
 
+        // Ref guard closes the double-click race (state is async); the button
+        // is also disabled while `saving` for normally-paced clicks. Also
+        // refuse while a Razorpay popup is in flight (`payingRef`) — the
+        // order already exists server-side, so placing again here would
+        // create a duplicate order and deduct stock a second time.
+        if (placingRef.current || payingRef.current) return;
+        placingRef.current = true;
+
+        // Open the tab synchronously in the click handler so the browser keeps
+        // the user-gesture context; it is navigated to the order URL below.
+        const tab = openWhatsAppTab();
+
         setSaving(true);
         try {
-            const order = await createOrder({
-                // Only trust the picker when it belongs to the current customer;
-                // otherwise fall through to the profile contact details.
-                addressId: addresses.length > 0 && addressId ? Number(addressId) : null,
-                // Without a saved address the server requires contact details,
-                // so fall back to what is on the profile.
-                contactName: user.fullName || undefined,
-                contactPhone: user.phone || undefined,
-                source: 'web',
-                items: items.map((item) => ({
-                    productId: item.productId,
-                    size: item.size,
-                    quantity: item.quantity,
-                })),
-            });
+            const order = await placeOrderOnce();
 
             setPlacedOrder(order);
-            setWhatsappUrl(openWhatsApp(buildOrderMessage(order)));
+            setWhatsappUrl(navigateTab(tab, buildOrderMessage(order)));
+            // Only clear after the server confirms — a failed request keeps
+            // the basket so the customer can retry without losing anything.
             dispatch({ type: 'CLEAR_CART' });
         } catch (err) {
+            // Order creation failed: close the pre-opened blank tab so the
+            // customer is not left staring at an empty page, then surface
+            // the server message (e.g. insufficient stock).
+            if (tab && !tab.closed) tab.close();
             setError(err.message || 'We could not place your order. Please try again.');
         } finally {
             setSaving(false);
+            placingRef.current = false;
         }
     };
 
     const handlePayOnline = async () => {
         setError('');
 
+        if (!user) return;
+        // Either flag means an order or payment is already in flight.
+        if (placingRef.current || payingRef.current) return;
+
         let order = placedOrder;
 
-        // Place the order first if it hasn't been placed yet.
-        if (!order && user) {
+        // Place the order first if it hasn't been placed yet. Stock is
+        // deducted exactly once inside this create() call; payment
+        // verification and webhooks only flip payment_status (markPaid),
+        // so retries below can never deduct stock again.
+        if (!order) {
+            placingRef.current = true;
             setSaving(true);
             try {
-                order = await createOrder({
-                    addressId: addresses.length > 0 && addressId ? Number(addressId) : null,
-                    contactName: user.fullName || undefined,
-                    contactPhone: user.phone || undefined,
-                    source: 'web',
-                    items: items.map((item) => ({
-                        productId: item.productId,
-                        size: item.size,
-                        quantity: item.quantity,
-                    })),
-                });
+                order = await placeOrderOnce();
                 setPlacedOrder(order);
-                setWhatsappUrl(openWhatsApp(buildOrderMessage(order)));
+                setWhatsappUrl(buildWhatsAppUrl(buildOrderMessage(order)));
                 dispatch({ type: 'CLEAR_CART' });
             } catch (err) {
                 setError(err.message || 'Could not place your order.');
-                setSaving(false);
                 return;
+            } finally {
+                setSaving(false);
+                placingRef.current = false;
             }
         }
 
-        if (!order || !user) return;
+        if (!order) return;
 
+        // The order now exists server-side, so Razorpay init failing here is
+        // safe: the customer retries payment against the SAME order (no new
+        // order, no second deduction) via the button or the success screen.
+        payingRef.current = true;
         setPaying(true);
+        // Capture the order number up-front: `order` is a render-local binding
+        // and a re-render mid-payment could otherwise leave the closure with
+        // a stale value when the proof finally arrives.
+        const payingOrderNumber = order.orderNumber;
         try {
             await openRazorpayCheckout({
-                orderNumber: order.orderNumber,
+                orderNumber: payingOrderNumber,
                 customer: user,
                 onSuccess: async (proof) => {
-                    const paid = await verifyPayment(order.orderNumber, proof);
-                    setPlacedOrder(paid);
-                    setError('');
-                },
+                    try {
+                        const paid = await verifyPayment(payingOrderNumber, proof);
+
+                        setPlacedOrder(paid);
+                        setError('');
+                    } catch (verifyErr) {
+                        setError(
+                            verifyErr.message ||
+                            'Payment may have succeeded, but verification failed. Please check your order status before trying again.'
+                        );
+
+                        // Important: let the payment handler know verification failed.
+                        throw verifyErr;
+                    }
+                }
             });
         } catch (err) {
-            if (err.code !== 'PAYMENT_FAILED') {
-                setError(err.message || 'Payment session could not be started.');
+            if (err?.code === 'PAYMENT_DISMISSED') {
+                // Customer closed the payment window.
+                setError('');
+            } else if (err?.code === 'PAYMENT_FAILED') {
+                setError(
+                    err.message || 'Payment failed. Please try again.'
+                );
+            } else {
+                setError(
+                    err?.message ||
+                    'Unable to complete payment. Check your order status before retrying.'
+                );
             }
         } finally {
             setPaying(false);
+            payingRef.current = false;
         }
     };
 
@@ -210,19 +295,26 @@ const Checkout = () => {
                             <button
                                 className="btn btn-primary btn-lg"
                                 onClick={handlePayOnline}
-                                disabled={paying}
+                                disabled={paying || saving}
                             >
                                 {paying ? 'Opening payment…' : 'Pay Online (UPI / Cards)'}
                             </button>
                         )}
-                        <a
-                            className="btn btn-whatsapp btn-lg"
-                            href={whatsappUrl}
-                            target="_blank"
-                            rel="noreferrer"
-                        >
-                            <MessageCircle size={20} /> {placedOrder.paymentStatus === 'paid' ? 'Open WhatsApp' : 'Continue on WhatsApp'}
-                        </a>
+
+                        {whatsappUrl && (
+                            <a
+                                className="btn btn-whatsapp btn-lg"
+                                href={whatsappUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                <MessageCircle size={20} />
+                                {placedOrder.paymentStatus === 'paid'
+                                    ? 'Open WhatsApp'
+                                    : 'Continue on WhatsApp'}
+                            </a>
+                        )}
+
                         <Link to="/account" className="btn btn-primary btn-lg">
                             View my orders
                         </Link>
@@ -356,7 +448,7 @@ const Checkout = () => {
                                     <button
                                         className="btn btn-primary btn-lg"
                                         onClick={handlePayOnline}
-                                        disabled={paying}
+                                        disabled={paying || saving || authLoading}
                                     >
                                         <CreditCard size={20} />
                                         {paying ? 'Opening payment…' : 'Pay Online (UPI / Cards)'}
