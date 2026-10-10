@@ -2,6 +2,8 @@ import { createOrdersRouter } from './orders.routes.js';
 import { createOrdersController } from './orders.controller.js';
 import GetOrdersUseCase from './application/use-cases/GetOrdersUseCase.js';
 import GetOrderByIdUseCase from './application/use-cases/GetOrderByIdUseCase.js';
+import UpdateOrderStatusUseCase from './application/use-cases/UpdateOrderStatusUseCase.js';
+import GenerateInvoiceUseCase from './application/use-cases/GenerateInvoiceUseCase.js';
 
 /**
  * OrdersContainer - Dependency injection container for the admin orders module
@@ -12,7 +14,7 @@ import GetOrderByIdUseCase from './application/use-cases/GetOrderByIdUseCase.js'
  * Dependency flow:
  * OrderRepository (existing, customer module)
  *   ↓
- * GetOrdersUseCase + GetOrderByIdUseCase
+ * GetOrdersUseCase + GetOrderByIdUseCase + UpdateOrderStatusUseCase + GenerateInvoiceUseCase
  *   ↓
  * OrdersController
  *   ↓
@@ -24,16 +26,25 @@ function createOrdersContainer(dependencies = {}) {
     // Application layer (use cases)
     const getOrdersUseCase = new GetOrdersUseCase(orderRepository);
     const getOrderByIdUseCase = new GetOrderByIdUseCase(orderRepository);
+    const updateOrderStatusUseCase = new UpdateOrderStatusUseCase(orderRepository);
+    const generateInvoiceUseCase = new GenerateInvoiceUseCase(orderRepository);
 
     // Presentation layer
-    const ordersController = createOrdersController({ getOrdersUseCase, getOrderByIdUseCase });
+    const ordersController = createOrdersController({
+        getOrdersUseCase,
+        getOrderByIdUseCase,
+        updateOrderStatusUseCase,
+        generateInvoiceUseCase,
+    });
 
     const ordersRouter = createOrdersRouter(ordersController);
 
     return Object.freeze({
         ordersRouter,
         getOrdersUseCase,
-        getOrderByIdUseCase
+        getOrderByIdUseCase,
+        updateOrderStatusUseCase,
+        generateInvoiceUseCase
     });
 }
 

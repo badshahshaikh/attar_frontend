@@ -244,6 +244,54 @@ function createCustomerOrderRepository({ query, withTransaction }) {
             return stitchItems([order], items.rows)[0];
         },
 
+        // ── Admin status update ───────────────────────────────────────────
+        // Updates ONLY the status columns explicitly supplied (status and/or
+        // payment_status) and leaves every other column — subtotal, shipping,
+        // total, stock-affecting fields, razorpay ids — untouched. Column names
+        // are built from a fixed allow-list in the caller, never from raw input,
+        // and every value is passed as a parameterized bind. Returns the full
+        // stitched order (same shape as findByIdAdmin) so the API response and
+        // the admin UI can reflect exactly what was persisted, or null when no
+        // order with that id exists.
+        async updateOrderStatus(id, { status, paymentStatus }) {
+            const assignments = [];
+            const values = [];
+
+            if (status !== undefined) {
+                values.push(status);
+                assignments.push(`status = $${values.length}`);
+            }
+
+            if (paymentStatus !== undefined) {
+                values.push(paymentStatus);
+                assignments.push(`payment_status = $${values.length}`);
+            }
+
+            // Caller guarantees at least one field, but guard defensively so a
+            // stray call can never issue an UPDATE with an empty SET clause.
+            if (assignments.length === 0) {
+                return this.findByIdAdmin(id);
+            }
+
+            assignments.push('updated_at = NOW()');
+            values.push(id);
+
+            const result = await query(
+                `UPDATE public.orders
+                    SET ${assignments.join(', ')}
+                  WHERE id = $${values.length}
+                  RETURNING id`,
+                values
+            );
+
+            // No row updated means the order does not exist.
+            if (result.rows.length === 0) return null;
+
+            // Read the row back through the same admin query as the View action
+            // so the response is identical to a freshly fetched order.
+            return this.findByIdAdmin(id);
+        },
+
         async create(userId, { orderNumber, address, contactName, contactPhone, notes, source, lines, subtotal, shipping, total }) {
             try {
                 return await withTransaction(async (client) => {

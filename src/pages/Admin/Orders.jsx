@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { fetchOrders, fetchOrderDetails } from '../../services/adminOrderService';
+import { FileText, MessageCircle } from 'lucide-react';
+import { fetchOrders, fetchOrderDetails, updateOrderStatus, downloadInvoice } from '../../services/adminOrderService';
+import {
+    normalizeWhatsAppPhone,
+    buildInvoiceShareMessage,
+    buildWhatsAppInvoiceUrl,
+    saveBlob,
+} from '../../features/admin/orders/utils/invoiceShare';
 import './Orders.css';
 
 const STATUS_LABELS = {
@@ -70,6 +77,19 @@ export default function Orders() {
         const [detailLoading, setDetailLoading] = useState(false);
         const [detailError, setDetailError] = useState('');
 
+        // Status update state (independent for order status vs payment status).
+        // `savingField` tracks which dropdown is mid-save so only that control
+        // shows a disabled/loading state.
+        const [savingField, setSavingField] = useState('');
+        const [statusError, setStatusError] = useState('');
+        const [statusSuccess, setStatusSuccess] = useState('');
+
+        // Invoice actions state. `invoiceBusy` blocks repeated clicks while a PDF
+        // is generating; `invoiceMessage` carries success/error feedback.
+        const [invoiceBusy, setInvoiceBusy] = useState('');
+        const [invoiceMessage, setInvoiceMessage] = useState('');
+        const [invoiceError, setInvoiceError] = useState('');
+
         const load = async () => {
             setLoading(true);
             setError('');
@@ -122,7 +142,157 @@ export default function Orders() {
             setSelectedOrder(null);
             setDetail(null);
             setDetailError('');
+            setSavingField('');
+            setStatusError('');
+            setStatusSuccess('');
+            setInvoiceBusy('');
+            setInvoiceMessage('');
+            setInvoiceError('');
         };
+
+        // Save one status field (order status OR payment status — never both).
+        // The server validates + persists and returns the updated order, which
+        // becomes the new source of truth for the modal and the underlying row
+        // so the UI never assumes the change succeeded.
+        const handleStatusChange = async (field, value) => {
+            if (!detail || savingField) return;
+
+            setSavingField(field);
+            setStatusError('');
+            setStatusSuccess('');
+
+            try {
+                const result = await updateOrderStatus(detail.id, { [field]: value });
+                const updated = result.order;
+
+                // Reflect the saved order: update the modal and the table row.
+                setDetail(updated);
+                setData(prev => ({
+                    ...prev,
+                    orders: prev.orders.map(order =>
+                        order.id === updated.id
+                            ? { ...order, status: updated.status, paymentStatus: updated.paymentStatus, updatedAt: updated.updatedAt }
+                            : order
+                    ),
+                }));
+                if (selectedOrder && selectedOrder.id === updated.id) {
+                    setSelectedOrder(prev => ({ ...prev, status: updated.status, paymentStatus: updated.paymentStatus }));
+                }
+
+                setStatusSuccess(
+                    field === 'status'
+                        ? `Order status updated to ${statusLabel(updated.status)}.`
+                        : `Payment status updated to ${paymentLabel(updated.paymentStatus)}.`
+                );
+            } catch (saveError) {
+                setStatusError(
+                    saveError.status === 403
+                        ? 'You do not have permission to update orders.'
+                        : saveError.message || 'Unable to update status. Please try again.'
+                );
+                // Re-open the detail so the dropdown reflects the persisted value
+                // (the optimistic UI is reverted by re-reading on next open; here
+                // we simply leave the select bound to `detail`, which is unchanged).
+            } finally {
+                setSavingField('');
+            }
+        };
+
+        // Invoice actions: download the backend-generated PDF, or download +
+            // open the customer's WhatsApp chat. A wa.me link cannot attach a
+            // file by itself, so sharing always saves the PDF first and tells
+            // the admin to attach it manually.
+            const handleDownloadInvoice = async () => {
+                if (invoiceBusy) return;
+
+                // The invoice endpoint takes the database order ID (same ID the
+                // detail and status endpoints use). `detail` holds the fresh
+                // record; fall back to the list row while details load.
+                const orderId = detail?.id ?? selectedOrder?.id;
+
+                if (!orderId) {
+                    setInvoiceMessage('');
+                    setInvoiceError('Order details are not available yet. Please try again.');
+                    return;
+                }
+
+                setInvoiceBusy('download');
+                setInvoiceMessage('');
+                setInvoiceError('');
+
+                try {
+                    const { blob, filename } = await downloadInvoice(orderId);
+                    saveBlob(blob, filename);
+                    setInvoiceMessage(`Invoice ${filename} downloaded.`);
+                } catch (downloadError) {
+                    setInvoiceError(
+                        downloadError.status === 403
+                            ? 'You do not have permission to download invoices.'
+                            : downloadError.status === 404
+                                ? 'This order no longer exists.'
+                                : downloadError.message || 'Unable to generate the invoice.'
+                    );
+                } finally {
+                    setInvoiceBusy('');
+                }
+            };
+
+            const handleShareWhatsApp = async () => {
+                if (invoiceBusy) return;
+
+                // Read the ID and phone from the saved backend order — the admin
+                // never re-enters them. `detail` has the freshest record; fall
+                // back to the list row while details are still loading.
+                const source = detail || selectedOrder;
+                const orderId = source?.id;
+
+                if (!orderId) {
+                    setInvoiceMessage('');
+                    setInvoiceError('Order details are not available yet. Please try again.');
+                    return;
+                }
+
+                const phone = source?.customerPhone || source?.contactPhone || detail?.shippingAddress?.phone || '';
+                const normalized = normalizeWhatsAppPhone(phone);
+
+                if (!normalized.valid) {
+                    setInvoiceMessage('');
+                    setInvoiceError(normalized.reason);
+                    return;
+                }
+
+                setInvoiceBusy('whatsapp');
+                setInvoiceMessage('');
+                setInvoiceError('');
+
+                try {
+                    const { blob, filename } = await downloadInvoice(orderId);
+                    saveBlob(blob, filename);
+
+                    const sourceDetail = detail || selectedOrder || {};
+                    const message = buildInvoiceShareMessage({
+                        customerName: sourceDetail.customerName || sourceDetail.contactName || '',
+                        orderNumber: sourceDetail.orderNumber,
+                        orderStatus: sourceDetail.status,
+                        paymentStatus: sourceDetail.paymentStatus,
+                    });
+
+                    window.open(buildWhatsAppInvoiceUrl(normalized.e164, message), '_blank', 'noopener,noreferrer');
+                    setInvoiceMessage(
+                        `Invoice ${filename} downloaded. The customer's WhatsApp chat is open — attach the downloaded PDF and send the message.`
+                    );
+                } catch (shareError) {
+                    setInvoiceError(
+                        shareError.status === 403
+                            ? 'You do not have permission to download invoices.'
+                            : shareError.status === 404
+                                ? 'This order no longer exists.'
+                                : shareError.message || 'Unable to prepare the invoice for sharing.'
+                    );
+                } finally {
+                    setInvoiceBusy('');
+                }
+            };
 
         const pagination = data.pagination || {};
 
@@ -150,7 +320,7 @@ export default function Orders() {
                         />
                     </div>
                     <div className="order-filter">
-                        <label htmlFor="order-status-filter">Status</label>
+                        <label htmlFor="order-status-filter">Order Status</label>
                         <select
                             id="order-status-filter"
                             value={statusFilter}
@@ -159,23 +329,23 @@ export default function Orders() {
                                 setStatusFilter(event.target.value);
                             }}
                         >
-                            <option value="">All statuses</option>
+                            <option value="">All order statuses</option>
                             {ORDER_STATUS_OPTIONS.map(status => (
                                 <option key={status} value={status}>{statusLabel(status)}</option>
                             ))}
                         </select>
                     </div>
                     <div className="order-filter">
-                        <label htmlFor="order-payment-filter">Payment</label>
+                        <label htmlFor="payment-status-filter">Payment Status</label>
                         <select
-                            id="order-payment-filter"
+                            id="payment-status-filter"
                             value={paymentFilter}
                             onChange={event => {
                                 setPage(1);
                                 setPaymentFilter(event.target.value);
                             }}
                         >
-                            <option value="">All payments</option>
+                            <option value="">All payment statuses</option>
                             {PAYMENT_STATUS_OPTIONS.map(payment => (
                                 <option key={payment} value={payment}>{paymentLabel(payment)}</option>
                             ))}
@@ -277,6 +447,70 @@ export default function Orders() {
                                 <div className="order-modal-badges">
                                     <span className={statusBadgeClass(detail.status)}>{statusLabel(detail.status)}</span>
                                     <span className={paymentBadgeClass(detail.paymentStatus)}>{paymentLabel(detail.paymentStatus)}</span>
+                                </div>
+
+                                <div className="order-status-manage">
+                                    <div className="order-status-manage-row">
+                                        <label htmlFor="order-detail-status">Order Status</label>
+                                        <select
+                                            id="order-detail-status"
+                                            value={detail.status}
+                                            disabled={savingField !== ''}
+                                            onChange={event => handleStatusChange('status', event.target.value)}
+                                        >
+                                            {ORDER_STATUS_OPTIONS.map(status => (
+                                                <option key={status} value={status}>{statusLabel(status)}</option>
+                                            ))}
+                                        </select>
+                                        {savingField === 'status' && <span className="order-status-saving">Saving…</span>}
+                                    </div>
+
+                                    <div className="order-status-manage-row">
+                                        <label htmlFor="order-detail-payment-status">Payment Status</label>
+                                        <select
+                                            id="order-detail-payment-status"
+                                            value={detail.paymentStatus}
+                                            disabled={savingField !== ''}
+                                            onChange={event => handleStatusChange('paymentStatus', event.target.value)}
+                                        >
+                                            {PAYMENT_STATUS_OPTIONS.map(payment => (
+                                                <option key={payment} value={payment}>{paymentLabel(payment)}</option>
+                                            ))}
+                                        </select>
+                                        {savingField === 'paymentStatus' && <span className="order-status-saving">Saving…</span>}
+                                    </div>
+
+                                    {statusError && <div className="admin-alert order-status-feedback">{statusError}</div>}
+                                    {statusSuccess && <div className="order-status-success order-status-feedback">{statusSuccess}</div>}
+                                </div>
+
+                                <div className="order-invoice-actions">
+                                    <div className="order-invoice-buttons">
+                                        <button
+                                            type="button"
+                                            className="btn btn-outline order-invoice-btn"
+                                            onClick={handleDownloadInvoice}
+                                            disabled={Boolean(invoiceBusy)}
+                                        >
+                                            <FileText size={15} />
+                                            {invoiceBusy === 'download' ? 'Generating…' : 'Download Invoice PDF'}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="btn btn-primary order-invoice-btn"
+                                            onClick={handleShareWhatsApp}
+                                            disabled={Boolean(invoiceBusy)}
+                                        >
+                                            <MessageCircle size={15} />
+                                            {invoiceBusy === 'whatsapp' ? 'Preparing…' : 'Share Invoice on WhatsApp'}
+                                        </button>
+                                    </div>
+                                    <p className="order-modal-muted">
+                                        Download works even without a customer phone number. Sharing opens the
+                                        customer&apos;s WhatsApp chat — attach the downloaded PDF and send the message.
+                                    </p>
+                                    {invoiceError && <div className="admin-alert order-status-feedback">{invoiceError}</div>}
+                                    {invoiceMessage && <div className="order-status-success order-status-feedback">{invoiceMessage}</div>}
                                 </div>
 
                                 <div className="order-modal-grid">

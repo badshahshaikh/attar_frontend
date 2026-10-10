@@ -126,6 +126,106 @@
     margin-bottom: 18px;
 }
 
+/* ── Editable status controls in the order detail modal ── */
+.order-status-manage {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px 16px;
+    margin-bottom: 18px;
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+}
+
+.order-status-manage-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.order-status-manage-row label {
+    flex: 0 0 130px;
+    font-size: .72rem;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--color-text-muted);
+}
+
+.order-status-manage-row select {
+    flex: 1;
+    border: 1px solid var(--color-border);
+    background: var(--color-bg-primary);
+    padding: .5rem .7rem;
+    border-radius: var(--radius-sm);
+    font-size: .875rem;
+    font-family: var(--font-sans);
+    color: var(--color-text-primary);
+    cursor: pointer;
+}
+
+.order-status-manage-row select:focus {
+    outline: 2px solid rgba(142, 122, 99, .25);
+    border-color: var(--color-accent);
+}
+
+.order-status-manage-row select:disabled {
+    opacity: .6;
+    cursor: not-allowed;
+}
+
+.order-status-saving {
+    flex: 0 0 auto;
+    font-size: .78rem;
+    color: var(--color-text-secondary);
+}
+
+.order-status-feedback {
+    font-size: .8rem;
+    margin: 2px 0 0;
+}
+
+.order-status-success {
+    color: var(--color-success);
+}
+
+/* ── Invoice actions in the order detail modal ── */
+.order-invoice-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 14px 16px;
+    margin-bottom: 18px;
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+}
+
+.order-invoice-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.order-invoice-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.order-invoice-btn:disabled {
+    opacity: .6;
+    cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+    .order-status-manage-row {
+        flex-wrap: wrap;
+    }
+
+    .order-status-manage-row label {
+        flex-basis: 100%;
+    }
+}
+
 .order-modal-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
