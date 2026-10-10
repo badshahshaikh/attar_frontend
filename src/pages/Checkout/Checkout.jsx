@@ -304,13 +304,17 @@ const Checkout = () => {
                     </p>
                     <div className="checkout-success-actions">
                         {placedOrder.paymentStatus !== 'paid' && (
-                            <button
-                                className="btn btn-primary btn-lg"
-                                onClick={handlePayOnline}
-                                disabled={paying || saving}
-                            >
-                                {paying ? 'Opening payment…' : 'Pay Online (UPI / Cards)'}
-                            </button>
+                            // <button
+                            //     className="btn btn-primary btn-lg"
+                            //     onClick={handlePayOnline}
+                            //     disabled={paying || saving}
+                            // >
+                            //     {paying ? 'Opening payment…' : 'Pay Online (UPI / Cards)'}
+                            // </button>
+                            <div className="online-payment-coming-soon">
+                                <CreditCard size={20} />
+                                <span>Online Payment — Coming Soon</span>
+                            </div>
                         )}
 
                         {whatsappUrl && (
@@ -457,7 +461,7 @@ const Checkout = () => {
                             )}
                             {user && (
                                 <>
-                                    <button
+                                    {/* <button
                                         className="btn btn-primary btn-lg"
                                         onClick={handlePayOnline}
                                         disabled={paying || saving || authLoading}
@@ -465,7 +469,15 @@ const Checkout = () => {
                                         <CreditCard size={20} />
                                         {paying ? 'Opening payment…' : 'Pay Online (UPI / Cards)'}
                                     </button>
-                                    <p className="whatsapp-help-text">Pay via UPI, card, or netbanking. Your order and address are saved.</p>
+                                    <p className="whatsapp-help-text">Pay via UPI, card, or netbanking. Your order and address are saved.</p> */}
+                                    <div className="online-payment-coming-soon">
+                                        <CreditCard size={20} />
+                                        <span>Online Payment — Coming Soon</span>
+                                    </div>
+                                    <p className="whatsapp-help-text">
+                                        Online payments will be available soon. For now, please
+                                        place your order through WhatsApp.
+                                    </p>
                                 </>
                             )}
                         </div>
