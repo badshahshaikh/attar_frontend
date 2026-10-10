@@ -2,6 +2,7 @@ import {
     validateAddressPayload,
     validateAddressUpdate,
     validateCreateOrder,
+    validateGuestOrder,
 } from './customer.validator.js';
 import { logger } from '../../shared/logging/logger.js';
 
@@ -150,6 +151,23 @@ function createCustomerController({ customerService }) {
 
             try {
                 const order = await customerService.createOrder(req.customer.id, payload);
+                res.status(201).json({ success: true, order });
+            } catch (error) {
+                return fail(res, error, 'Unable to place your order');
+            }
+        },
+
+        // Public guest checkout — no session required. The order is recorded
+        // with a null user_id and the delivery details supplied on the form.
+        // Everything is validated and re-priced server-side exactly like a
+        // signed-in order; only the auth layer is skipped.
+        async createGuestOrder(req, res) {
+            const payload = validated(res, () => validateGuestOrder(req.body), 'Unable to place your order');
+
+            if (!payload) return undefined;
+
+            try {
+                const order = await customerService.createGuestOrder(payload);
                 res.status(201).json({ success: true, order });
             } catch (error) {
                 return fail(res, error, 'Unable to place your order');

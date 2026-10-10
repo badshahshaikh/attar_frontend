@@ -3,6 +3,7 @@ import { requireText } from '../../core/validation/validation.helpers.js';
 
 const PHONE_PATTERN = /^[6-9]\d{9}$/;
 const POSTAL_PATTERN = /^[0-9]{6}$/;
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MAX_ADDRESS_LENGTH = 200;
 const MAX_ITEMS_PER_ORDER = 50;
 const MAX_QUANTITY_PER_ITEM = 99;
@@ -34,6 +35,20 @@ function optionalText(value, maxLength) {
     }
 
     return String(value).trim().slice(0, maxLength);
+}
+
+function optionalEmail(value) {
+    const email = optionalText(value, 255);
+
+    if (email === null) {
+        return null;
+    }
+
+    if (!EMAIL_PATTERN.test(email)) {
+        throw new ValidationError('Enter a valid email address');
+    }
+
+    return email.toLowerCase();
 }
 
 function validateAddressPayload(body) {
@@ -120,8 +135,44 @@ function validateCreateOrder(body) {
     };
 }
 
+// Guest checkout: a shopper with no account still supplies everything needed to
+// ship and reach them. Prices are never accepted here — the service recomputes
+// them from the products table — so only identity/delivery fields are validated.
+// The result is a camelCase address snapshot (matching what the signed-in flow
+// stores in orders.shipping_address) plus the contact fields the orders row
+// requires, so a guest order fits the existing schema with no migration.
+function validateGuestOrder(body) {
+    const fullName = requireText(body.fullName, 'Full name').slice(0, MAX_ADDRESS_LENGTH);
+    const phone = requirePhone(body.phone);
+    const line1 = requireText(body.addressLine, 'Delivery address').slice(0, MAX_ADDRESS_LENGTH);
+    const city = requireText(body.city, 'City').slice(0, MAX_ADDRESS_LENGTH);
+    const postalCode = requirePostalCode(body.postalCode);
+
+    return {
+        address: {
+            fullName,
+            phone,
+            line1,
+            line2: optionalText(body.addressLine2, MAX_ADDRESS_LENGTH),
+            city,
+            // State is optional for guests (the delivery address is captured as a
+            // free-text line); keep it when provided so admin sees the full address.
+            state: optionalText(body.state, MAX_ADDRESS_LENGTH) || '',
+            postalCode,
+            country: optionalText(body.country, 50) || 'India',
+            email: optionalEmail(body.email),
+        },
+        contactName: fullName,
+        contactPhone: phone,
+        notes: optionalText(body.notes, 500),
+        source: body.source === 'web' ? 'web' : 'whatsapp',
+        items: validateOrderItems(body.items),
+    };
+}
+
 export {
   validateAddressPayload,
   validateAddressUpdate,
-  validateCreateOrder
+  validateCreateOrder,
+  validateGuestOrder
 };

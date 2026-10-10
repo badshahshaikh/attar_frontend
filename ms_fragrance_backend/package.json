@@ -12,6 +12,7 @@
         "migrate:images": "node migrate-images-to-supabase.js",
         "migrate:role": "node migrate-user-role-default.js",
         "migrate:customers": "node migrate-customers.js",
+        "migrate:guest-orders": "node migrate-guest-orders.js",
         "create:admin": "node create-admin.js"
     },
     "dependencies": {

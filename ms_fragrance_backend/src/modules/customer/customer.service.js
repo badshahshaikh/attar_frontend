@@ -127,6 +127,56 @@ function createCustomerService({ addressRepository, orderRepository, razorpayKey
         return { fullName: contactName, phone: contactPhone };
     }
 
+    // Shared persistence path for signed-in AND guest orders. Prices, shipping
+    // and totals are always recomputed here from the products table (never the
+    // client), stock is reserved atomically inside orderRepository.create, and
+    // the unique order_number is retried on the rare collision. `userId` may be
+    // null for guests — the orders table allows it so no account is required.
+    async function persistOrder(userId, { address, contactName, contactPhone, notes, source, items }) {
+        const products = await orderRepository.findProductsByIds(
+            [...new Set(items.map((item) => item.productId))]
+        );
+
+        const lines = buildLines(items, products);
+        const subtotal = Number(
+            lines.reduce((sum, line) => sum + line.lineTotal, 0).toFixed(2)
+        );
+        const shipping = subtotal > FREE_SHIPPING_THRESHOLD ? 0 : FLAT_SHIPPING_CHARGE;
+        const total = Number((subtotal + shipping).toFixed(2));
+
+        // order_number is unique, so retry on the rare collision.
+        for (let attempt = 0; attempt < ORDER_NUMBER_ATTEMPTS; attempt += 1) {
+            try {
+                const order = await orderRepository.create(userId, {
+                    orderNumber: buildOrderNumber(),
+                    address,
+                    contactName: contactName || address.fullName,
+                    contactPhone: contactPhone || address.phone,
+                    notes,
+                    source,
+                    lines,
+                    subtotal,
+                    shipping,
+                    total,
+                });
+
+                return toCamelOrder(order);
+            } catch (error) {
+                const isCollision = error.code === UNIQUE_VIOLATION && attempt < ORDER_NUMBER_ATTEMPTS - 1;
+
+                if (!isCollision) {
+                    logger.error('[CUSTOMER_ORDER_CREATE_FAILED]', {
+                        userId,
+                        errorMessage: error.message,
+                    });
+                    throw error;
+                }
+            }
+        }
+
+        throw new AppError('Unable to create your order right now', 500, 'ORDER_FAILED');
+    }
+
     // Loads an order that belongs to this customer, or 404s exactly like the
     // GET /orders/:orderNumber handler does.
     async function loadOrder(userId, orderNumber) {
@@ -226,49 +276,33 @@ function createCustomerService({ addressRepository, orderRepository, razorpayKey
         },
 
         async createOrder(userId, payload) {
-            const products = await orderRepository.findProductsByIds(
-                [...new Set(payload.items.map((item) => item.productId))]
-            );
-
-            const lines = buildLines(payload.items, products);
-            const subtotal = Number(
-                lines.reduce((sum, line) => sum + line.lineTotal, 0).toFixed(2)
-            );
-            const shipping = subtotal > FREE_SHIPPING_THRESHOLD ? 0 : FLAT_SHIPPING_CHARGE;
-            const total = Number((subtotal + shipping).toFixed(2));
             const address = await resolveAddress(userId, payload);
 
-            // order_number is unique, so retry on the rare collision.
-            for (let attempt = 0; attempt < ORDER_NUMBER_ATTEMPTS; attempt += 1) {
-                try {
-                    const order = await orderRepository.create(userId, {
-                        orderNumber: buildOrderNumber(),
-                        address,
-                        contactName: payload.contactName || address.fullName,
-                        contactPhone: payload.contactPhone || address.phone,
-                        notes: payload.notes,
-                        source: payload.source,
-                        lines,
-                        subtotal,
-                        shipping,
-                        total,
-                    });
+            return persistOrder(userId, {
+                address,
+                contactName: payload.contactName,
+                contactPhone: payload.contactPhone,
+                notes: payload.notes,
+                source: payload.source,
+                items: payload.items,
+            });
+        },
 
-                    return toCamelOrder(order);
-                } catch (error) {
-                    const isCollision = error.code === UNIQUE_VIOLATION && attempt < ORDER_NUMBER_ATTEMPTS - 1;
-
-                    if (!isCollision) {
-                        logger.error('[CUSTOMER_ORDER_CREATE_FAILED]', {
-                            userId,
-                            errorMessage: error.message,
-                        });
-                        throw error;
-                    }
-                }
-            }
-
-            throw new AppError('Unable to create your order right now', 500, 'ORDER_FAILED');
+        // Guest checkout — no account, no session. `userId` is null so the order
+        // is recorded against the contact details only (the orders.user_id column
+        // is nullable). The delivery snapshot comes straight from the validated
+        // guest form, and pricing/stock/totals go through the exact same
+        // persistOrder() path as a signed-in order, so nothing is trusted from
+        // the client and no order logic is duplicated.
+        async createGuestOrder(payload) {
+            return persistOrder(null, {
+                address: payload.address,
+                contactName: payload.contactName,
+                contactPhone: payload.contactPhone,
+                notes: payload.notes,
+                source: payload.source,
+                items: payload.items,
+            });
         },
 
         async createPaymentSession(userId, orderNumber) {

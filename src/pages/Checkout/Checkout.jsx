@@ -3,18 +3,21 @@ import { Link } from 'react-router-dom';
 import { MessageCircle, ArrowLeft, CircleCheck, CreditCard } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
-import { fetchAddresses, createOrder, verifyPayment } from '../../services/customerService';
+import { fetchAddresses, createOrder, createGuestOrder, verifyPayment } from '../../services/customerService';
 import { openRazorpayCheckout } from '../../services/paymentRazorpay';
-import { WHATSAPP_NUMBER } from '../../config/constants';
+import { buildWhatsAppUrl, buildGuestOrderMessage } from '../../features/checkout/utils/orderMessage';
+import { validateGuestCheckout } from '../../features/checkout/validators/guestCheckoutValidator';
 import './Checkout.css';
 
 /**
  * Checkout — reviews the basket and hands it over to WhatsApp.
  *
- * Signed-in customers: the order is first recorded server-side
- * (POST /api/customer/orders — prices/shipping are computed from the products
- * table, never trusted from the client) and the WhatsApp message then carries
- * the real order number. Guests keep the original message-only flow.
+ * Signed-in customers AND guests both record the order server-side first
+ * (POST /api/customer/orders or /orders/guest — prices/shipping are computed
+ * from the products table, never trusted from the client) and the WhatsApp
+ * message then carries the real order number. Guests are not required to sign
+ * in: clicking "Proceed with WhatsApp" opens a short delivery form, which is
+ * validated on the client and the server before the order is saved.
  */
 const Checkout = () => {
     const { state, cartSubtotal, dispatch } = useCart();
@@ -30,6 +33,21 @@ const Checkout = () => {
     const [placedOrder, setPlacedOrder] = useState(null);
     const [whatsappUrl, setWhatsappUrl] = useState('');
     const [paying, setPaying] = useState(false);
+
+    // Guest delivery form. Opened by "Proceed with WhatsApp" for shoppers with
+    // no account; the saved order (source of truth) drives the WhatsApp message.
+    const [guestFormOpen, setGuestFormOpen] = useState(false);
+    const [guestForm, setGuestForm] = useState({
+        fullName: '',
+        phone: '',
+        addressLine: '',
+        addressLine2: '',
+        city: '',
+        state: '',
+        postalCode: '',
+        email: '',
+    });
+    const [guestErrors, setGuestErrors] = useState({});
 
     // Refs mirror the in-flight flags synchronously. State updates are async,
     // so without these two rapid clicks could both pass the `saving`/`paying`
@@ -66,15 +84,7 @@ const Checkout = () => {
     const shippingCharge = cartSubtotal > 5000 ? 0 : 150;
     const finalTotal = cartSubtotal + shippingCharge;
 
-    function buildWhatsAppUrl(message) {
-        const phone = String(WHATSAPP_NUMBER).replace(/\D/g, '');
-
-        if (!phone) {
-            throw new Error('WhatsApp phone number is not configured.');
-        }
-
-        return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
-    }
+    // `buildWhatsAppUrl` is imported from features/checkout/utils/orderMessage.
 
     // WhatsApp must open synchronously inside the click handler. Browsers
     // block `window.open` calls that happen after an `await` (the user-gesture
@@ -106,44 +116,94 @@ const Checkout = () => {
         return url;
     };
 
-    // Guest basket message — identical to the flow before accounts existed.
-    const buildGuestMessage = () => {
-        let message = "Hello, I would like to place an order.\n\nOrder Details:\n\n";
+    // The order message is always built from the *server* response so the
+    // totals, delivery details and order number in the chat can never drift
+    // from what was actually recorded — for guests and signed-in customers
+    // alike (both now persist an order before opening WhatsApp).
+    const buildOrderMessage = (order) => buildGuestOrderMessage(order);
 
-        items.forEach((item, index) => {
-            message += `${index + 1}. ${item.name}\n`;
-            message += `   Size: ${item.size}\n`;
-            message += `   Quantity: ${item.quantity}\n`;
-            message += `   Unit Price: ₹${item.price.toLocaleString()}\n`;
-            message += `   Item Total: ₹${item.total.toLocaleString()}\n\n`;
-        });
-
-        message += `Subtotal: ₹${cartSubtotal.toLocaleString()}\n`;
-        message += `Shipping: ${shippingCharge === 0 ? 'To be confirmed' : `₹${shippingCharge.toLocaleString()}`}\n`;
-        message += `Total: ₹${finalTotal.toLocaleString()}\n\n`;
-
-        message += "Please confirm the availability and order details.";
-        return message;
+    // Opens the guest delivery form so the shopper can enter their details.
+    const openGuestForm = () => {
+        setError('');
+        setGuestErrors({});
+        setGuestFormOpen(true);
     };
 
-    // Logged-in message — built from the *server* response so the totals in
-    // the chat can never drift from what was actually recorded.
-    const buildOrderMessage = (order) => {
-        let message = `Hello! I just placed an order on the website.\n\nOrder Details:\n\n`;
+    const closeGuestForm = () => {
+        // Never yank the form out from under an in-flight submission.
+        if (saving) return;
+        setGuestFormOpen(false);
+        setGuestErrors({});
+    };
 
-        order.items.forEach((item, index) => {
-            message += `${index + 1}. ${item.productName}\n`;
-            message += `   Size: ${item.size}\n`;
-            message += `   Quantity: ${item.quantity}\n`;
-            message += `   Unit Price: ₹${Number(item.unitPrice).toLocaleString()}\n`;
-            message += `   Item Total: ₹${Number(item.lineTotal).toLocaleString()}\n\n`;
+    const updateGuestField = (field) => (event) => {
+        const { value } = event.target;
+        setGuestForm((prev) => ({ ...prev, [field]: value }));
+        // Clear this field's error as soon as the shopper edits it.
+        setGuestErrors((prev) => {
+            if (!prev[field]) return prev;
+            const next = { ...prev };
+            delete next[field];
+            return next;
         });
+    };
 
-        message += `Subtotal: ₹${Number(order.subtotal).toLocaleString()}\n`;
-        message += `Shipping: ${Number(order.shipping) === 0 ? 'Free' : `₹${Number(order.shipping).toLocaleString()}`}\n`;
-        message += `Total: ₹${Number(order.total).toLocaleString()}\n\n`;
-        message += `My order number is ${order.orderNumber} — please confirm the availability and payment details.`;
-        return message;
+    // Guest checkout submit: validate on the client, save the order server-side
+    // (which re-prices everything and reserves stock), then open WhatsApp with
+    // the saved order and show the success screen — the same order flow as a
+    // signed-in customer, just without an account.
+    const handleGuestSubmit = async (event) => {
+        event.preventDefault();
+        setError('');
+
+        const { valid, errors, values } = validateGuestCheckout(guestForm);
+        setGuestErrors(errors);
+
+        if (!valid) {
+            return;
+        }
+
+        // Ref guard closes the double-click race (state is async); the button is
+        // also disabled while `saving`. This is what stops a double-submit from
+        // creating two orders and deducting stock twice.
+        if (placingRef.current) return;
+        placingRef.current = true;
+
+        // Open the tab synchronously inside the submit gesture so the browser
+        // does not block the popup; navigated to the order URL once it exists.
+        const tab = openWhatsAppTab();
+
+        setSaving(true);
+        try {
+            const order = await createGuestOrder({
+                fullName: values.fullName,
+                phone: values.phone,
+                addressLine: values.addressLine,
+                addressLine2: values.addressLine2 || undefined,
+                city: values.city,
+                state: values.state || undefined,
+                postalCode: values.postalCode,
+                email: values.email || undefined,
+                source: 'web',
+                items: items.map((item) => ({
+                    productId: item.productId,
+                    size: item.size,
+                    quantity: item.quantity,
+                })),
+            });
+
+            setPlacedOrder(order);
+            setWhatsappUrl(navigateTab(tab, buildGuestOrderMessage(order)));
+            setGuestFormOpen(false);
+            // Clear the basket only after the server confirms the order.
+            dispatch({ type: 'CLEAR_CART' });
+        } catch (err) {
+            if (tab && !tab.closed) tab.close();
+            setError(err.message || 'We could not place your order. Please try again.');
+        } finally {
+            setSaving(false);
+            placingRef.current = false;
+        }
     };
 
     // Single shared order-creation path used by both checkout buttons, so the
@@ -168,11 +228,11 @@ const Checkout = () => {
     const handlePlaceOrder = async () => {
         setError('');
 
-        // Guest: nothing is recorded server-side, keep the original flow.
-        // No async work happens first, so the user gesture is intact and the
-        // popup cannot be blocked.
+        // Guest: collect delivery details first. Nothing is recorded and no tab
+        // opens until the form is submitted, so the popup stays tied to the
+        // submit gesture inside handleGuestSubmit.
         if (!user) {
-            window.open(buildWhatsAppUrl(buildGuestMessage()), '_blank');
+            openGuestForm();
             return;
         }
 
@@ -300,17 +360,12 @@ const Checkout = () => {
                     <p>
                         {placedOrder.paymentStatus === 'paid'
                             ? 'Your payment has been received. We will confirm the order shortly.'
-                            : 'Your order has been saved to your account. You can pay online below or continue on WhatsApp.'}
+                            : user
+                                ? 'Your order has been saved to your account. You can pay online below or continue on WhatsApp.'
+                                : 'Your order has been saved. Continue on WhatsApp so we can confirm availability and delivery details.'}
                     </p>
                     <div className="checkout-success-actions">
                         {placedOrder.paymentStatus !== 'paid' && (
-                            // <button
-                            //     className="btn btn-primary btn-lg"
-                            //     onClick={handlePayOnline}
-                            //     disabled={paying || saving}
-                            // >
-                            //     {paying ? 'Opening payment…' : 'Pay Online (UPI / Cards)'}
-                            // </button>
                             <div className="online-payment-coming-soon">
                                 <CreditCard size={20} />
                                 <span>Online Payment — Coming Soon</span>
@@ -331,9 +386,13 @@ const Checkout = () => {
                             </a>
                         )}
 
-                        <Link to="/account" className="btn btn-primary btn-lg">
-                            View my orders
-                        </Link>
+                        {/* Order history lives behind the account, so guests (who
+                            have no account) skip this and just continue shopping. */}
+                        {user && (
+                            <Link to="/account" className="btn btn-primary btn-lg">
+                                View my orders
+                            </Link>
+                        )}
                     </div>
                     <Link to="/shop" className="checkout-success-continue">
                         <ArrowLeft size={16} /> Continue shopping
@@ -451,7 +510,7 @@ const Checkout = () => {
                             <p className="whatsapp-help-text">
                                 {user
                                     ? 'Your order is recorded in your account, then confirmed with us on WhatsApp.'
-                                    : 'Send your order details directly to us on WhatsApp.'}
+                                    : 'Enter your delivery details and we will confirm your order on WhatsApp. No account needed.'}
                             </p>
                             {!user && (
                                 <p className="whatsapp-help-text">
@@ -459,31 +518,187 @@ const Checkout = () => {
                                     account.
                                 </p>
                             )}
-                            {user && (
-                                <>
-                                    {/* <button
-                                        className="btn btn-primary btn-lg"
-                                        onClick={handlePayOnline}
-                                        disabled={paying || saving || authLoading}
-                                    >
-                                        <CreditCard size={20} />
-                                        {paying ? 'Opening payment…' : 'Pay Online (UPI / Cards)'}
-                                    </button>
-                                    <p className="whatsapp-help-text">Pay via UPI, card, or netbanking. Your order and address are saved.</p> */}
-                                    <div className="online-payment-coming-soon">
-                                        <CreditCard size={20} />
-                                        <span>Online Payment — Coming Soon</span>
-                                    </div>
-                                    <p className="whatsapp-help-text">
-                                        Online payments will be available soon. For now, please
-                                        place your order through WhatsApp.
-                                    </p>
-                                </>
-                            )}
+                            <div className="online-payment-coming-soon">
+                                <CreditCard size={20} />
+                                <span>Online Payment — Coming Soon</span>
+                            </div>
+                            <p className="whatsapp-help-text">
+                                Online payments will be available soon. For now, please
+                                place your order through WhatsApp.
+                            </p>
                         </div>
                     </div>
                 </div>
             </div>
+
+            {/* Guest delivery form — opened by "Proceed with WhatsApp". Keeps the
+                basket and summary untouched behind it; the order is only saved
+                when this form is submitted. */}
+            {!user && guestFormOpen && (
+                <div className="guest-checkout-overlay" role="dialog" aria-modal="true" aria-label="Delivery details">
+                    <div className="guest-checkout-modal">
+                        <div className="guest-checkout-header">
+                            <h3>Delivery Details</h3>
+                            <button
+                                type="button"
+                                className="guest-checkout-close"
+                                onClick={closeGuestForm}
+                                disabled={saving}
+                                aria-label="Close"
+                            >
+                                ×
+                            </button>
+                        </div>
+
+                        <p className="guest-checkout-intro">
+                            Enter your details so we can confirm your order on WhatsApp. No account is needed.
+                        </p>
+
+                        <form className="guest-checkout-form" onSubmit={handleGuestSubmit} noValidate>
+                            <div className="guest-checkout-field">
+                                <label htmlFor="guest-fullName">Full name *</label>
+                                <input
+                                    id="guest-fullName"
+                                    name="fullName"
+                                    type="text"
+                                    autoComplete="name"
+                                    value={guestForm.fullName}
+                                    onChange={updateGuestField('fullName')}
+                                    disabled={saving}
+                                />
+                                {guestErrors.fullName && <span className="guest-field-error">{guestErrors.fullName}</span>}
+                            </div>
+
+                            <div className="guest-checkout-field">
+                                <label htmlFor="guest-phone">Mobile number *</label>
+                                <input
+                                    id="guest-phone"
+                                    name="phone"
+                                    type="tel"
+                                    inputMode="numeric"
+                                    autoComplete="tel"
+                                    placeholder="10-digit mobile number"
+                                    value={guestForm.phone}
+                                    onChange={updateGuestField('phone')}
+                                    disabled={saving}
+                                />
+                                {guestErrors.phone && <span className="guest-field-error">{guestErrors.phone}</span>}
+                            </div>
+
+                            <div className="guest-checkout-field">
+                                <label htmlFor="guest-addressLine">Complete delivery address *</label>
+                                <input
+                                    id="guest-addressLine"
+                                    name="addressLine"
+                                    type="text"
+                                    autoComplete="address-line1"
+                                    placeholder="House / building, street, area"
+                                    value={guestForm.addressLine}
+                                    onChange={updateGuestField('addressLine')}
+                                    disabled={saving}
+                                />
+                                {guestErrors.addressLine && <span className="guest-field-error">{guestErrors.addressLine}</span>}
+                            </div>
+
+                            <div className="guest-checkout-field">
+                                <label htmlFor="guest-addressLine2">Address line 2 (optional)</label>
+                                <input
+                                    id="guest-addressLine2"
+                                    name="addressLine2"
+                                    type="text"
+                                    autoComplete="address-line2"
+                                    placeholder="Landmark, apartment, etc."
+                                    value={guestForm.addressLine2}
+                                    onChange={updateGuestField('addressLine2')}
+                                    disabled={saving}
+                                />
+                            </div>
+
+                            <div className="guest-checkout-row">
+                                <div className="guest-checkout-field">
+                                    <label htmlFor="guest-city">City *</label>
+                                    <input
+                                        id="guest-city"
+                                        name="city"
+                                        type="text"
+                                        autoComplete="address-level2"
+                                        value={guestForm.city}
+                                        onChange={updateGuestField('city')}
+                                        disabled={saving}
+                                    />
+                                    {guestErrors.city && <span className="guest-field-error">{guestErrors.city}</span>}
+                                </div>
+
+                                <div className="guest-checkout-field">
+                                    <label htmlFor="guest-postalCode">PIN / postal code *</label>
+                                    <input
+                                        id="guest-postalCode"
+                                        name="postalCode"
+                                        type="text"
+                                        inputMode="numeric"
+                                        autoComplete="postal-code"
+                                        placeholder="6-digit PIN"
+                                        value={guestForm.postalCode}
+                                        onChange={updateGuestField('postalCode')}
+                                        disabled={saving}
+                                    />
+                                    {guestErrors.postalCode && <span className="guest-field-error">{guestErrors.postalCode}</span>}
+                                </div>
+                            </div>
+
+                            <div className="guest-checkout-row">
+                                <div className="guest-checkout-field">
+                                    <label htmlFor="guest-state">State (optional)</label>
+                                    <input
+                                        id="guest-state"
+                                        name="state"
+                                        type="text"
+                                        autoComplete="address-level1"
+                                        value={guestForm.state}
+                                        onChange={updateGuestField('state')}
+                                        disabled={saving}
+                                    />
+                                </div>
+
+                                <div className="guest-checkout-field">
+                                    <label htmlFor="guest-email">Email (optional)</label>
+                                    <input
+                                        id="guest-email"
+                                        name="email"
+                                        type="email"
+                                        autoComplete="email"
+                                        value={guestForm.email}
+                                        onChange={updateGuestField('email')}
+                                        disabled={saving}
+                                    />
+                                    {guestErrors.email && <span className="guest-field-error">{guestErrors.email}</span>}
+                                </div>
+                            </div>
+
+                            {error && <div className="checkout-error">{error}</div>}
+
+                            <div className="guest-checkout-actions">
+                                <button
+                                    type="button"
+                                    className="btn btn-outline btn-lg"
+                                    onClick={closeGuestForm}
+                                    disabled={saving}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="btn btn-whatsapp btn-lg"
+                                    disabled={saving}
+                                >
+                                    <MessageCircle size={20} />
+                                    {saving ? 'Placing your order…' : 'Place order & send on WhatsApp'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </main>
     );
 };

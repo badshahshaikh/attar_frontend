@@ -1,11 +1,24 @@
 import express from 'express';
+import rateLimit from 'express-rate-limit';
 import { authenticateCustomer } from '../../shared/middleware/authenticate.js';
 import { asyncHandler } from '../../shared/middleware/async-handler.js';
+
+// Guest checkout is public, so it is rate-limited to blunt abuse/stock-spam.
+// Limits are generous enough for genuine shoppers retrying a slow connection.
+const guestOrderLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 20,
+    message: { success: false, message: 'Too many orders placed, please try again later' },
+});
 
 function createCustomerRouter(controller) {
     const router = express.Router();
 
-    // Every customer route requires a valid storefront session.
+    // Public guest checkout. Registered BEFORE authenticateCustomer so it needs
+    // no session; validation + server-side pricing/stock guard the request.
+    router.post('/orders/guest', guestOrderLimiter, asyncHandler(controller.createGuestOrder));
+
+    // Every other customer route requires a valid storefront session.
     router.use(authenticateCustomer);
 
     router.get('/addresses', asyncHandler(controller.listAddresses));

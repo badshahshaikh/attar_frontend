@@ -117,6 +117,18 @@ export async function createOrder(payload) {
     return data.order;
 }
 
+/**
+ * Places a guest order (no account, no session). Hits the public
+ * POST /api/customer/orders/guest endpoint. Only delivery/contact details and
+ * the cart's product/size/quantity are sent — the server recomputes prices,
+ * shipping and totals from the products table and reserves stock atomically, so
+ * the returned order is the source of truth for the WhatsApp message.
+ */
+export async function createGuestOrder(payload) {
+    const data = await sendAccount('/orders/guest', { method: 'POST', body: payload });
+    return data.order;
+}
+
 /** Creates a Razorpay order on the server (amount taken from DB total). */
 export async function createPaymentSession(orderNumber) {
     const data = await sendAccount(`/orders/${encodeURIComponent(orderNumber)}/payment`, { method: 'POST' });
