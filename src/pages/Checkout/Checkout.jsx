@@ -66,8 +66,15 @@ const Checkout = () => {
     const shippingCharge = cartSubtotal > 5000 ? 0 : 150;
     const finalTotal = cartSubtotal + shippingCharge;
 
-    const buildWhatsAppUrl = (message) =>
-        `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+    function buildWhatsAppUrl(message) {
+        const phone = String(WHATSAPP_NUMBER).replace(/\D/g, '');
+
+        if (!phone) {
+            throw new Error('WhatsApp phone number is not configured.');
+        }
+
+        return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+    }
 
     // WhatsApp must open synchronously inside the click handler. Browsers
     // block `window.open` calls that happen after an `await` (the user-gesture
@@ -75,14 +82,19 @@ const Checkout = () => {
     // the real URL once the order exists. If the popup is blocked entirely,
     // `window.open` returns null and the stored URL keeps the on-page
     // "Continue on WhatsApp" link working as a fallback.
-    const openWhatsAppTab = () => {
+    function openWhatsAppTab() {
         try {
-            const tab = window.open('', '_blank', 'noopener');
+            const tab = window.open('about:blank', '_blank');
+
+            if (tab) {
+                tab.opener = null;
+            }
+
             return tab;
         } catch {
             return null;
         }
-    };
+    }
 
     const navigateTab = (tab, message) => {
         const url = buildWhatsAppUrl(message);
