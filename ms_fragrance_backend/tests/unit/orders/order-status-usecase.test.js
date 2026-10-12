@@ -187,3 +187,82 @@ test('findAllAdmin still searches by order number and contact name', async () =>
     assert.ok(/o\.order_number ILIKE/.test(countQuery.sql), 'order number search retained');
     assert.ok(/o\.contact_name ILIKE/.test(countQuery.sql), 'guest contact_name search retained');
 });
+
+// ── delivered_at: first stamp wins, only on a delivered transition ─────────
+test('repository stamps delivered_at with a COALESCE chain so the first delivery timestamp wins', async () => {
+    const { repository, queries } = buildStatusRepository({ 7: {} });
+
+    await repository.updateOrderStatus(7, { status: 'delivered', deliveredAt: '2026-10-01T10:00:00.000Z' });
+
+    const update = queries.find(q => /UPDATE public\.orders/.test(q.sql));
+    assert.ok(
+        /delivered_at = COALESCE\(delivered_at, \$\d+::timestamptz, NOW\(\)\)/.test(update.sql),
+        'delivered_at is only written when it is currently NULL (a re-mark never moves the stamp)'
+    );
+    assert.ok(update.values.includes('2026-10-01T10:00:00.000Z'), 'the explicit date is a bind parameter');
+    assert.equal(update.values[update.values.length - 1], 7, 'the id remains the final bind parameter');
+});
+
+test('repository auto-stamps delivered_at with NOW() when no explicit date is supplied', async () => {
+    const { repository, queries } = buildStatusRepository({ 7: {} });
+
+    await repository.updateOrderStatus(7, { status: 'delivered' });
+
+    const update = queries.find(q => /UPDATE public\.orders/.test(q.sql));
+    assert.ok(
+        /COALESCE\(delivered_at, \$\d+::timestamptz, NOW\(\)\)/.test(update.sql),
+        'NOW() is the fallback so an omitted deliveredAt still stamps the row'
+    );
+});
+
+test('repository never touches delivered_at on payment-only or non-delivered status updates', async () => {
+    const cases = [
+        { paymentStatus: 'paid' },
+        { paymentStatus: 'unpaid' },
+        { status: 'shipped' },
+        { status: 'cancelled' },
+    ];
+
+    for (const fields of cases) {
+        const { repository, queries } = buildStatusRepository({ 7: {} });
+        await repository.updateOrderStatus(7, fields);
+        const update = queries.find(q => /UPDATE public\.orders/.test(q.sql));
+        assert.ok(
+            !/delivered_at/.test(update.sql),
+            `delivered_at must not appear in the SET clause for ${JSON.stringify(fields)}`
+        );
+    }
+});
+
+test('use case forwards deliveredAt to the repository and returns it on the mapped order', async () => {
+    const seen = [];
+    const repository = {
+        updateOrderStatus: async (id, fields) => {
+            seen.push({ id, fields });
+            return orderRow({ status: fields.status, delivered_at: fields.deliveredAt ?? null });
+        },
+    };
+
+    const useCase = new UpdateOrderStatusUseCase(repository);
+    const order = await useCase.execute(7, { status: 'delivered', deliveredAt: '2026-10-01T10:00:00.000Z' });
+
+    assert.equal(seen[0].fields.deliveredAt, '2026-10-01T10:00:00.000Z', 'deliveredAt reaches the repository');
+    assert.equal(order.deliveredAt, '2026-10-01T10:00:00.000Z', 'the admin mapper exposes deliveredAt');
+});
+
+test('use case sends no deliveredAt on a payment-only update and maps a missing stamp to null', async () => {
+    const seen = [];
+    const repository = {
+        updateOrderStatus: async (id, fields) => {
+            seen.push(fields);
+            return orderRow({ payment_status: fields.paymentStatus });
+        },
+    };
+
+    const useCase = new UpdateOrderStatusUseCase(repository);
+    const order = await useCase.execute(7, { paymentStatus: 'paid' });
+
+    assert.equal(seen[0].deliveredAt, undefined, 'no deliveredAt is sent for a payment-only update');
+    assert.equal(seen[0].status, undefined, 'the order status is untouched');
+    assert.equal(order.deliveredAt, null, 'an unstamped order maps deliveredAt to null');
+});

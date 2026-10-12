@@ -29,7 +29,8 @@ function toAdminOrder(row) {
         shipping: row.shipping,
         total: row.total,
         orderDate: row.created_at,
-        updatedAt: row.updated_at
+        updatedAt: row.updated_at,
+        deliveredAt: row.delivered_at || null,
     };
 }
 

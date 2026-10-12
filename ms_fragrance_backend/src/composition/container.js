@@ -12,6 +12,7 @@ import { createSettingsContainer } from '../modules/settings/settings.container.
 import { createCustomerContainer } from '../modules/customer/customer.container.js';
 import { createUsersContainer } from '../modules/users/users.container.js';
 import { createOrdersContainer } from '../modules/orders/orders.container.js';
+import { createReturnsContainer } from '../modules/returns/returns.container.js';
 
 function createContainer(dependencies = {}) {
     const query = dependencies.query || database.query;
@@ -46,6 +47,9 @@ function createContainer(dependencies = {}) {
         orderRepository: customerContainer.orderRepository
     });
 
+    // Admin returns module — own tables, same query/transaction plumbing
+    const returnsContainer = createReturnsContainer({ query });
+
     return Object.freeze({
         productRouter: productsContainer.productRouter,
         catalogRouter: catalogContainer.catalogRouter,
@@ -54,6 +58,7 @@ function createContainer(dependencies = {}) {
         customerRouter: customerContainer.customerRouter,
         usersRouter: usersContainer.usersRouter,
         ordersRouter: ordersContainer.ordersRouter,
+        returnsRouter: returnsContainer.returnsRouter,
     });
 }
 

@@ -62,6 +62,49 @@ test('supported payment statuses are exactly unpaid and paid', () => {
     assert.deepEqual(PAYMENT_STATUSES, ['unpaid', 'paid']);
 });
 
+// ── deliveredAt: only ever alongside a delivered status ─────────────────────
+test('parseOrderStatusUpdate accepts a valid deliveredAt with a delivered status', () => {
+    assert.deepEqual(
+        parseOrderStatusUpdate({ status: 'delivered', deliveredAt: '2026-10-01T10:00:00.000Z' }),
+        { status: 'delivered', deliveredAt: '2026-10-01T10:00:00.000Z' }
+    );
+});
+
+test('parseOrderStatusUpdate omits deliveredAt when not supplied so the repository stamps it', () => {
+    const update = parseOrderStatusUpdate({ status: 'delivered' });
+    assert.deepEqual(update, { status: 'delivered' });
+    assert.ok(!('deliveredAt' in update), 'no deliveredAt key is returned when the caller omits it');
+});
+
+test('parseOrderStatusUpdate rejects an invalid deliveredAt date', () => {
+    assert.throws(
+        () => parseOrderStatusUpdate({ status: 'delivered', deliveredAt: 'not-a-date' }),
+        error => error.statusCode === 400 && /valid date/i.test(error.message)
+    );
+});
+
+test('parseOrderStatusUpdate rejects a future deliveredAt date', () => {
+    const future = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+    assert.throws(
+        () => parseOrderStatusUpdate({ status: 'delivered', deliveredAt: future }),
+        error => error.statusCode === 400 && /future/i.test(error.message)
+    );
+});
+
+test('parseOrderStatusUpdate rejects deliveredAt on a payment-only update', () => {
+    assert.throws(
+        () => parseOrderStatusUpdate({ paymentStatus: 'paid', deliveredAt: '2026-10-01T10:00:00.000Z' }),
+        error => error.statusCode === 400 && /only be supplied with status "delivered"/i.test(error.message)
+    );
+});
+
+test('parseOrderStatusUpdate rejects deliveredAt on a non-delivered order status', () => {
+    assert.throws(
+        () => parseOrderStatusUpdate({ status: 'shipped', deliveredAt: '2026-10-01T10:00:00.000Z' }),
+        error => error.statusCode === 400 && /only be supplied with status "delivered"/i.test(error.message)
+    );
+});
+
 test('parseOrderIdParam still validates the id route param', () => {
     assert.equal(parseOrderIdParam('7'), 7);
     assert.equal(parseOrderIdParam('0'), null);

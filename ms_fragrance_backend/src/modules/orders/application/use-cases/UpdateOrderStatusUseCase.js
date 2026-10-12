@@ -21,9 +21,9 @@ class UpdateOrderStatusUseCase {
         this.orderRepository = orderRepository;
     }
 
-    async execute(id, { status, paymentStatus }) {
+    async execute(id, { status, paymentStatus, deliveredAt }) {
         try {
-            const row = await this.orderRepository.updateOrderStatus(id, { status, paymentStatus });
+            const row = await this.orderRepository.updateOrderStatus(id, { status, paymentStatus, deliveredAt });
             return toAdminOrderDetail(row);
         } catch (error) {
             logger.error('[UPDATE_ORDER_STATUS_ERROR]', { orderId: id, errorMessage: error.message });

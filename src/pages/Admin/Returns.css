@@ -1,0 +1,332 @@
+/* Returns admin page — reuses admin.css table/toolbar/pagination/badge styles
+   plus the order-modal primitives from Orders.css. Only return-specific
+   additions live here. */
+
+/* Neutral badge for in-progress return states (mirrors Orders.css, which is
+   only loaded on the Orders page). */
+.status-neutral {
+    background: var(--color-bg-secondary);
+    color: var(--color-text-secondary);
+}
+
+/* Muted secondary text helper used across the page. */
+.muted {
+    color: var(--color-text-secondary);
+    font-size: .78rem;
+}
+
+/* Green confirmation banner (admin-alert is the red counterpart). */
+.admin-message {
+    padding: .875rem 1rem;
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+    border-radius: var(--radius-sm);
+    font-size: .85rem;
+    margin-bottom: 14px;
+}
+
+/* Wider modal for return details / creation */
+.return-modal {
+    max-width: 880px;
+}
+
+.return-back {
+    margin-bottom: 14px;
+}
+
+/* Status + refund/inspection badges under the modal header */
+.return-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 18px;
+}
+
+/* Two-column facts layout inside the detail modal */
+.return-modal-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+@media (max-width: 600px) {
+    .return-modal-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.return-section {
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    padding: 14px 16px;
+    margin-bottom: 16px;
+}
+
+.return-modal-grid .return-section {
+    margin-bottom: 0;
+}
+
+.return-section h3 {
+    font-size: .72rem;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--color-text-muted);
+    margin-bottom: 8px;
+}
+
+.return-section > p {
+    font-size: .85rem;
+    line-height: 1.6;
+    margin: 0 0 10px;
+}
+
+/* Definition lists for order/return facts and refund info */
+.return-facts {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 16px;
+    margin: 0;
+}
+
+.return-facts div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.return-facts dt {
+    font-size: .68rem;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: var(--color-text-muted);
+}
+
+.return-facts dd {
+    margin: 0;
+    font-size: .85rem;
+    color: var(--color-text-primary);
+}
+
+/* Items table inside the modal */
+.order-items-wrap {
+    overflow-x: auto;
+}
+
+.order-items {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.order-items th {
+    text-align: left;
+    font-size: .68rem;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: var(--color-text-muted);
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--color-border);
+    white-space: nowrap;
+}
+
+.order-items td {
+    padding: 10px;
+    border-bottom: 1px solid var(--color-border);
+    font-size: .85rem;
+    vertical-align: top;
+}
+
+.order-items td strong {
+    display: block;
+    font-size: .85rem;
+}
+
+/* Status / inspection action rows */
+.return-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.return-inspection {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--color-border);
+}
+
+/* History timeline */
+.return-history {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.return-history li {
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.return-history li:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.return-history-status {
+    display: block;
+    font-size: .82rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin-bottom: 2px;
+}
+
+.return-history p {
+    margin: 4px 0 0;
+    font-size: .82rem;
+}
+
+/* ── Form primitives (return-specific; admin.css has no generic form grid) ── */
+.order-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.order-form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.order-form-field span {
+    font-size: .75rem;
+    color: var(--color-text-secondary);
+}
+
+.order-form-field input,
+.order-form-field select {
+    border: 1px solid var(--color-border);
+    background: var(--color-bg-primary);
+    padding: .55rem .7rem;
+    border-radius: var(--radius-sm);
+    font-size: .875rem;
+    font-family: var(--font-sans);
+    color: var(--color-text-primary);
+}
+
+.order-form-field input:focus,
+.order-form-field select:focus {
+    outline: 2px solid rgba(142, 122, 99, .25);
+    border-color: var(--color-accent);
+}
+
+.order-form-actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.order-checkbox {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: .82rem;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+}
+
+.order-checkbox input {
+    margin-top: 3px;
+    accent-color: var(--color-accent);
+}
+
+/* Refund form: two fields side by side */
+.return-refund-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+@media (max-width: 600px) {
+    .return-refund-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ── Create-return modal: order results + item picker ── */
+.return-order-results {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.return-order-results li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 12px;
+    border: 1px solid var(--color-border);
+    background: var(--color-bg-primary);
+}
+
+.return-order-results li div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.return-item-picker {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.return-item-picker li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.return-item-picker label {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: .85rem;
+    cursor: pointer;
+}
+
+.return-item-picker label span {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.return-item-picker .return-item-disabled {
+    opacity: .55;
+    cursor: not-allowed;
+}
+
+.return-qty {
+    width: 70px;
+    border: 1px solid var(--color-border);
+    background: var(--color-bg-primary);
+    padding: .4rem .5rem;
+    border-radius: var(--radius-sm);
+    font-size: .85rem;
+}
+

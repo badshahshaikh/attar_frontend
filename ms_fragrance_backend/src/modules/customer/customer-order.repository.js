@@ -202,6 +202,7 @@ function createCustomerOrderRepository({ query, withTransaction }) {
                 `SELECT o.id, o.order_number, o.user_id, o.status, o.payment_status,
                         o.subtotal, o.shipping, o.total,
                         o.contact_name, o.contact_phone, o.created_at, o.updated_at,
+                        o.delivered_at,
                         u.full_name, u.email, u.phone
                  FROM public.orders o
                  LEFT JOIN public.users u ON u.id = o.user_id
@@ -225,7 +226,7 @@ function createCustomerOrderRepository({ query, withTransaction }) {
                 `SELECT o.id, o.order_number, o.user_id, o.status, o.payment_status,
                         o.subtotal, o.shipping, o.total,
                         o.contact_name, o.contact_phone, o.shipping_address, o.notes, o.source,
-                        o.created_at, o.updated_at,
+                        o.created_at, o.updated_at, o.delivered_at,
                         u.full_name, u.email, u.phone
                  FROM public.orders o
                  LEFT JOIN public.users u ON u.id = o.user_id
@@ -247,19 +248,27 @@ function createCustomerOrderRepository({ query, withTransaction }) {
         // ── Admin status update ───────────────────────────────────────────
         // Updates ONLY the status columns explicitly supplied (status and/or
         // payment_status) and leaves every other column — subtotal, shipping,
-        // total, stock-affecting fields, razorpay ids — untouched. Column names
-        // are built from a fixed allow-list in the caller, never from raw input,
-        // and every value is passed as a parameterized bind. Returns the full
-        // stitched order (same shape as findByIdAdmin) so the API response and
-        // the admin UI can reflect exactly what was persisted, or null when no
-        // order with that id exists.
-        async updateOrderStatus(id, { status, paymentStatus }) {
+        // total, stock-affecting fields, razorpay ids — untouched. When the new
+        // order status is 'delivered', delivered_at is stamped exactly once
+        // (first stamp wins via COALESCE) so the 7-day return window is stable;
+        // an explicit deliveredAt (validated by the caller) supports backfills.
+        // Column names are built from a fixed allow-list in the caller, never
+        // from raw input, and every value is passed as a parameterized bind.
+        async updateOrderStatus(id, { status, paymentStatus, deliveredAt = null }) {
             const assignments = [];
             const values = [];
 
             if (status !== undefined) {
                 values.push(status);
                 assignments.push(`status = $${values.length}`);
+
+                if (status === 'delivered') {
+                    // Explicit admin date wins, the existing stamp is preserved,
+                    // otherwise the stamp is taken now. The COALESCE chain means
+                    // a re-mark never moves the 7-day return window.
+                    values.push(deliveredAt);
+                    assignments.push(`delivered_at = COALESCE(delivered_at, $${values.length}::timestamptz, NOW())`);
+                }
             }
 
             if (paymentStatus !== undefined) {
