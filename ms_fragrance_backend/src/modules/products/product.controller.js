@@ -196,9 +196,15 @@ function createProductController({
                     errorMessage: error.message
                 });
 
-                res.status(500).json({
-                    error: 'Failed to generate product images'
-                });
+                // Surface safe, operational messages (e.g. missing master image
+                // → 503, missing name → 400). Unknown errors stay generic so we
+                // never leak internals or secrets to the client.
+                const statusCode = error.statusCode || 500;
+                const message = error.isOperational
+                    ? error.message
+                    : 'Failed to generate product images';
+
+                res.status(statusCode).json({ error: message });
             }
         },
     };

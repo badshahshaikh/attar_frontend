@@ -1,6 +1,15 @@
+import { loadMasterProductImage } from './master-product-image.js';
+import AppError from '../../core/errors/AppError.js';
+
+// GPT image model used for reference-based generation. gpt-image-2 supports the
+// images.edit reference operation used below.
+const IMAGE_MODEL = 'gpt-image-2';
+
 class ProductAiService {
-    constructor({ client }) {
+    constructor({ client, loadMasterImage }) {
         this.client = client;
+        // Injectable so tests can supply a stub; production uses the real loader.
+        this.loadMasterImage = loadMasterImage || loadMasterProductImage;
     }
 
     async generateProductData(name) {
@@ -103,6 +112,10 @@ ${name}`,
         return JSON.parse(response.output_text);
     }
 
+    // Build the image-edit prompt. The master bottle reference image is passed
+    // to the API separately (see generateProductImage); this prompt tells the
+    // model to keep that bottle identical and only vary the product name and a
+    // fragrance-inspired background.
     buildProductImagePrompt({
         name,
         description,
@@ -112,45 +125,51 @@ ${name}`,
         baseNotes
     }) {
         return `
-Create a single premium ecommerce product photograph for this attar/perfume:
+Use the supplied reference image of the MS Fragrance bottle as the exact bottle
+identity for this shot. Reproduce that same bottle; do not redesign it.
 
-Product name: ${name}
-Description: ${description}
-Fragrance family: ${fragranceFamily}
-Top notes: ${topNotes}
-Heart notes: ${heartNotes}
-Base notes: ${baseNotes}
+PRODUCT
+- Product name: ${name}
+- Description: ${description}
+- Fragrance family: ${fragranceFamily}
+- Top notes: ${topNotes}
+- Heart notes: ${heartNotes}
+- Base notes: ${baseNotes}
 
-Requirements:
+BOTTLE IDENTITY — KEEP EXACTLY AS IN THE REFERENCE IMAGE
+- Preserve the bottle's silhouette, proportions and front-facing camera angle.
+- Preserve the amber-brown glass, the glossy black cap, the neck and the clear glass base.
+- Preserve the ivory rectangular label, its thin border and ornamental details.
+- Preserve the "MS FRAGRANCE" brand name and the Arabic text "سعد للعطورات" exactly.
+- The only text that changes is the product-name area: print "${name}" there.
+- Do NOT remove the MS FRAGRANCE brand or the Arabic text.
+- Do NOT invent extra label text, logos, certifications, prices or claims.
+- Do NOT redesign the bottle to match the background.
 
-- Create ONE product image only.
-- Luxury attar product photography.
-- Elegant premium glass attar bottle.
-- Premium Middle Eastern fragrance aesthetic.
-- Sophisticated studio lighting.
-- Clean, minimal luxury background.
-- Product centered and clearly visible.
-- Photorealistic.
-- No people.
-- No unrelated objects.
-- Front-facing ecommerce hero shot.
-- Show the product name "${name}" clearly on the bottle.
-- The bottle label must contain ONLY the product name.
-- Do NOT display "MS Fragrance".
-- Do NOT display any brand logo.
-- Do NOT display any brand name.
-- Do NOT add slogans, descriptions, ingredients, certifications, prices, or decorative text.
-- Do NOT invent additional text.
-- Keep the product name simple, elegant, and professionally printed.
-- Make the text look physically printed on the bottle or label.
-- Use a realistic premium bottle design suitable for an attar product.
-- Keep the composition clean and suitable for an ecommerce product listing.
+BACKGROUND — INSPIRED BY THIS PRODUCT'S SCENT PROFILE
+- Create a premium, photorealistic ecommerce background inspired by the product
+  name, description, fragrance family and the top, heart and base notes above.
+- Use appropriate fragrance-related materials or atmosphere when relevant, such
+  as woods, amber, florals, spices, citrus, musk-inspired tones or smoke.
+- Make the background specific to this fragrance — do not reuse a generic look.
+- Keep background props behind or around the bottle; they must never obscure the label.
+
+COMPOSITION & QUALITY
+- ONE product image only. No multiple bottles, collages, split screens or extra text.
+- Keep the entire bottle visible and centered with a consistent, professional composition.
+- Photorealistic luxury attar/perfume product photography with sophisticated studio lighting.
+- No people. No food or ingredients inside the bottle.
 `;
     }
 
-    async generatePng(prompt) {
-        const result = await this.client.images.generate({
-            model: 'gpt-image-2',
+    // Reference-based generation: the master bottle image is passed to the
+    // images.edit endpoint as an actual image input (not just prompt text), so
+    // every product reuses the same bottle. Returns the raw base64 PNG string,
+    // matching the existing frontend contract (res.json({ image })).
+    async generatePng(prompt, masterImageFile) {
+        const result = await this.client.images.edit({
+            model: IMAGE_MODEL,
+            image: [masterImageFile],
             prompt,
             size: '1024x1024'
         });
@@ -159,16 +178,20 @@ Requirements:
     }
 
     async generateProductImage(productData) {
+        const { name } = productData || {};
+
+        // Validate required input before doing any work or hitting the API.
+        if (!name || !String(name).trim()) {
+            throw new AppError('Product name is required to generate an image.', 400, 'PRODUCT_NAME_REQUIRED');
+        }
+
         const prompt = this.buildProductImagePrompt(productData);
 
-        return await this.generatePng(`
-            ${prompt}
+        // Load the single master bottle reference. Throws a safe AppError (503)
+        // if the asset is missing — never exposes the filesystem path.
+        const { file: masterImageFile } = await this.loadMasterImage();
 
-            Camera:
-            Primary front-facing ecommerce hero shot.
-            Show the complete bottle clearly.
-            Keep the bottle centered with enough clean space around it.
-        `);
+        return await this.generatePng(prompt, masterImageFile);
     }
 }
 
