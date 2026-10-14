@@ -7,6 +7,7 @@ import React, {
 } from 'react';
 
 import {
+    fetchProductById,
     fetchProducts,
     fetchProductFacets
 } from '../services/productService';
@@ -99,14 +100,69 @@ export function ProductProvider({ children }) {
         initializeProducts();
     }, []);
 
-    const getProductById = (id) => {
-        const productId = Number(id);
+    const getProductById = useCallback((id) => {
+        if (id === undefined || id === null || id === '') {
+            return undefined;
+        }
 
-        return products.find(
-            product =>
-                Number(product.id) === productId
-        );
-    };
+        const raw = String(id).trim();
+        const numericId = Number(raw);
+
+        // Numeric database IDs: compare numerically so a string URL param
+        // (`/product/76`) still matches a numeric product id (`76`).
+        if (raw !== '' && Number.isFinite(numericId)) {
+            const byId = products.find(
+                product => Number(product.id) === numericId
+            );
+
+            if (byId) {
+                return byId;
+            }
+        }
+
+        // Slug lookup is explicit: a slug is never treated as a database ID.
+        // The backend `GET /api/products/:id` only accepts positive integers,
+        // so slugs can only resolve against the loaded catalog slice.
+        const lowered = raw.toLowerCase();
+
+        return products.find(product => {
+            if (!product.slug) {
+                return false;
+            }
+
+            return String(product.slug).toLowerCase() === lowered;
+        });
+    }, [products]);
+
+    const getProductDetails = useCallback(async (idOrSlug) => {
+        const cached = getProductById(idOrSlug);
+
+        if (cached) {
+            return cached;
+        }
+
+        // Only numeric identifiers can be fetched individually; slug-only
+        // values have no single-product endpoint.
+        if (!/^\d+$/.test(String(idOrSlug).trim())) {
+            return undefined;
+        }
+
+        const fetched = await fetchProductById(idOrSlug);
+
+        if (fetched && fetched.id !== undefined && fetched.id !== null) {
+            setProducts(previousProducts => {
+                if (previousProducts.some(
+                    product => String(product.id) === String(fetched.id)
+                )) {
+                    return previousProducts;
+                }
+
+                return [...previousProducts, fetched];
+            });
+        }
+
+        return fetched;
+    }, [getProductById]);
 
     const searchProducts = async (
         query,
@@ -132,6 +188,7 @@ export function ProductProvider({ children }) {
         error,
         loadProducts,
         getProductById,
+        getProductDetails,
         searchProducts,
         ...facets
     };

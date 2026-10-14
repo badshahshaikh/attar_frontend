@@ -2,6 +2,7 @@ import './unit/products/product.validator.test.js';
 import './unit/products/product.mapper.test.js';
 import './unit/products/product.controller.test.js';
 import './unit/products/product-ai-image.test.js';
+import './unit/products/catalog-audit.test.js';
 import './unit/auth/require-role.test.js';
 import './unit/auth/customer-validator.test.js';
 import './unit/auth/customer-auth.test.js';

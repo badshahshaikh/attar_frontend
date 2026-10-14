@@ -13,16 +13,19 @@ const ProductDetails = () => {
     const navigate = useNavigate();
     const { dispatch } = useCart();
     const { toggleWishlist, isInWishlist } = useWishlist();
-    const { products, loading, error, getProductById } = useProducts();
+    const { products, loading, error, getProductDetails } = useProducts();
     const [product, setProduct] = useState(null);
     const [selectedSize, setSelectedSize] = useState('');
     const [quantity, setQuantity] = useState(1);
     const [currentPrice, setCurrentPrice] = useState(0);
     const [activeImage, setActiveImage] = useState('');
+    const [detailLoading, setDetailLoading] = useState(true);
+    const [notFound, setNotFound] = useState(false);
 
     useEffect(() => {
-        const foundProduct = getProductById(id);
-        if (foundProduct) {
+        let cancelled = false;
+
+        const applyProduct = (foundProduct) => {
             setProduct(foundProduct);
             const firstSize = foundProduct.sizes[0] || '';
             setSelectedSize(firstSize);
@@ -32,10 +35,48 @@ const ProductDetails = () => {
                 ? foundProduct.imageUrls
                 : (foundProduct.imageUrl ? [foundProduct.imageUrl] : []);
             setActiveImage(galleryImages[0] || '');
-        }
-    }, [id, getProductById]);
+        };
 
-    if (loading) {
+        const resolveProduct = async () => {
+            setDetailLoading(true);
+            setNotFound(false);
+
+            try {
+                // Cache-first: resolves from the loaded catalog slice (by numeric
+                // id or slug), falling back to GET /api/products/:id for items
+                // outside the current page — e.g. opened from global search.
+                const foundProduct = await getProductDetails(id);
+
+                if (cancelled) {
+                    return;
+                }
+
+                if (foundProduct) {
+                    applyProduct(foundProduct);
+                } else {
+                    setProduct(null);
+                    setNotFound(true);
+                }
+            } catch (detailError) {
+                if (!cancelled) {
+                    setProduct(null);
+                    setNotFound(true);
+                }
+            } finally {
+                if (!cancelled) {
+                    setDetailLoading(false);
+                }
+            }
+        };
+
+        resolveProduct();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [id, getProductDetails]);
+
+    if (loading || detailLoading) {
         return <div className="container py-20 text-center">Loading product...</div>;
     }
 
@@ -43,7 +84,7 @@ const ProductDetails = () => {
         return <div className="container py-20 text-center">{error}</div>;
     }
 
-    if (!product) {
+    if (notFound || !product) {
         return <div className="container py-20 text-center">Product not found</div>;
     }
 
