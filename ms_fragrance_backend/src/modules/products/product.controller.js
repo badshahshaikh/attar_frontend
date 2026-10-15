@@ -1,4 +1,4 @@
-import { parseProductIdParam, parseListQuery } from './product.validator.js';
+import { parseProductIdParam, parseProductIdList, parseListQuery } from './product.validator.js';
 import { FRAGRANCE_FAMILIES } from './product.constants.js';
 import { logger } from '../../shared/logging/logger.js';
 import AppError from '../../core/errors/AppError.js';
@@ -9,6 +9,7 @@ function createProductController({
     createProductUseCase,
     updateProductUseCase,
     deleteProductUseCase,
+    deleteProductsUseCase,
     bulkUpsertProductsUseCase,
     uploadProductImageUseCase,
     getBrandsUseCase,
@@ -130,6 +131,34 @@ function createProductController({
                 const statusCode = error.statusCode || 500;
                 const message = error.isOperational ? error.message : 'Failed to delete product';
                 res.status(statusCode).json({ error: message });
+            }
+        },
+
+        async bulkDelete(req, res) {
+            let ids;
+            try {
+                ids = parseProductIdList(req.body?.ids);
+            } catch (error) {
+                logger.error('[PRODUCT_BULK_DELETE_ERROR]', { errorMessage: error.message });
+                const statusCode = error.statusCode || 400;
+                const message = error.isOperational ? error.message : 'Invalid product IDs';
+                return res.status(statusCode).json({ error: message });
+            }
+            try {
+                const result = await deleteProductsUseCase.execute(ids);
+                return res.json({
+                    message: result.notFoundIds.length > 0
+                        ? 'Some products were deleted; others were not found'
+                        : 'Products deleted',
+                    deletedIds: result.deletedIds,
+                    deletedCount: result.deletedCount,
+                    notFoundIds: result.notFoundIds
+                });
+            } catch (error) {
+                logger.error('[PRODUCT_BULK_DELETE_ERROR]', { requestedCount: ids.length, errorMessage: error.message });
+                const statusCode = error.statusCode || 500;
+                const message = error.isOperational ? error.message : 'Failed to delete products';
+                return res.status(statusCode).json({ error: message });
             }
         },
 

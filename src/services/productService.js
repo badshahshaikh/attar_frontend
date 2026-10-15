@@ -272,6 +272,16 @@ export async function deleteProduct(id) {
     return parseResponse(response);
 }
 
+export async function deleteProducts(ids) {
+    const response = await fetch(`${API_URL}/api/products/bulk`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ ids }),
+    });
+    return parseResponse(response);
+}
+
 export async function uploadProductImage(file, productId) {
     const formData = new FormData();
     formData.append('image', file);

@@ -143,6 +143,36 @@ export function parseProductIdParam(rawId) {
 }
 
 /**
+ * Validate a bulk-delete list of product IDs
+ * @param {Array} rawIds - Raw ids array from request body
+ * @returns {number[]} Unique, validated positive integer ids
+ * @throws {ValidationError} If the list is not a valid array of positive integers
+ */
+export function parseProductIdList(rawIds) {
+    if (!Array.isArray(rawIds) || rawIds.length === 0) {
+        throw new ValidationError('Product IDs must be a non-empty array');
+    }
+
+    if (rawIds.length > 500) {
+        throw new ValidationError('Too many product IDs in one request (max 500)');
+    }
+
+    const ids = new Set();
+
+    for (const rawId of rawIds) {
+        const id = parseProductIdParam(rawId);
+
+        if (!id) {
+            throw new ValidationError('Each product ID must be a positive integer');
+        }
+
+        ids.add(id);
+    }
+
+    return [...ids];
+}
+
+/**
  * Parse and validate list query parameters
  * @param {Object} query - Query parameters from request
  * @returns {Object} Normalized query parameters

@@ -88,6 +88,14 @@ function createProductRepository({ query }) {
             const result = await query('DELETE FROM products WHERE id = $1 RETURNING id', [id]);
             return result.rows[0] || null;
         },
+        async findImagesByIds(ids, client) {
+            const result = await run('SELECT id, image_url, image_urls FROM products WHERE id = ANY($1::int[])', [ids], client);
+            return result.rows;
+        },
+        async deleteProductsByIds(ids, client) {
+            const result = await run('DELETE FROM products WHERE id = ANY($1::int[]) RETURNING id', [ids], client);
+            return result.rows.map((row) => row.id);
+        },
         async bulkCreate(products, client) {
             const placeholders = PRODUCT_WRITE_COLUMNS.map((_, i) => `$${i + 1}`).join(', ');
             const insertSql = `INSERT INTO products (${PRODUCT_WRITE_COLUMNS.join(', ')}) VALUES (${placeholders}) RETURNING ${PRODUCT_COLUMNS}`;

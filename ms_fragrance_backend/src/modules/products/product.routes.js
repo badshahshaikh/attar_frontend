@@ -24,6 +24,7 @@ function createProductRouter(controller) {
   );
   router.post('/upload-image', authenticate, requireAdmin, upload.single('image'), asyncHandler(controller.uploadImage));
   router.post('/bulk-upsert', authenticate, requireAdmin, asyncHandler(controller.bulkUpsert));
+  router.delete('/bulk', authenticate, requireAdmin, asyncHandler(controller.bulkDelete));
   router.get('/:id', asyncHandler(controller.getById));
   router.post('/', authenticate, requireAdmin, asyncHandler(controller.create));
   router.put('/:id', authenticate, requireAdmin, asyncHandler(controller.update));

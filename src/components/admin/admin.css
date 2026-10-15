@@ -931,3 +931,115 @@
     font-size: 0.75rem;
     color: #6b645b;
 }
+
+/* ── Bulk selection (product listing) ── */
+.admin-table-checkbox {
+    width: 44px;
+    text-align: center;
+}
+
+.admin-table-checkbox .admin-checkbox {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--color-sale);
+    cursor: pointer;
+}
+
+.admin-table-checkbox .admin-checkbox:disabled {
+    cursor: not-allowed;
+    opacity: .5;
+}
+
+.admin-bulk-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+}
+
+.admin-bulk-count {
+    font-size: .85rem;
+    font-weight: 500;
+    color: var(--color-text-primary);
+}
+
+.admin-bulk-actions {
+    display: flex;
+    gap: 8px;
+}
+
+/* Success feedback reuses the admin alert treatment */
+.admin-alert-success {
+    color: var(--color-success);
+    background: #eef7f0;
+    border: 1px solid #cfe3d6;
+}
+
+/* ── Confirmation dialog (mirrors the order modal design) ── */
+.admin-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, .48);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+.admin-modal {
+    background: var(--color-white);
+    border: 1px solid var(--color-border);
+    padding: 28px;
+    max-width: 440px;
+    width: 100%;
+    max-height: calc(100vh - 48px);
+    overflow-y: auto;
+}
+
+.admin-modal-header {
+    margin-bottom: 10px;
+}
+
+.admin-modal-header h2 {
+    margin: 0;
+    font-size: 1.15rem;
+}
+
+.admin-modal-text {
+    font-size: .88rem;
+    line-height: 1.55;
+    color: var(--color-text-secondary);
+    margin-bottom: 22px;
+}
+
+.admin-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+@media (max-width: 600px) {
+    .admin-bulk-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .admin-bulk-actions {
+        flex-direction: column;
+    }
+
+    .admin-modal-actions {
+        flex-direction: column;
+    }
+
+    .admin-modal-actions .btn {
+        width: 100%;
+    }
+}

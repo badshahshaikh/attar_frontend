@@ -7,6 +7,7 @@ import GetProductByIdUseCase from './application/use-cases/GetProductByIdUseCase
 import CreateProductUseCase from './application/use-cases/CreateProductUseCase.js';
 import UpdateProductUseCase from './application/use-cases/UpdateProductUseCase.js';
 import DeleteProductUseCase from './application/use-cases/DeleteProductUseCase.js';
+import DeleteProductsUseCase from './application/use-cases/DeleteProductsUseCase.js';
 import BulkUpsertProductsUseCase from './application/use-cases/BulkUpsertProductsUseCase.js';
 import UploadProductImageUseCase from './application/use-cases/UploadProductImageUseCase.js';
 import AiFillProductUseCase from './application/use-cases/aiFillProductUseCase.js';
@@ -54,6 +55,7 @@ function createProductsContainer(dependencies = {}) {
     const createProductUseCase = new CreateProductUseCase(productRepository);
     const updateProductUseCase = new UpdateProductUseCase(productRepository, storage);
     const deleteProductUseCase = new DeleteProductUseCase(productRepository, storage);
+    const deleteProductsUseCase = new DeleteProductsUseCase(productRepository, storage);
     const bulkUpsertProductsUseCase = new BulkUpsertProductsUseCase(productRepository);
     const uploadProductImageUseCase = new UploadProductImageUseCase(storage);
 
@@ -78,6 +80,7 @@ function createProductsContainer(dependencies = {}) {
         createProductUseCase,
         updateProductUseCase,
         deleteProductUseCase,
+        deleteProductsUseCase,
         bulkUpsertProductsUseCase,
         uploadProductImageUseCase,
         getBrandsUseCase,
@@ -98,6 +101,7 @@ function createProductsContainer(dependencies = {}) {
         createProductUseCase,
         updateProductUseCase,
         deleteProductUseCase,
+        deleteProductsUseCase,
         bulkUpsertProductsUseCase,
         uploadProductImageUseCase,
         aiFillProductUseCase,
