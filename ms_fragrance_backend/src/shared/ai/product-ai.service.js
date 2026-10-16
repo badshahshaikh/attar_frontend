@@ -6,14 +6,25 @@ import AppError from '../../core/errors/AppError.js';
 const IMAGE_MODEL = 'gpt-image-2';
 
 class ProductAiService {
-    constructor({ client, loadMasterImage }) {
+    constructor({ client, loadMasterImage, imageAdapter, textAdapter }) {
         this.client = client;
         // Injectable so tests can supply a stub; production uses the real loader.
         this.loadMasterImage = loadMasterImage || loadMasterProductImage;
+        // Provider adapter for the reference-image generation call. When none
+        // is injected, the built-in OpenAI images.edit path below is used
+        // (gpt-image-2), preserving the existing default behaviour. The
+        // container injects adapters for alternative providers (e.g. Eden AI
+        // via PRODUCT_IMAGE_PROVIDER=edenai, Cloudflare Workers AI via
+        // PRODUCT_IMAGE_PROVIDER=cloudflare) from image-provider.js.
+        this.imageAdapter = imageAdapter || null;
+        // Text provider adapter for AI Fill. When none is injected, the
+        // built-in OpenAI responses.create path in generateProductData is
+        // used (gpt-5.5), preserving the existing default behaviour.
+        this.textAdapter = textAdapter || null;
     }
 
-    async generateProductData(name) {
-        const response = await this.client.responses.create({
+    buildProductDataRequest(name) {
+        return {
             model: 'gpt-5.5',
 
             instructions: `
@@ -107,9 +118,79 @@ ${name}`,
                     }
                 }
             }
-        });
+        };
+    }
 
-        return JSON.parse(response.output_text);
+    async generateProductData(name) {
+        if (!name || !String(name).trim()) {
+            throw new AppError(
+                'Product name is required to generate product information.',
+                400,
+                'PRODUCT_NAME_REQUIRED'
+            );
+        }
+
+        const { model, instructions, text, input } =
+            this.buildProductDataRequest(name.trim());
+
+        let outputText;
+
+        if (this.textAdapter) {
+            const schema = text.format.schema;
+
+            outputText = await this.textAdapter.generateProductJson({
+                instructions,
+                input,
+                schema
+            });
+        } else {
+            const response = await this.client.responses.create({
+                model,
+                instructions,
+                text,
+                input
+            });
+
+            outputText = response.output_text;
+        }
+
+        if (!outputText || typeof outputText !== 'string') {
+            throw new AppError(
+                'The AI provider returned an empty product response.',
+                502,
+                'AI_EMPTY_PRODUCT_RESPONSE'
+            );
+        }
+
+        try {
+            return JSON.parse(outputText);
+        } catch {
+            // Cloudflare models may wrap JSON in markdown code fences or prefix
+            // the response with explanatory text. Strip fences and retry parsing
+            // only if the cleaned text is valid JSON; otherwise surface a
+            // sanitized error without exposing provider internals.
+            const cleaned = String(outputText)
+                .replace(/^\s*```json\s*\n?/i, '')
+                .replace(/^\s*```\s*\n?/i, '')
+                .replace(/\n?\s*```\s*$/i, '')
+                .trim();
+            if (cleaned !== outputText) {
+                try {
+                    return JSON.parse(cleaned);
+                } catch {
+                    throw new AppError(
+                        'The AI provider returned invalid product JSON.',
+                        502,
+                        'AI_INVALID_PRODUCT_JSON'
+                    );
+                }
+            }
+            throw new AppError(
+                'The AI provider returned invalid product JSON.',
+                502,
+                'AI_INVALID_PRODUCT_JSON'
+            );
+        }
     }
 
     // Build the image-edit prompt. The master bottle reference image is passed
@@ -187,9 +268,18 @@ COMPOSITION & QUALITY
 
         const prompt = this.buildProductImagePrompt(productData);
 
-        // Load the single master bottle reference. Throws a safe AppError (503)
-        // if the asset is missing — never exposes the filesystem path.
-        const { file: masterImageFile } = await this.loadMasterImage();
+        // Load the single master bottle reference, unless the active adapter
+        // cannot consume reference images (text-to-image providers). Throws a
+        // safe AppError (503) if the asset is missing — never exposes the
+        // filesystem path.
+        const needsReference = this.imageAdapter?.supportsReferenceImage !== false;
+        const { file: masterImageFile, buffer: masterImageBuffer } = needsReference
+            ? await this.loadMasterImage()
+            : { file: undefined, buffer: undefined };
+
+        if (this.imageAdapter) {
+            return await this.imageAdapter.generatePng({ prompt, imageFile: masterImageFile, imageBuffer: masterImageBuffer });
+        }
 
         return await this.generatePng(prompt, masterImageFile);
     }

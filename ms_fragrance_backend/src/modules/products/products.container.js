@@ -13,6 +13,8 @@ import UploadProductImageUseCase from './application/use-cases/UploadProductImag
 import AiFillProductUseCase from './application/use-cases/aiFillProductUseCase.js';
 import AiGenerateProductImageUseCase from './application/use-cases/AiGenerateProductImageUseCase.js';
 import ProductAiService from '../../shared/ai/product-ai.service.js';
+import { createProductImageAdapter } from '../../shared/ai/image-provider.js';
+import { createProductTextAdapter } from '../../shared/ai/text-provider.js';
 import openai from '../../shared/ai/openai.client.js';
 
 
@@ -65,7 +67,17 @@ function createProductsContainer(dependencies = {}) {
     const productAiService =
         dependencies.productAiService ||
         new ProductAiService({
-            client: openai
+            client: openai,
+            // Image provider selection (PRODUCT_IMAGE_PROVIDER). Returns null
+            // for the default "openai" provider so the built-in gpt-image-2
+            // path is preserved; an Eden AI adapter is injected when
+            // PRODUCT_IMAGE_PROVIDER=edenai. Throws on unsupported names.
+            imageAdapter: createProductImageAdapter({ env: process.env }),
+            // Text provider selection (PRODUCT_TEXT_PROVIDER). Returns null
+            // for the default "openai" provider so the built-in gpt-5.5 path
+            // is preserved; a Cloudflare text adapter is injected when
+            // PRODUCT_TEXT_PROVIDER=cloudflare. Throws on unsupported names.
+            textAdapter: createProductTextAdapter({ env: process.env })
         });
 
     const aiFillProductUseCase =
