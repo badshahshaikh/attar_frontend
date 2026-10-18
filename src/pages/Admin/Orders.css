@@ -15,7 +15,7 @@
 }
 
 .order-customer strong {
-    font-size: .9rem;
+    font-size: .85rem;
     font-weight: 600;
     color: var(--color-text-primary);
 }
@@ -63,14 +63,14 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 24px;
+    padding: 16px;
     overflow-y: auto;
 }
 
 .order-modal {
     background: var(--color-white);
     border: 1px solid var(--color-border);
-    padding: 36px;
+    padding: 24px;
     max-width: 680px;
     width: 100%;
     max-height: calc(100vh - 48px);
@@ -81,12 +81,12 @@
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    gap: 12px;
-    margin-bottom: 14px;
+    gap: 10px;
+    margin-bottom: 10px;
 }
 
 .order-modal-eyebrow {
-    font-size: .7rem;
+    font-size: .65rem;
     text-transform: uppercase;
     letter-spacing: .08em;
     color: var(--color-text-muted);
@@ -95,14 +95,14 @@
 
 .order-modal-header h2 {
     margin: 0;
-    font-size: 1.2rem;
+    font-size: 1.05rem;
 }
 
 .order-modal-close {
     background: none;
     border: 1px solid var(--color-border);
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -122,17 +122,17 @@
 
 .order-modal-badges {
     display: flex;
-    gap: 8px;
-    margin-bottom: 18px;
+    gap: 6px;
+    margin-bottom: 12px;
 }
 
 /* ── Editable status controls in the order detail modal ── */
 .order-status-manage {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    padding: 14px 16px;
-    margin-bottom: 18px;
+    gap: 8px;
+    padding: 10px 12px;
+    margin-bottom: 12px;
     background: var(--color-bg-secondary);
     border: 1px solid var(--color-border);
 }
@@ -192,9 +192,9 @@
 .order-invoice-actions {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    padding: 14px 16px;
-    margin-bottom: 18px;
+    gap: 6px;
+    padding: 10px 12px;
+    margin-bottom: 12px;
     background: var(--color-bg-secondary);
     border: 1px solid var(--color-border);
 }
@@ -202,7 +202,7 @@
 .order-invoice-buttons {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 8px;
 }
 
 .order-invoice-btn {
@@ -229,13 +229,13 @@
 .order-modal-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-bottom: 18px;
+    gap: 10px;
+    margin-bottom: 12px;
 }
 
 @media (max-width: 600px) {
     .order-modal {
-        padding: 24px;
+        padding: 18px;
     }
 
     .order-modal-grid {
@@ -246,8 +246,8 @@
 .order-modal-section {
     background: var(--color-bg-secondary);
     border: 1px solid var(--color-border);
-    padding: 14px 16px;
-    margin-bottom: 16px;
+    padding: 10px 12px;
+    margin-bottom: 10px;
 }
 
 .order-modal-grid .order-modal-section {
@@ -259,11 +259,11 @@
     text-transform: uppercase;
     letter-spacing: .06em;
     color: var(--color-text-muted);
-    margin-bottom: 8px;
+    margin-bottom: 6px;
 }
 
 .order-modal-section p {
-    font-size: .875rem;
+    font-size: .82rem;
     line-height: 1.6;
     margin: 0;
     color: var(--color-text-primary);
@@ -271,13 +271,13 @@
 
 .order-modal-muted {
     color: var(--color-text-secondary) !important;
-    font-size: .8rem !important;
+    font-size: .75rem !important;
 }
 
 /* Items table inside the modal */
 .order-items-table td {
     height: auto;
-    padding: 12px 14px;
+    padding: 8px 10px;
 }
 
 .order-items-table th {
@@ -287,17 +287,17 @@
 .order-modal-totals {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
     margin-left: auto;
-    max-width: 280px;
+    max-width: 260px;
     padding-top: 4px;
 }
 
 .order-modal-totals div {
     display: flex;
     justify-content: space-between;
-    gap: 24px;
-    font-size: .875rem;
+    gap: 8px;
+    font-size: .8rem;
     color: var(--color-text-secondary);
 }
 
@@ -308,8 +308,8 @@
 
 .order-modal-totals .order-modal-total {
     border-top: 1px solid var(--color-border);
-    padding-top: 8px;
-    font-size: 1rem;
+    padding-top: 6px;
+    font-size: .92rem;
 }
 
 .order-modal-totals .order-modal-total strong {
@@ -320,9 +320,9 @@
     display: flex;
     justify-content: space-between;
     flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 18px;
-    padding-top: 14px;
+    gap: 6px;
+    margin-top: 12px;
+    padding-top: 10px;
     border-top: 1px solid var(--color-border);
     font-size: .78rem;
     color: var(--color-text-muted);
