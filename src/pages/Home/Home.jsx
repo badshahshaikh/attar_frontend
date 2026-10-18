@@ -114,6 +114,9 @@ const Home = () => {
                                 alt={slide.headline}
                                 className="hero-slide-image"
                                 style={{ objectPosition: index === 0 ? 'center center' : index === 1 ? 'center center' : 'center center' }}
+                                loading={index === 0 ? 'eager' : 'lazy'}
+                                fetchPriority={index === 0 ? 'high' : undefined}
+                                decoding="async"
                             />
                             <div className="container hero-inner">
                                 <div className="hero-content">
@@ -184,7 +187,7 @@ const Home = () => {
                                 to={`/shop?collection=${encodeURIComponent(category)}`}
                                 className="category-card"
                             >
-                                <img src={categoryProduct.imageUrl} alt={category} loading="lazy" />
+                                <img src={categoryProduct.imageUrl} alt={category} loading="lazy" decoding="async" />
                                 <div className="category-card-overlay">
                                     <span>Collection</span>
                                     <h3>{category}</h3>

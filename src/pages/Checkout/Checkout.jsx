@@ -427,7 +427,7 @@ const Checkout = () => {
                         {items.map((item, index) => (
                             <div key={`${item.productId}-${item.size}-${index}`} className="checkout-item">
                                 <div className="checkout-item-image">
-                                    <img src={item.image || "https://images.unsplash.com/photo-1594035987173-1e5b2cc22bc0?q=80&w=300&auto=format&fit=crop"} alt={item.name} />
+                                    <img src={item.image || "https://images.unsplash.com/photo-1594035987173-1e5b2cc22bc0?q=80&w=300&auto=format&fit=crop"} alt={item.name} loading="lazy" decoding="async" width={60} height={80} />
                                 </div>
                                 <div className="checkout-item-details">
                                     <h4 className="checkout-item-name">{item.name}</h4>

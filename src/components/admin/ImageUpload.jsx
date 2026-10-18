@@ -24,7 +24,7 @@ export default function ImageUpload({ imageUrl, productId, onUploaded }) {
 
     return (
         <div className="admin-image-upload">
-            {imageUrl ? <img src={imageUrl} alt="Product preview" /> : <div className="admin-image-empty">No image selected</div>}
+            {imageUrl ? <img src={imageUrl} alt="Product preview" decoding="async" /> : <div className="admin-image-empty">No image selected</div>}
             <div><input ref={inputRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={handleChange} disabled={uploading} /><small>{uploading ? 'Uploading...' : 'JPEG, PNG or WebP, max 5MB'}</small>{error && <p className="admin-error">{error}</p>}</div>
         </div>
     );

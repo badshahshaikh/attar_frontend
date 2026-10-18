@@ -49,7 +49,7 @@ const Collections = () => {
                         onClick={() => handleCollectionClick(category)}
                     >
                         <div className="collection-img-container">
-                            <img src={getCategoryImage(category)} alt={category} />
+                            <img src={getCategoryImage(category)} alt={category} loading="lazy" decoding="async" />
                             <div className="collection-overlay">
                                 <h3>{category}</h3>
                                 <span>Explore</span>

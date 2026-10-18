@@ -113,7 +113,7 @@ const Cart = () => {
                             <div key={`${item.productId}-${item.size}-${index}`} className="cart-item">
                                 <div className="cart-item-product">
                                     <div className="cart-item-image">
-                                        <img src={item.image || "https://images.unsplash.com/photo-1594035987173-1e5b2cc22bc0?q=80&w=300&auto=format&fit=crop"} alt={item.name} />
+                                        <img src={item.image || "https://images.unsplash.com/photo-1594035987173-1e5b2cc22bc0?q=80&w=300&auto=format&fit=crop"} alt={item.name} loading="lazy" decoding="async" width={90} height={110} />
                                     </div>
                                     <div className="cart-item-details">
                                         <Link to={`/product/${item.productId}`} className="cart-item-name">{item.name}</Link>

@@ -58,6 +58,7 @@ const ProductCard = ({ product }) => {
                         alt={product.name}
                         className="product-image"
                         loading="lazy"
+                        decoding="async"
                     />
                 ) : (
                     <div className="product-image-placeholder">

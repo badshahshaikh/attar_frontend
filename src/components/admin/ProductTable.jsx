@@ -64,7 +64,7 @@ export default function ProductTable({
                             )}
                             <td >
                                 <div className="admin-product-cell">
-                                    <img src={product.imageUrl || '/placeholder-product.jpg'} alt="" />
+                                    <img src={product.imageUrl || '/placeholder-product.jpg'} alt="" loading="lazy" decoding="async" width={48} height={56} />
                                     <span>{product.name}</span>
                                 </div>
                             </td>

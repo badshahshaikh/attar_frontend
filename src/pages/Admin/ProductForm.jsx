@@ -139,6 +139,7 @@ export default function ProductForm() {
                                         <img
                                             src={`data:image/png;base64,${aiImage}`}
                                             alt="AI generated product"
+                                            decoding="async"
                                         />
                                         <small>AI Generated Image</small>
                                     </div>

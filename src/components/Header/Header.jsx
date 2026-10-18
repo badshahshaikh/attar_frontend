@@ -193,6 +193,7 @@ const Header = () => {
                                 <img
                                     src="/ms-fragrance-logo.png"
                                     alt="MS Fragrance"
+                                    decoding="async"
                                 />
                             </picture>
                         </Link>
@@ -312,6 +313,10 @@ const Header = () => {
                                                         <img
                                                             src={product.imageUrl || '/placeholder-product.jpg'}
                                                             alt={product.name}
+                                                            loading="lazy"
+                                                            decoding="async"
+                                                            width={48}
+                                                            height={48}
                                                         />
 
                                                         <div className="search-result-info">
@@ -367,6 +372,7 @@ const Header = () => {
                                 <img
                                     src="/ms-fragrance-logo.png"
                                     alt="MS Fragrance"
+                                    decoding="async"
                                 />
                             </picture>
                             <span className="mobile-brand-urdu">سعد لِلطُورت</span>
@@ -422,7 +428,7 @@ const Header = () => {
                                                                 setSearchQuery('');
                                                             }}
                                                         >
-                                                            <img src={product.imageUrl || '/placeholder-product.jpg'} alt={product.name} />
+                                                            <img src={product.imageUrl || '/placeholder-product.jpg'} alt={product.name} loading="lazy" decoding="async" width={48} height={48} />
                                                             <div className="search-result-info">
                                                                 <h4>{product.name}</h4>
                                                                 <span>{product.fragranceType}</span>

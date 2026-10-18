@@ -154,7 +154,7 @@ const ProductDetails = () => {
                 <div className="product-gallery">
                     <div className="main-image-container">
                         {product.isNew && <span className="product-badge new">New</span>}
-                        <img src={activeImage || product.imageUrl} alt={product.name} className="main-image" />
+                        <img src={activeImage || product.imageUrl} alt={product.name} className="main-image" loading="eager" fetchPriority="high" decoding="async" />
                     </div>
                     {Array.isArray(product.imageUrls) && product.imageUrls.length > 1 && (
                         <div className="product-gallery-thumbs">
@@ -165,7 +165,7 @@ const ProductDetails = () => {
                                     className={`product-gallery-thumb${activeImage === imageUrl ? ' active' : ''}`}
                                     onClick={() => setActiveImage(imageUrl)}
                                 >
-                                    <img src={imageUrl} alt={`${product.name} view ${index + 1}`} />
+                                    <img src={imageUrl} alt={`${product.name} view ${index + 1}`} loading="lazy" decoding="async" />
                                 </button>
                             ))}
                         </div>
