@@ -2,6 +2,7 @@ import './unit/products/product.validator.test.js';
 import './unit/products/product.mapper.test.js';
 import './unit/products/product.controller.test.js';
 import './unit/products/product-delete-bulk.test.js';
+import './unit/products/product-upload-optimization.test.js';
 import './unit/products/product-ai-image.test.js';
 import './unit/products/product-ai-image-providers.test.js';
 import './unit/products/product-ai-text-providers.test.js';
