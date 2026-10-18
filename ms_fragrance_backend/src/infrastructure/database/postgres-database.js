@@ -59,55 +59,85 @@ console.log(
     )}`
 );
 
-async function initializeDatabase() {
-    try {
-        await pool.query('SELECT 1');
+function createPostgresDatabase(poolInstance) {
+    let initializationPromise = null;
 
-        console.log('[database] connection established');
+    async function initializeDatabase() {
+        if (initializationPromise) {
+            return initializationPromise;
+        }
 
-        return pool;
-    } catch (error) {
-        console.error('[database] connection failed', {
-            message: error.message,
-            code: error.code,
-            stack: error.stack,
-        });
+        initializationPromise = (async () => {
+            try {
+                await poolInstance.query('SELECT 1');
 
-        throw error;
+                console.log('[database] connection established');
+
+                return poolInstance;
+            } catch (error) {
+                initializationPromise = null;
+
+                console.error('[database] connection failed', {
+                    message: error.message,
+                    code: error.code,
+                    stack: error.stack,
+                });
+
+                throw error;
+            }
+        })();
+
+        return initializationPromise;
     }
-}
 
-async function query(text, values) {
-    const database = await initializeDatabase();
+    async function query(text, values) {
+        const database = await initializeDatabase();
 
-    return database.query(text, values);
-}
-
-async function withTransaction(callback) {
-    const database = await initializeDatabase();
-    const client = await database.connect();
-
-    try {
-        await client.query('BEGIN');
-
-        const result = await callback(client);
-
-        await client.query('COMMIT');
-
-        return result;
-    } catch (error) {
-        await client.query('ROLLBACK');
-        throw error;
-    } finally {
-        client.release();
+        return database.query(text, values);
     }
+
+    async function withTransaction(callback) {
+        const database = await initializeDatabase();
+        const client = await database.connect();
+
+        try {
+            await client.query('BEGIN');
+
+            const result = await callback(client);
+
+            await client.query('COMMIT');
+
+            return result;
+        } catch (error) {
+            await client.query('ROLLBACK');
+            throw error;
+        } finally {
+            client.release();
+        }
+    }
+
+    async function closeDb() {
+        initializationPromise = null;
+        await poolInstance.end();
+    }
+
+    return {
+        initializeDatabase,
+        query,
+        withTransaction,
+        closeDb,
+    };
 }
 
-async function closeDb() {
-    await pool.end();
-}
+const defaultDatabase = createPostgresDatabase(pool);
+
+const initializeDatabase = defaultDatabase.initializeDatabase;
+const query = defaultDatabase.query;
+const withTransaction = defaultDatabase.withTransaction;
+const closeDb = defaultDatabase.closeDb;
 
 export {
+    createPostgresDatabase,
     initializeDatabase,
     query,
     withTransaction,
@@ -115,6 +145,7 @@ export {
 };
 
 export default {
+    createPostgresDatabase,
     initializeDatabase,
     query,
     withTransaction,

@@ -32,4 +32,5 @@ import './unit/checkout/order-message.test.js';
 import './unit/checkout/guest-checkout-validator.test.js';
 import './integration/customer/order-stock-deduction.test.js';
 import './integration/products/product-route-wiring.test.js';
+import './unit/database/postgres-database-init.test.js';
 import './e2e/products/product-put.e2e.test.js';
