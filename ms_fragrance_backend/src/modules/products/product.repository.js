@@ -1,3 +1,4 @@
+import { performance } from 'node:perf_hooks';
 import {
     PRODUCT_COLUMNS,
     PRODUCT_WRITE_COLUMNS,
@@ -15,13 +16,17 @@ function createProductRepository({ query }) {
     return {
 
         async findAll(filters) {
+            const requestId = 'listing';
+            const start = performance.now();
+
             console.log('FILTERS:', filters);
 
             const { where, values } = buildProductWhere(filters);
 
             console.log('GENERATED WHERE:', where);
-            console.log('QUERY VALUES:', values);
+            // console.log('QUERY VALUES:', values);
 
+            const countStart = performance.now();
             // Count matching products
             const countResult = await query(
                 `
@@ -31,11 +36,12 @@ function createProductRepository({ query }) {
         `,
                 values
             );
+            const countElapsed = Math.round(performance.now() - countStart);
 
-            // Fetch paginated products
             const limitIndex = values.length + 1;
             const offsetIndex = values.length + 2;
 
+            const productsStart = performance.now();
             const productsResult = await query(
                 `
             SELECT ${PRODUCT_COLUMNS}
@@ -50,6 +56,19 @@ function createProductRepository({ query }) {
                     filters.limit,
                     (filters.page - 1) * filters.limit
                 ]
+            );
+            const productsElapsed = Math.round(performance.now() - productsStart);
+
+            const totalElapsed = Math.round(performance.now() - start);
+
+            console.log(
+                '[PRODUCT_LIST_TIMING]',
+                {
+                    requestId,
+                    countMs: countElapsed,
+                    productsMs: productsElapsed,
+                    totalMs: totalElapsed,
+                }
             );
 
             return {
