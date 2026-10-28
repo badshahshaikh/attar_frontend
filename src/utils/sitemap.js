@@ -1,7 +1,6 @@
-// Site URL sitemap fix: normalize base URL by removing trailing slash
-const baseUrl = siteUrl.replace(/\/$/, '');
-
-// Rest of the function continues...
+// Site URL: base URL with trailing slash removed, computed inside
+// buildSitemapXml using the siteUrl parameter to avoid ReferenceError
+// when the module loads before the function is called.
 /**
  * sitemap.js - Build a sitemap.xml string from public sitemap endpoint data.
  */
@@ -16,6 +15,9 @@ function escapeXml(value) {
 }
 
 export function buildSitemapXml(data, siteUrl = '') {
+    // Normalize site URL by removing trailing slash to avoid double slashes
+    const baseUrl = siteUrl.replace(/\/$/, '');
+
     const urls = Array.isArray(data?.urls) ? data.urls : [];
     const entries = urls
         .filter((u) => u && u.loc)
