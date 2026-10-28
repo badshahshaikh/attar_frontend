@@ -1,3 +1,7 @@
+// Site URL sitemap fix: normalize base URL by removing trailing slash
+const baseUrl = siteUrl.replace(/\/$/, '');
+
+// Rest of the function continues...
 /**
  * sitemap.js - Build a sitemap.xml string from public sitemap endpoint data.
  */
@@ -22,11 +26,15 @@ export function buildSitemapXml(data, siteUrl = '') {
             if (siteUrl) {
                 if (!u.loc.startsWith('http')) {
                     // Relative path: prepend siteUrl
+// Fixed: relative path using baseUrl to avoid double slashes
+loc = baseUrl + '/' + u.loc.replace(/^\/+/, '');
                     loc = siteUrl + (siteUrl.endsWith('/') ? '' : '/') + u.loc.replace(/^\//, '');
                 } else if (u.loc.startsWith('http') && u.loc !== siteUrl) {
                     // Absolute URL: replace host, keep path
                     try {
                         const parsed = new URL(u.loc);
+// Fixed: absolute URL using baseUrl to avoid double slashes
+loc = baseUrl + parsed.pathname + parsed.search + parsed.hash;
                         loc = siteUrl + (siteUrl.endsWith('/') ? '' : '/') + parsed.pathname + parsed.search + parsed.hash;
                     } catch {
                         // If URL parsing fails, keep original

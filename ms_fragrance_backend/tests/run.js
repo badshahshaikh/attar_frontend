@@ -1,3 +1,8 @@
+import './unit/seo/seo.validator.test.js';
+import './unit/seo/seo.controller.test.js';
+import './unit/seo/seo.repository.test.js';
+import './unit/seo/seo-use-cases.test.js';
+import './unit/seo/sitemap.test.js';
 import './unit/products/product.validator.test.js';
 import './unit/products/product.mapper.test.js';
 import './unit/products/product.controller.test.js';

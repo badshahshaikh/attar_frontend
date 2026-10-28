@@ -4,6 +4,7 @@ import * as storage from '../infrastructure/storage/supabase-storage.adapter.js'
 
 import { createProductsContainer } from '../modules/products/products.container.js';
 import { createCatalogContainer } from '../modules/catalog/catalog.container.js';
+import { createSeoContainer } from '../modules/seo/seo.container.js';
 import { createUserRepository } from '../modules/auth/user.repository.js';
 import { createAuthService } from '../modules/auth/auth.service.js';
 import { createAuthController } from '../modules/auth/auth.controller.js';
@@ -36,6 +37,9 @@ function createContainer(dependencies = {}) {
     // Settings module
     const settingsContainer = createSettingsContainer({ query });
 
+    // SEO module
+    const seoContainer = createSeoContainer({ query });
+
     // Customer accounts module (addresses + orders)
     const customerContainer = createCustomerContainer({ query });
 
@@ -55,6 +59,7 @@ function createContainer(dependencies = {}) {
         catalogRouter: catalogContainer.catalogRouter,
         authRouter: createAuthRouter(authController),
         settingsRouter: settingsContainer.settingsRouter,
+        seoRouter: seoContainer.seoRouter,
         customerRouter: customerContainer.customerRouter,
         usersRouter: usersContainer.usersRouter,
         ordersRouter: ordersContainer.ordersRouter,

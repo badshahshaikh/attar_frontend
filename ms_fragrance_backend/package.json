@@ -14,6 +14,7 @@
         "migrate:customers": "node migrate-customers.js",
         "migrate:guest-orders": "node migrate-guest-orders.js",
         "migrate:returns": "node migrate-returns.js",
+    "migrate:seo": "node migrate-seo.js",
         "optimize:images": "node optimize-product-images.js",
         "create:admin": "node create-admin.js",
         "audit:catalog": "node audit-catalog.js"

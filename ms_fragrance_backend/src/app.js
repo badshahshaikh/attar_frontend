@@ -12,7 +12,7 @@ import { createPaymentWebhookRouter } from './modules/customer/payment-webhook.r
 import { checkDatabaseConnection } from './shared/database/index.js';
 
 const app = express();
-const { productRouter, catalogRouter, authRouter, settingsRouter, customerRouter, usersRouter, ordersRouter, returnsRouter } = createContainer();
+const { productRouter, catalogRouter, authRouter, settingsRouter, seoRouter, customerRouter, usersRouter, ordersRouter, returnsRouter } = createContainer();
 const uploadDir = config.uploads.directory;
 
 // Webhook router needs the raw body before express.json() strips it.
@@ -34,6 +34,7 @@ app.use('/api/products', productRouter);
 app.use('/api/catalog', catalogRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/settings', settingsRouter);
+app.use('/api/seo', seoRouter);
 app.use('/api/customer', customerRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/orders', ordersRouter);
