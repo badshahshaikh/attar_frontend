@@ -25,6 +25,7 @@ const Categories = lazy(() => import('./pages/Admin/Categories'));
 const Customers = lazy(() => import('./pages/Admin/Customers'));
 const Orders = lazy(() => import('./pages/Admin/Orders'));
 const Returns = lazy(() => import('./pages/Admin/Returns'));
+const SeoSettings = lazy(() => import('./pages/Admin/SeoSettings'));
 
 const PublicLayout = lazy(() => import('./components/layouts/PublicLayout'));
 const AdminLayout = lazy(() => import('./components/admin/AdminLayout'));
@@ -89,6 +90,7 @@ function App() {
                             <Route path="/admin/customers" element={<Customers />} />
                             <Route path="/admin/orders" element={<Orders />} />
                             <Route path="/admin/returns" element={<Returns />} />
+                            <Route path="/admin/seo" element={<SeoSettings />} />
                             <Route path="/admin/footer-settings" element={<FooterSettings />} />
                           </Route>
                         </Route>

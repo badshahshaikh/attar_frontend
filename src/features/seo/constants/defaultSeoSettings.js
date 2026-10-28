@@ -1,0 +1,18 @@
+export const DEFAULT_SEO_SETTINGS = {
+    page_type: 'shop',
+    route_path: '',
+    seo_title: '',
+    meta_description: '',
+    canonical_url: '',
+    robots: 'index,follow',
+    og_title: '',
+    og_description: '',
+    og_image: '',
+    twitter_card: 'summary_large_image',
+    twitter_title: '',
+    twitter_description: '',
+    twitter_image: '',
+    structured_data: {},
+    product_id: null,
+    is_published: true,
+};

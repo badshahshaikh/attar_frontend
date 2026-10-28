@@ -55,6 +55,14 @@ export default function AdminDashboard() {
                 <Link to="/admin/products/new">
                     Add a new product <span>→</span>
                 </Link>
+
+
+                <Link to="/admin/footer-settings">
+                    Footer settings <span>→</span>
+                </Link>
+                <Link to="/admin/seo">
+                    SEO settings <span>→</span>
+                </Link>
             </div>
         </section>
     );
