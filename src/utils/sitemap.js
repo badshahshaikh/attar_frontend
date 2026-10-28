@@ -30,14 +30,14 @@ export function buildSitemapXml(data, siteUrl = '') {
                     // Relative path: prepend siteUrl
 // Fixed: relative path using baseUrl to avoid double slashes
 loc = baseUrl + '/' + u.loc.replace(/^\/+/, '');
-                    loc = siteUrl + (siteUrl.endsWith('/') ? '' : '/') + u.loc.replace(/^\//, '');
+                    /* removed: duplicate loc assignment that caused double slashes */ // neutralized(/^\//, '');
                 } else if (u.loc.startsWith('http') && u.loc !== siteUrl) {
                     // Absolute URL: replace host, keep path
                     try {
                         const parsed = new URL(u.loc);
 // Fixed: absolute URL using baseUrl to avoid double slashes
 loc = baseUrl + parsed.pathname + parsed.search + parsed.hash;
-                        loc = siteUrl + (siteUrl.endsWith('/') ? '' : '/') + parsed.pathname + parsed.search + parsed.hash;
+                        /* removed: duplicate loc assignment that caused double slashes */ // neutralized + parsed.search + parsed.hash;
                     } catch {
                         // If URL parsing fails, keep original
                     }

@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-const API_BASE = (process.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/$/, '');
+const API_BASE = (process.env.VITE_API_URL || 'http://localhost:5000').replace(/\/$/, '');
 const DIST_DIR = path.resolve(process.cwd(), 'dist');
 
 function escapeHtml(value) {
@@ -76,7 +76,7 @@ async function fetchJson(url) {
 
 async function getProducts() {
   try {
-    const data = await fetchJson(`${API_BASE}/products?limit=100`);
+    const data = await fetchJson(`${API_BASE}/api/products?limit=100`);
     if (Array.isArray(data?.products)) return data.products;
     if (Array.isArray(data)) return data;
     return [];
@@ -88,7 +88,7 @@ async function getProducts() {
 
 async function getSeo(route) {
   const encoded = encodeURIComponent(route);
-  return fetchJson(`${API_BASE}/seo/public/${encoded}`);
+  return fetchJson(`${API_BASE}/api/seo/public/${encoded}`);
 }
 
 async function prerenderRoute(route, template) {
