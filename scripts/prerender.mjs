@@ -135,7 +135,14 @@ async function main() {
   const coreRoutes = ['/', '/shop', '/collections', '/about'];
   const products = await getProducts();
   const productRoutes = products
-    .map((p) => (p && p.id != null ? `/product/${p.id}` : null))
+    .map((p) => {
+      if (p == null || p.id == null) return null;
+      // Use the canonical DB slug as the descriptive prefix. When no slug is
+      // present, fall back to the numeric ID alone (no "-{id}" suffix) so the
+      // prerendered route matches the links rendered by ProductCard/Header.
+      const slug = p.slug && String(p.slug).trim() ? String(p.slug) : null;
+      return slug ? `/product/${slug}-${p.id}` : `/product/${p.id}`;
+    })
     .filter(Boolean);
 
   const routes = [...coreRoutes, ...productRoutes];
