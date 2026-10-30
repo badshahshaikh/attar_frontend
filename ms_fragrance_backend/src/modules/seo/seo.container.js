@@ -63,7 +63,7 @@ function createSeoContainer(dependencies = {}) {
 
     async function listProducts() {
         try {
-            const result = await query('SELECT id, updated_at FROM products');
+            const result = await query('SELECT id, slug, updated_at FROM products');
             return result.rows;
         } catch (error) {
             logger.error('[SEO_LIST_PRODUCTS_ERROR]', { errorMessage: error.message });
