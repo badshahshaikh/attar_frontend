@@ -1,5 +1,5 @@
 import { toProduct, toPersistenceValues } from '../../product.mapper.js';
-import { parseProductPayload, ensureSizeConsistency } from '../../product.validator.js';
+import { parseProductPayload, ensureSizeConsistency, slugify } from '../../product.validator.js';
 import database from '../../../../infrastructure/database/postgres-database.js';
 import { logger } from '../../../../shared/logging/logger.js';
 
@@ -32,6 +32,9 @@ class BulkUpsertProductsUseCase {
             try {
                 const validated = parseProductPayload(create[i]);
                 const normalized = ensureSizeConsistency(validated);
+                if (!normalized.slug) {
+                    normalized.slug = slugify(normalized.name);
+                }
                 createPayloads.push(normalized);
             } catch (err) {
                 errors.push({ row: i + 1, context: 'create', message: err.message });

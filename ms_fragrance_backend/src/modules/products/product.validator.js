@@ -41,6 +41,19 @@ export function parseProductPayload(body) {
         'Fragrance family'
     );
 
+    // Slug: preserve an explicitly supplied valid slug; otherwise mark as
+    // not-provided so the create use case can generate one from the name.
+    // On update, an absent slug means "leave the existing value unchanged."
+    if (
+        payload.slug !== undefined &&
+        payload.slug !== null &&
+        String(payload.slug).trim() !== ''
+    ) {
+        payload.slug = String(payload.slug).trim();
+    } else {
+        payload.slug = undefined;
+    }
+
     // Price
     payload.price = validateNonNegativeNumber(
         payload.price,
@@ -299,6 +312,17 @@ export function normalizeSizePricing(sizePricing) {
  * @param {Object} sizePricing - Size pricing object
  * @returns {Array} Array of size keys
  */
+export function slugify(name) {
+    return String(name ?? '')
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-+|-+$/, '')
+        || null;
+}
+
 export function deriveSizesFromPricing(sizePricing) {
     if (!sizePricing || typeof sizePricing !== 'object') {
         return [];

@@ -64,6 +64,16 @@ class UpdateProductUseCase {
                 sizes: normalized.sizes
             });
 
+            const previous = await this.productRepository.findImageById(id);
+
+            // Slug handling on update:
+            // - If the caller supplied a slug, use it (allows renaming/custom slugs).
+            // - If no slug is supplied, preserve the existing slug so a manually
+            //   customized slug is never unexpectedly overwritten or wiped to NULL.
+            if (!normalized.slug) {
+                normalized.slug = previous?.slug ?? null;
+            }
+
             const persistenceValues = toPersistenceValues(normalized);
 
             logger.info('[PUT_TRACE]', {
@@ -72,8 +82,6 @@ class UpdateProductUseCase {
                 sizePricing: persistenceValues[9],
                 sizes: persistenceValues[10]
             });
-
-            const previous = await this.productRepository.findImageById(id);
 
             const row = await this.productRepository.update(
                 id,

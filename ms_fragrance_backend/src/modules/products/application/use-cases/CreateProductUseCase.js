@@ -1,5 +1,5 @@
 import { toProduct, toPersistenceValues } from '../../product.mapper.js';
-import { parseProductPayload, ensureSizeConsistency } from '../../product.validator.js';
+import { parseProductPayload, ensureSizeConsistency, slugify } from '../../product.validator.js';
 import { logger } from '../../../../shared/logging/logger.js';
 
 /**
@@ -26,7 +26,14 @@ class CreateProductUseCase {
             
             // Ensure size pricing and sizes consistency
             const normalized = ensureSizeConsistency(validated);
-            
+
+            // Auto-generate a slug from the product name when none is supplied.
+            // The slug is persisted as part of the creation operation so the
+            // frontend can build canonical /product/{slug}-{id} URLs.
+            if (!normalized.slug) {
+                normalized.slug = slugify(normalized.name);
+            }
+
             // Persist to repository
             const row = await this.productRepository.create(toPersistenceValues(normalized));
             

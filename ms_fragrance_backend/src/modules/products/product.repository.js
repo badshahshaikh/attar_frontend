@@ -81,7 +81,7 @@ function createProductRepository({ query }) {
             return result.rows[0] || null;
         },
         async findImageById(id) {
-            const result = await query('SELECT image_url, image_urls FROM products WHERE id = $1', [id]);
+            const result = await query('SELECT image_url, image_urls, slug FROM products WHERE id = $1', [id]);
             return result.rows[0] || null;
         },
         async create(values) {
