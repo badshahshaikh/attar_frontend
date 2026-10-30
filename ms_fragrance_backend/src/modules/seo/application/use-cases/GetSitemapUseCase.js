@@ -92,10 +92,17 @@ class GetSitemapUseCase {
         for (const p of products) {
             const id = p && (p.id != null ? p.id : p);
             if (id == null) continue;
-            const routePath = `/product/${id}`;
+            // Use the canonical DB slug as the descriptive prefix. When no slug is
+            // present, fall back to the numeric ID alone (no "-{id}" suffix) so the
+            // sitemap URL matches the frontend links and prerendered routes.
+            const slug = p.slug && String(p.slug).trim() ? String(p.slug) : null;
+            const routePath = slug ? `/product/${slug}-${id}` : `/product/${id}`;
             if (noindexRoutes.has(routePath)) continue;
-            // check if a product-specific SEO record exists
-            const seoRow = published.find((r) => r.route_path === routePath || r.product_id === Number(id));
+            // check if a product-specific SEO record exists (match by new descriptive
+            // route path, legacy numeric route path, or product_id)
+            const seoRow = published.find(
+                (r) => r.route_path === routePath || r.route_path === `/product/${id}` || r.product_id === Number(id)
+            );
             if (seoRow && String(seoRow.robots || '').includes('noindex')) continue;
             const loc = resolveLoc(routePath, seoRow ? seoRow.canonical_url : null);
             addUrl(loc, {

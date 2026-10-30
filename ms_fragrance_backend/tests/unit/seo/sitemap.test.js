@@ -27,6 +27,7 @@ test('includes products and uses canonical urls', async () => {
     const useCase = new GetSitemapUseCase({
         seoRepository: repoWith([
             { route_path: '/product/7', robots: 'index,follow', canonical_url: 'https://example.com/p/7', updated_at: null, product_id: 7 },
+            // No SEO record for product 9 — falls back to numeric route /product/9 (no slug)
         ]),
         listProducts: async () => [{ id: 7, updated_at: '2026-02-02T00:00:00Z' }, { id: 9 }],
         siteUrl: 'https://example.com',

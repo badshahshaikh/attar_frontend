@@ -40,7 +40,9 @@ class GetSeoSettingsUseCase {
             let record = await this.seoRepository.getPublicByRoute(path);
             let product = null;
 
-            const m = path.match(/^\/product\/(\d+)$/);
+            // Match both numeric (/product/42) and descriptive (/product/mukhallat-jahara-42)
+            // product URLs, extracting the authoritative numeric ID from the trailing segment.
+            const m = path.match(/^\/product\/(?:.+-)?(\d+)$/);
             if (!record && m) {
                 const id = Number(m[1]);
                 const pr = await this.seoRepository.getByProductId(id);
