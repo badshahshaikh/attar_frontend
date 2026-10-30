@@ -6,14 +6,22 @@ import { useCart } from '../../context/CartContext';
 import { useWishlist } from '../../context/WishlistContext';
 import { useProducts } from '../../context/ProductContext';
 import { isProductAvailable, getAvailableStock, clampQuantity } from '../../utils/stock';
+import { getProductUrl } from '../../utils/productUrl';
 import './ProductDetails.css';
 
 const ProductDetails = () => {
-    const { id } = useParams();
+    const { slugId } = useParams();
     const navigate = useNavigate();
+
+    // Extract the authoritative numeric database ID from the trailing segment of
+    // the slugId param. Handles both descriptive (/product/mukhallat-jahara-74)
+    // and legacy numeric (/product/74) URLs.
+    const numericIdMatch = String(slugId ?? '').match(/(\d+)$/);
+    const numericId = numericIdMatch ? numericIdMatch[1] : null;
+
     const { dispatch } = useCart();
     const { toggleWishlist, isInWishlist } = useWishlist();
-    const { products, loading, error, getProductDetails } = useProducts();
+    const { products, loading, error, getProductDetails, getProductById } = useProducts();
     const [product, setProduct] = useState(null);
     const [selectedSize, setSelectedSize] = useState('');
     const [quantity, setQuantity] = useState(1);
@@ -21,6 +29,33 @@ const ProductDetails = () => {
     const [activeImage, setActiveImage] = useState('');
     const [detailLoading, setDetailLoading] = useState(true);
     const [notFound, setNotFound] = useState(false);
+
+    // Client-side fallback redirect for legacy numeric URLs (e.g. /product/74)
+    // when the Vercel edge redirect has not yet been applied (dev, or stale
+    // redirect list). Looks up the product in the catalog cache and navigates to
+    // the canonical descriptive URL.
+    useEffect(() => {
+        if (!numericId || !/^\d+$/.test(String(slugId))) return;
+
+        const cached = getProductById(numericId);
+        if (cached && cached.slug) {
+            navigate(getProductUrl(cached), { replace: true });
+        }
+    }, [slugId, numericId, navigate, getProductById]);
+
+    // Redirect a legacy numeric URL opened directly (uncached) to the canonical
+    // descriptive URL once the product has loaded, so the browser always ends
+    // up on /product/{slug}-{id}. A descriptive URL is never rewritten back to
+    // numeric because the guard above requires slugId to be purely numeric.
+    useEffect(() => {
+        if (!numericId || !/^\d+$/.test(String(slugId))) return;
+        if (!product || !product.slug) return;
+
+        const canonical = getProductUrl(product);
+        if (String(slugId) !== getProductUrl(product)) {
+            navigate(canonical, { replace: true });
+        }
+    }, [slugId, numericId, product, navigate]);
 
     useEffect(() => {
         let cancelled = false;
@@ -45,7 +80,7 @@ const ProductDetails = () => {
                 // Cache-first: resolves from the loaded catalog slice (by numeric
                 // id or slug), falling back to GET /api/products/:id for items
                 // outside the current page — e.g. opened from global search.
-                const foundProduct = await getProductDetails(id);
+                const foundProduct = await getProductDetails(numericId);
 
                 if (cancelled) {
                     return;
@@ -74,7 +109,7 @@ const ProductDetails = () => {
         return () => {
             cancelled = true;
         };
-    }, [id, getProductDetails]);
+    }, [numericId, getProductDetails]);
 
     if (loading || detailLoading) {
         return <div className="container py-20 text-center">Loading product...</div>;

@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { useWishlist } from '../../context/WishlistContext';
 import { useCart } from '../../context/CartContext';
 import { isProductAvailable } from '../../utils/stock';
+import { getProductUrl } from '../../utils/productUrl';
 import './ProductCard.css';
 
 const ProductCard = ({ product }) => {
@@ -43,7 +44,11 @@ const ProductCard = ({ product }) => {
 
     return (
         <div className="product-card group">
-            <Link to={`/product/${product.id}`} className="product-image-container" style={{ display: 'block' }}>
+            <Link
+                to={getProductUrl(product)}
+                className="product-image-container"
+                style={{ display: 'block' }}
+            >
                 {!available ? (
                     <span className="product-badge sold-out">Sold Out</span>
                 ) : product.isNew ? (
@@ -111,7 +116,7 @@ const ProductCard = ({ product }) => {
                 </div>
 
                 <h3 className="product-title">
-                    <Link to={`/product/${product.id}`}>{product.name}</Link>
+                    <Link to={getProductUrl(product)}>{product.name}</Link>
                 </h3>
 
                 <p className="product-desc">{product.description}</p>

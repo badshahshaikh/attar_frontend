@@ -5,6 +5,7 @@ import { useCart } from '../../context/CartContext';
 import { useWishlist } from '../../context/WishlistContext';
 import { useProducts } from '../../context/ProductContext';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
+import { getProductUrl, getProductUrlFromId } from '../../utils/productUrl';
 import './Header.css';
 
 const Header = () => {
@@ -129,7 +130,8 @@ const Header = () => {
     };
 
     const handleResultClick = (id) => {
-        navigate(`/product/${id}`);
+        const product = searchResults.find((p) => p.id === id);
+        navigate(getProductUrlFromId(product?.slug, id));
         setIsSearchOpen(false);
         setSearchQuery('');
     };
@@ -301,15 +303,15 @@ const Header = () => {
                                                 </div>
                                             ) : searchResults.length > 0 ? (
                                                 searchResults.map(product => (
-                                                    <Link
-                                                        key={product.id}
-                                                        to={`/product/${product.id}`}
-                                                        className="search-result-item"
-                                                        onClick={() => {
-                                                            setIsSearchOpen(false);
-                                                            setSearchQuery('');
-                                                        }}
-                                                    >
+                                                            <Link
+                                                                key={product.id}
+                                                                to={getProductUrl(product)}
+                                                                className="search-result-item"
+                                                                onClick={() => {
+                                                                    setIsSearchOpen(false);
+                                                                    setSearchQuery('');
+                                                                }}
+                                                            >
                                                         <img
                                                             src={product.imageUrl || '/placeholder-product.jpg'}
                                                             alt={product.name}
@@ -421,7 +423,7 @@ const Header = () => {
                                                     searchResults.map(product => (
                                                         <Link
                                                             key={product.id}
-                                                            to={`/product/${product.id}`}
+                                                            to={getProductUrl(product)}
                                                             className="search-result-item"
                                                             onClick={() => {
                                                                 setIsSearchOpen(false);

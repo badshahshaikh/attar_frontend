@@ -2,14 +2,24 @@ import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Trash2, Plus, Minus, ArrowLeft } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
+import { useProducts } from '../../context/ProductContext';
 import { hasStockMetadata } from '../../context/cartReducer';
 import { getAvailableStock, isProductAvailable } from '../../utils/stock';
 import { fetchProductById } from '../../services/productService';
+import { getProductUrlFromId } from '../../utils/productUrl';
 import './Cart.css';
 
 const Cart = () => {
     const { state, dispatch, cartSubtotal } = useCart();
+    const { getProductById } = useProducts();
     const { items } = state;
+
+    // Canonical product URL: uses the database slug as the source of truth,
+    // falling back to the numeric ID only when the product has no slug.
+    const cartItemUrl = (item) => {
+        const product = getProductById(item.productId);
+        return getProductUrlFromId(product?.slug, item.productId);
+    };
 
     // Revalidate stock against the backend: the basket is persisted in
     // localStorage, so its inStock/stockQuantity snapshot can be stale (the
@@ -116,7 +126,7 @@ const Cart = () => {
                                         <img src={item.image || "https://images.unsplash.com/photo-1594035987173-1e5b2cc22bc0?q=80&w=300&auto=format&fit=crop"} alt={item.name} loading="lazy" decoding="async" width={90} height={110} />
                                     </div>
                                     <div className="cart-item-details">
-                                        <Link to={`/product/${item.productId}`} className="cart-item-name">{item.name}</Link>
+                                        <Link to={cartItemUrl(item)} className="cart-item-name">{item.name}</Link>
                                         <span className="cart-item-size">Size: {item.size}</span>
                                         {isKnownUnavailable(item) && (
                                             <span className="cart-item-out-of-stock">Out of Stock</span>

@@ -58,7 +58,7 @@ function App() {
                         <Route element={<PublicLayout />}>
                           <Route path="/" element={<Home />} />
                           <Route path="/shop" element={<Shop />} />
-                          <Route path="/product/:id" element={<ProductDetails />} />
+                          <Route path="/product/:slugId" element={<ProductDetails />} />
                           <Route path="/cart" element={<Cart />} />
                           <Route path="/checkout" element={<Checkout />} />
                           <Route path="/wishlist" element={<Wishlist />} />
