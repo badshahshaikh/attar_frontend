@@ -15,8 +15,338 @@
   ],
   "redirects": [
     {
+      "source": "/product/112",
+      "destination": "/product/ehsas-al-arabia-112",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/117",
+      "destination": "/product/zumar-117",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/121",
+      "destination": "/product/reef-33-121",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/130",
+      "destination": "/product/floral-arabia-130",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/132",
+      "destination": "/product/dehnal-oud-shams-hindi-132",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/133",
+      "destination": "/product/nice-133",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/135",
+      "destination": "/product/velvet-musk-135",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/82",
+      "destination": "/product/bin-shaikh-82",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/122",
+      "destination": "/product/imperial-valley-122",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/131",
+      "destination": "/product/tobacco-agarwood-131",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/83",
+      "destination": "/product/kaaf-83",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/92",
+      "destination": "/product/shahi-khus-92",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/118",
+      "destination": "/product/rawdah-118",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/93",
+      "destination": "/product/shahi-kewda-93",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/119",
+      "destination": "/product/kiswa-119",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/123",
+      "destination": "/product/mukhallat-al-badr-123",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/114",
+      "destination": "/product/al-hajr-114",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/134",
+      "destination": "/product/oud-malaki-134",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/91",
+      "destination": "/product/attar-oud-91",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/120",
+      "destination": "/product/reef-11-120",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/100",
+      "destination": "/product/lilly-100",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/137",
+      "destination": "/product/test-image-137",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/97",
+      "destination": "/product/mohsin-shamama-97",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/115",
+      "destination": "/product/perfume-dfl-115",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/136",
+      "destination": "/product/attar-makkah-136",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/76",
+      "destination": "/product/hawas-76",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/98",
+      "destination": "/product/ruh-khus-no-1-98",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/67",
+      "destination": "/product/oud-al-meraj-67",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/75",
+      "destination": "/product/mukhallat-emirates-75",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/125",
+      "destination": "/product/amber-oud-125",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/79",
+      "destination": "/product/khamrah-waha-79",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/81",
+      "destination": "/product/khamra-dukhan-81",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/126",
+      "destination": "/product/oud-khususi-126",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/90",
+      "destination": "/product/majmua-90",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/80",
+      "destination": "/product/khamraha-qahwa-80",
+      "statusCode": 301
+    },
+    {
       "source": "/product/74",
       "destination": "/product/mukhallat-jahara-74",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/89",
+      "destination": "/product/blue-oud-89",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/77",
+      "destination": "/product/hawas-ice-77",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/78",
+      "destination": "/product/khamrah-78",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/87",
+      "destination": "/product/mexican-tobacco-87",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/88",
+      "destination": "/product/cuban-tobacco-88",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/84",
+      "destination": "/product/rose-noir-84",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/85",
+      "destination": "/product/reef-19-85",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/86",
+      "destination": "/product/brazilian-tobacco-86",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/109",
+      "destination": "/product/musk-mutasalliq-109",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/95",
+      "destination": "/product/mukhallat-suyufi-95",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/139",
+      "destination": "/product/oud-test-139",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/96",
+      "destination": "/product/mukhallat-humaira-96",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/127",
+      "destination": "/product/musk-oud-rose-127",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/138",
+      "destination": "/product/mukhallat-138",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/102",
+      "destination": "/product/bela-102",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/103",
+      "destination": "/product/imeprial-oud-103",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/104",
+      "destination": "/product/kalimat-104",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/99",
+      "destination": "/product/gulaab-99",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/105",
+      "destination": "/product/musky-rose-105",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/101",
+      "destination": "/product/jasmine-101",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/111",
+      "destination": "/product/mukhallat-rayyan-111",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/107",
+      "destination": "/product/rooh-al-musk-107",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/108",
+      "destination": "/product/oud-interloge-108",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/129",
+      "destination": "/product/oud-suyufi-129",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/116",
+      "destination": "/product/marj-116",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/128",
+      "destination": "/product/musk-combodi-128",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/106",
+      "destination": "/product/baccart-rouge-106",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/113",
+      "destination": "/product/zam-zam-113",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/94",
+      "destination": "/product/mukhallat-ayyub-94",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/110",
+      "destination": "/product/hawas-fire-110",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/124",
+      "destination": "/product/shaikh-hamdan-124",
       "statusCode": 301
     }
   ]

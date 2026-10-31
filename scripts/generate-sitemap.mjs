@@ -7,6 +7,20 @@ const SITE_URL = process.env.SITE_URL || 'https://msfragrance.in';
 const OUT = resolve(process.cwd(), 'public', 'sitemap.xml');
 const VERCEL_JSON = resolve(process.cwd(), 'vercel.json');
 
+function normalizeLoc(loc, siteUrl) {
+    if (!loc) return loc;
+    const baseUrl = siteUrl.replace(/\/$/, '');
+    if (!loc.startsWith('http')) {
+        return baseUrl + '/' + loc.replace(/^\/+/, '');
+    }
+    try {
+        const parsed = new URL(loc);
+        return baseUrl + parsed.pathname + parsed.search + parsed.hash;
+    } catch {
+        return loc;
+    }
+}
+
 async function main() {
     try {
         const res = await fetch(`${API_URL}/api/seo/public/sitemap`);
@@ -17,11 +31,16 @@ async function main() {
         console.log(`[sitemap] wrote ${OUT} with ${data?.urls?.length ?? 0} urls`);
 
         // ── Generate legacy numeric → descriptive product redirects for Vercel ──
+        const baseUrl = SITE_URL.replace(/\/$/, '');
         const urls = Array.isArray(data?.urls) ? data.urls : [];
         const productUrls = urls
-            .filter((u) => u && u.loc && /^\/product\/.+-\d+$/.test(u.loc.replace(SITE_URL, '')))
+            .filter((u) => u && u.loc)  // descriptive product URLs are detected below
             .map((u) => {
-                const path = u.loc.replace(SITE_URL, '');
+                const path = normalizeLoc(u.loc, SITE_URL).replace(baseUrl, '');
+                return { loc: u.loc, path };
+            })
+            .filter(({ path }) => /^\/product\/.+-\d+$/.test(path))
+            .map(({ path }) => {
                 const match = path.match(/^\/product\/.+-(\d+)$/);
                 return match ? { id: match[1], path } : null;
             })
