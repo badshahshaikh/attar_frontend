@@ -1,0 +1,167 @@
+/* ── Bulk Products page ──────────────────────────────────────── */
+
+.bulk-page { max-width: 1400px; margin: 0 auto; }
+
+/* ── sticky action bar ──────────────────────────────────────── */
+.bulk-bar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: var(--color-bg-primary);
+  border-bottom: 1px solid var(--color-border);
+  padding: 8px 0;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.bulk-bar-stats {
+  display: flex;
+  gap: 12px;
+  flex: 1;
+  flex-wrap: wrap;
+}
+.bulk-stat {
+  font-size: .76rem;
+  color: var(--color-text-secondary);
+}
+.bulk-stat strong { color: var(--color-text-primary); font-size: .85rem; margin-left: 4px; }
+.bulk-stat.has-errors strong { color: var(--color-sale); }
+
+/* ── toolbar row ────────────────────────────────────────────── */
+.bulk-toolbar {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+  align-items: center;
+}
+
+/* ── table wrapper ──────────────────────────────────────────── */
+.bulk-table-wrap {
+  overflow-x: auto;
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  max-height: 68vh;
+  overflow-y: auto;
+}
+.bulk-table {
+  width: 100%;
+  min-width: 1300px;
+  border-collapse: collapse;
+  font-size: .80rem;
+  table-layout: fixed;
+}
+.bulk-table th {
+  position: sticky;
+  top: 0;
+  background: var(--color-bg-secondary);
+  color: var(--color-text-muted);
+  font-size: .65rem;
+  text-transform: uppercase;
+  letter-spacing: .09em;
+  font-weight: 600;
+  padding: 8px 6px;
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
+  z-index: 2;
+  text-align: left;
+}
+
+/* column widths */
+.col-badge { width: 70px; }
+.col-name  { width: 180px; }
+.col-brand { width: 130px; }
+.col-cat   { width: 100px; }
+.col-frag  { width: 110px; }
+.col-price { width: 82px; }
+.col-rate  { width: 65px; }
+.col-stock { width: 70px; }
+.col-bool  { width: 55px; }
+.col-act   { width: 100px; }
+
+.bulk-table td {
+  padding: 5px 6px;
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: middle;
+}
+.bulk-table tbody tr:last-child td { border-bottom: 0; }
+.bulk-table tbody tr:hover { background: var(--color-bg-secondary); }
+
+.bulk-row-new   { background: #f9fff6; }
+.bulk-row-dirty { background: #fffaf3; }
+.bulk-row-error { background: #fff8f6; }
+
+/* ── inline cell inputs ─────────────────────────────────────── */
+.bulk-cell-input {
+  width: 100%;
+  padding: 4px 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--color-text-primary);
+  font: inherit;
+  font-size: .80rem;
+  border-radius: var(--radius-sm);
+  box-sizing: border-box;
+}
+.bulk-cell-input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  background: var(--color-white);
+}
+.bulk-cell-input.has-error {
+  border-color: var(--color-sale);
+  background: #fff8f6;
+}
+.bulk-cell-select {
+  width: 100%;
+  padding: 4px 3px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--color-text-primary);
+  font: inherit;
+  font-size: .78rem;
+  border-radius: var(--radius-sm);
+  box-sizing: border-box;
+}
+.bulk-cell-select:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  background: var(--color-white);
+}
+
+/* ── button alignment ───────────────────────────────────────── */
+.bulk-table .btn { white-space: nowrap; }
+.bulk-table .btn-small { font-size: .72rem; padding: 2px 6px; }
+
+/* ── advanced row expand ────────────────────────────────────── */
+.bulk-advanced-row td {
+  padding: 6px 12px 10px;
+  background: #fafafa;
+  border-bottom: 1px solid var(--color-border);
+}
+.bulk-advanced-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 8px 12px;
+}
+.bulk-advanced-field { display: grid; gap: 3px; font-size: .72rem; color: var(--color-text-secondary); }
+.bulk-advanced-field input {
+  padding: 4px 6px;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  font: inherit;
+  border-radius: var(--radius-sm);
+}
+.bulk-advanced-field input:focus { outline: none; border-color: var(--color-accent); }
+
+/* ── feedback banner ────────────────────────────────────────── */
+.bulk-success { color: #1a7a40; background: #e8f9ee; border: 1px solid #b2e4c5; padding: 8px 12px; margin-bottom: 10px; font-size: .85rem; }
+.bulk-error-banner { color: var(--color-sale); background: #fff8f6; border: 1px solid #e4c9c4; padding: 8px 12px; margin-bottom: 10px; font-size: .85rem; }
+
+/* ── responsive ─────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .bulk-bar { position: static; }
+}

@@ -4,7 +4,7 @@ import { Link, useParams } from 'react-router-dom';
 import ProductFormFields from '../../components/admin/ProductFormFields';
 import ImageUpload from '../../components/admin/ImageUpload';
 import { useProductForm } from '../../features/products/hooks/useProductForm';
-import '../../components/admin/admin.css';
+import '../../styles/admin/shared/admin-shared.css';
 import { generateProductWithAI, generateProductImageWithAI } from '../../services/productService';
 
 // D:\attar_frontend\src\components\admin\admin.css

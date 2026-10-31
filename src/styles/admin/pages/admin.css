@@ -1,0 +1,31 @@
+.admin-header {
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+
+.admin-title {
+    margin: 0;
+}
+
+.admin-welcome {
+    color: var(--color-text-secondary);
+    margin-top: 0.4rem;
+}
+
+.admin-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.admin-content {
+    background: var(--color-white);
+    padding: 1.5rem;
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-subtle);
+    text-align: center;
+    color: var(--color-text-secondary);
+}

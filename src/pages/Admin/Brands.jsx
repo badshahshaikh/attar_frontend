@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import './Admin.css';
+import '../../styles/admin/pages/admin.css';
 
 export default function Brands() {
     const [brands, setBrands] = useState([]);

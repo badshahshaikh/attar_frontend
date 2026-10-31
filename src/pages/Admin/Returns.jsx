@@ -9,7 +9,7 @@ import {
     recordRefund,
 } from '../../services/adminReturnService';
 import { fetchOrders } from '../../services/adminOrderService';
-import './Returns.css';
+import '../../styles/admin/pages/returns.css';
 
 import { statusLabel } from './returnsConstants';
 import { formatMoney, lineTotalSum } from './returnsFormat';

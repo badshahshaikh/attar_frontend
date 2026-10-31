@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSeoSettings } from '../../features/seo/hooks/useSeoSettings';
-import '../../components/admin/admin.css';
+import '../../styles/admin/shared/admin-shared.css';
 
 const PAGE_TYPES = ['homepage', 'shop', 'category', 'product'];
 const ROBOTS = ['index,follow', 'index,nofollow', 'noindex,follow', 'noindex,nofollow'];

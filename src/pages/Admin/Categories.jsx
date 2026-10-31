@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { fetchJson } from '../../utils/api';
-import '../../components/admin/admin.css';
-// import './Categories.css';
+import '../../styles/admin/shared/admin-shared.css';
 
 export default function Categories() {
     const [categories, setCategories] = useState([]);

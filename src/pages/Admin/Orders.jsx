@@ -7,7 +7,7 @@ import {
     buildWhatsAppInvoiceUrl,
     saveBlob,
 } from '../../features/admin/orders/utils/invoiceShare';
-import './Orders.css';
+import '../../styles/admin/pages/orders.css';
 
 const STATUS_LABELS = {
     placed: 'Placed',
