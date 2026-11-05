@@ -42,9 +42,8 @@ export class BackendClient {
         method,
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${this.config.backendAdminToken}`,
+          Authorization: `Bearer ${this.config.backendServiceKey}`,
         },
-        credentials: 'include',
         signal: controller.signal,
         ...(options?.body ? { body: JSON.stringify(options.body) } : {}),
       });
