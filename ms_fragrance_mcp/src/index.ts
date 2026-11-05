@@ -9,6 +9,9 @@ import { registerCustomerTools } from './tools/customers.js';
 import { registerProductTools } from './tools/products.js';
 import { registerSalesTools } from './tools/sales.js';
 
+const config = loadConfig();
+const client = new BackendClient(config);
+
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
 const RATE_LIMIT_WINDOW_MS = 60 * 1000;
 const RATE_LIMIT_MAX_REQUESTS = 120;
@@ -37,6 +40,56 @@ function rateLimiter(req: Request, res: Response, next: NextFunction): void {
   next();
 }
 
+function auditLog(toolName: string, status: string, meta: Record<string, unknown>): void {
+  console.log(JSON.stringify({
+    timestamp: new Date().toISOString(),
+    tool: toolName,
+    status,
+    ip: meta.ip,
+    sessionId: meta.sessionId,
+  }));
+}
+
+function verifyMcpAccessKey(req: Request, res: Response, next: NextFunction): void | Response {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || typeof authHeader !== 'string' || !authHeader.startsWith('Bearer ')) {
+    res.status(401).json({
+      jsonrpc: '2.0',
+      error: { code: -32001, message: 'Authentication required: Authorization: Bearer <token>' },
+      id: null,
+    });
+    return res;
+  }
+
+  const token = authHeader.substring(7).trim();
+  if (token !== config.mcpAccessKey) {
+    res.status(401).json({
+      jsonrpc: '2.0',
+      error: { code: -32001, message: 'Invalid MCP access key' },
+      id: null,
+    });
+    return res;
+  }
+
+  next();
+  return undefined;
+}
+
+function createMcpServer(): McpServer {
+  const server = new McpServer({
+    name: 'ms-fragrance-mcp',
+    version: '1.0.0',
+  });
+
+  registerOrderTools(server, client);
+  registerCustomerTools(server, client);
+  registerProductTools(server, client);
+  registerSalesTools(server, client);
+
+  return server;
+}
+
+const app = express();
 app.use(express.json());
 
 // Health check (no auth required)
@@ -53,7 +106,7 @@ app.use('/mcp', (req, res, next) => {
   if (result) return;
 });
 
-// Factory function to handle MCP request statelessly
+// Stateless MCP handler
 async function handleMcpRequest(req: Request, res: Response) {
   try {
     const transport = new StreamableHTTPServerTransport({
@@ -104,4 +157,4 @@ app.delete('/mcp', (req, res) => {
 });
 
 // Export app for Vercel serverless functions
-export { app, createMcpServer, handleMcpRequest, rateLimiter, verifyMcpAccessKey };
+export { app, createMcpServer, handleMcpRequest, rateLimiter, verifyMcpAccessKey, auditLog };

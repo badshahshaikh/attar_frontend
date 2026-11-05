@@ -1,6 +1,5 @@
 {
   "framework": "express",
   "buildCommand": "npm run build",
-  "outputDirectory": "dist",
-  "region": "auto"
+  "outputDirectory": "dist"
 }
