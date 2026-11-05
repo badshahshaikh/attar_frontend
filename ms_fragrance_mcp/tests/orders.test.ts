@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { BackendClient } from '../src/client/backend.js';
 import { registerOrderTools } from '../src/tools/orders.js';
@@ -14,7 +14,8 @@ describe('Order Tools', () => {
     global.fetch = mockFetch;
     client = new BackendClient({
       backendApiUrl: 'http://localhost:5000',
-      backendAdminToken: 'test-token',
+      backendServiceKey: 'test-service-key',
+      mcpAccessKey: 'test-mcp-key',
       mcpPort: 3001,
       nodeEnv: 'test',
     });
@@ -31,7 +32,6 @@ describe('Order Tools', () => {
         }),
       });
 
-      // Tool registration verification
       expect(server).toBeDefined();
     });
 

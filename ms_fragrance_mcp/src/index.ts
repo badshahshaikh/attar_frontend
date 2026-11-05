@@ -1,6 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { isInitializeRequest } from '@modelcontextprotocol/sdk/types.js';
+import { metadataHandler } from '@modelcontextprotocol/sdk/server/auth/handlers/metadata.js';
 import express, { Request, Response, NextFunction } from 'express';
 import { loadConfig } from './config.js';
 import { BackendClient } from './client/backend.js';
@@ -8,9 +9,28 @@ import { registerOrderTools } from './tools/orders.js';
 import { registerCustomerTools } from './tools/customers.js';
 import { registerProductTools } from './tools/products.js';
 import { registerSalesTools } from './tools/sales.js';
+import { createJwksTokenVerifier } from './auth/jwks.js';
+import { createProtectedResourceMetadata } from './auth/metadata.js';
+import { createBearerAuthMiddleware } from './auth/middleware.js';
 
 const config = loadConfig();
 const client = new BackendClient(config);
+
+// Auth0 OAuth 2.1 protected resource setup
+const jwksVerifier = createJwksTokenVerifier(
+  config.auth0IssuerBaseUrl,
+  config.auth0Audience
+);
+const protectedResourceMetadata = createProtectedResourceMetadata(
+  config.auth0IssuerBaseUrl,
+  config.auth0IssuerBaseUrl,
+  config.mcpResourceScopes
+);
+const bearerAuthMiddleware = createBearerAuthMiddleware(
+  jwksVerifier,
+  config.mcpResourceScopes,
+  new URL('/.well-known/oauth-protected-resource', config.auth0IssuerBaseUrl).href
+);
 
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
 const RATE_LIMIT_WINDOW_MS = 60 * 1000;
@@ -50,31 +70,6 @@ function auditLog(toolName: string, status: string, meta: Record<string, unknown
   }));
 }
 
-function verifyMcpAccessKey(req: Request, res: Response, next: NextFunction): void | Response {
-  const authHeader = req.headers.authorization;
-  if (!authHeader || typeof authHeader !== 'string' || !authHeader.startsWith('Bearer ')) {
-    res.status(401).json({
-      jsonrpc: '2.0',
-      error: { code: -32001, message: 'Authentication required: Authorization: Bearer <token>' },
-      id: null,
-    });
-    return res;
-  }
-
-  const token = authHeader.substring(7).trim();
-  if (token !== config.mcpAccessKey) {
-    res.status(401).json({
-      jsonrpc: '2.0',
-      error: { code: -32001, message: 'Invalid MCP access key' },
-      id: null,
-    });
-    return res;
-  }
-
-  next();
-  return undefined;
-}
-
 function createMcpServer(): McpServer {
   const server = new McpServer({
     name: 'ms-fragrance-mcp',
@@ -100,11 +95,14 @@ app.get('/health', (_req, res) => {
 // Apply rate limiting to MCP endpoints
 app.use('/mcp', rateLimiter);
 
-// Apply MCP access key verification to all MCP endpoints
-app.use('/mcp', (req, res, next) => {
-  const result = verifyMcpAccessKey(req, res, next);
-  if (result) return;
-});
+// Apply Auth0 JWT bearer authentication to MCP endpoints
+app.use('/mcp', bearerAuthMiddleware);
+
+// OAuth protected-resource metadata (RFC 9728)
+app.use(
+  '/.well-known/oauth-protected-resource',
+  metadataHandler(protectedResourceMetadata)
+);
 
 // Stateless MCP handler
 async function handleMcpRequest(req: Request, res: Response) {
@@ -158,4 +156,4 @@ app.delete('/mcp', (req, res) => {
 
 // Export app for Vercel serverless functions
 export default app;
-export { app, createMcpServer, handleMcpRequest, rateLimiter, verifyMcpAccessKey, auditLog };
+export { app, createMcpServer, handleMcpRequest, rateLimiter, auditLog };
