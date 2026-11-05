@@ -157,4 +157,5 @@ app.delete('/mcp', (req, res) => {
 });
 
 // Export app for Vercel serverless functions
+export default app;
 export { app, createMcpServer, handleMcpRequest, rateLimiter, verifyMcpAccessKey, auditLog };
