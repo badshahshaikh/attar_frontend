@@ -95,21 +95,8 @@ app.get('/health', (_req, res) => {
 // Apply rate limiting to MCP endpoints
 app.use('/mcp', rateLimiter);
 
-// Custom middleware: skip auth for initialize and notifications/initialized
-const mcpAuthMiddleware = (req: Request, res: Response, next: NextFunction): void => {
-  // Only apply auth to POST requests with JSON-RPC body
-  if (req.method === 'POST' && req.body) {
-    const method = req.body.method;
-    // Allow initialize and notifications/initialized without auth
-    if (method === 'initialize' || method === 'notifications/initialized') {
-      return next();
-    }
-  }
-  // For all other requests (tools/list, tools/call, etc.), apply bearer auth
-  return bearerAuthMiddleware(req, res, next);
-};
-
-app.use('/mcp', mcpAuthMiddleware);
+// Apply Auth0 JWT bearer authentication to ALL MCP endpoints (including initialize)
+app.use('/mcp', bearerAuthMiddleware);
 
 // OAuth protected-resource metadata (RFC 9728)
 app.use(
