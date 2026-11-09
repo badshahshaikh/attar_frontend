@@ -11,6 +11,7 @@ export interface Config {
   auth0IssuerBaseUrl: string;
   auth0Audience: string;
   mcpResourceScopes: string[];
+  mcpServerUrl: string;
 }
 
 export function loadConfig(): Config {
@@ -21,6 +22,7 @@ export function loadConfig(): Config {
   const nodeEnv = process.env.NODE_ENV || 'development';
   const auth0IssuerBaseUrlRaw = process.env.AUTH0_ISSUER_BASE_URL;
   const auth0AudienceRaw = process.env.AUTH0_AUDIENCE;
+  const mcpServerUrlRaw = process.env.MCP_SERVER_URL;
   const mcpResourceScopes = (
     process.env.MCP_RESOURCE_SCOPES || 'mcp:read'
   )
@@ -44,12 +46,17 @@ export function loadConfig(): Config {
     throw new Error('AUTH0_AUDIENCE environment variable is required');
   }
 
+  if (!mcpServerUrlRaw) {
+    throw new Error('MCP_SERVER_URL environment variable is required');
+  }
+
   if (!mcpAccessKey) {
     throw new Error('MCP_ACCESS_KEY environment variable is required');
   }
 
-  const auth0IssuerBaseUrl = auth0IssuerBaseUrlRaw.replace(/\/$/, '');
+  const auth0IssuerBaseUrl = auth0IssuerBaseUrlRaw.replace(/\/$/, '') + '/';
   const auth0Audience = auth0AudienceRaw;
+  const mcpServerUrl = mcpServerUrlRaw.replace(/\/$/, '');
 
   return {
     backendApiUrl: backendApiUrl.replace(/\/$/, ''),
@@ -60,5 +67,6 @@ export function loadConfig(): Config {
     auth0IssuerBaseUrl,
     auth0Audience,
     mcpResourceScopes,
+    mcpServerUrl,
   };
 }

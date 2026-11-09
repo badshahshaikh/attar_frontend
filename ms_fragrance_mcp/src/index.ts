@@ -22,14 +22,14 @@ const jwksVerifier = createJwksTokenVerifier(
   config.auth0Audience
 );
 const protectedResourceMetadata = createProtectedResourceMetadata(
-  config.auth0IssuerBaseUrl,
+  config.mcpServerUrl,
   config.auth0IssuerBaseUrl,
   config.mcpResourceScopes
 );
 const bearerAuthMiddleware = createBearerAuthMiddleware(
   jwksVerifier,
   config.mcpResourceScopes,
-  new URL('/.well-known/oauth-protected-resource', config.auth0IssuerBaseUrl).href
+  new URL('/.well-known/oauth-protected-resource', config.mcpServerUrl).href
 );
 
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
