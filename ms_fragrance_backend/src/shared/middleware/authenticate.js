@@ -24,6 +24,20 @@ function authenticate(req, res, next) {
         req.user = decoded;
         return next();
     } catch {
+        // Fall back to static service-key auth for server-to-server calls
+        // (e.g., MCP server calling backend APIs). This is not a JWT; it is a
+        // shared secret verified by direct comparison.
+        if (
+            config.auth.backendServiceKey &&
+            token === config.auth.backendServiceKey
+        ) {
+            req.user = {
+                id: 'system',
+                role: 'admin',
+                source: 'service_key',
+            };
+            return next();
+        }
         return res.status(401).json({ success: false, message: 'Invalid or expired authentication' });
     }
 }

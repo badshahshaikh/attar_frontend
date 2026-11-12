@@ -12,6 +12,14 @@ export class BackendClient {
     this.config = config || loadConfig();
   }
 
+  private getBackendUrl(path: string): string {
+    const baseUrl = this.config.backendApiUrl.replace(/\/$/, '');
+    if (!baseUrl.startsWith('http://') && !baseUrl.startsWith('https://')) {
+      throw new Error(`Invalid BACKEND_API_URL: must start with http:// or https://`);
+    }
+    return `${baseUrl}${path}`;
+  }
+
   async request<T = unknown>(
     method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE',
     path: string,
@@ -21,7 +29,7 @@ export class BackendClient {
       timeout?: number;
     }
   ): Promise<ApiResponse<T>> {
-    const url = new URL(`${this.config.backendApiUrl}${path}`);
+    const url = new URL(this.getBackendUrl(path));
 
     if (options?.params) {
       Object.entries(options.params).forEach(([key, value]) => {
@@ -51,13 +59,31 @@ export class BackendClient {
       clearTimeout(timeoutId);
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        const error = new Error(
-          (errorData as { error?: string; message?: string }).error ||
-            (errorData as { error?: string; message?: string }).message ||
-            `HTTP ${response.status}: ${response.statusText}`
-        );
-        (error as Error & { status?: number }).status = response.status;
+        let errorMessage: string;
+        let errorData: Record<string, unknown> = {};
+
+        try {
+          errorData = await response.json();
+          errorMessage = (errorData.error as string) ||
+            (errorData.message as string) ||
+            `HTTP ${response.status}: ${response.statusText}`;
+        } catch {
+          errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+        }
+
+        // Provide more descriptive error for common issues
+        if (response.status === 404) {
+          const redactedUrl = url.toString().replace(this.config.backendServiceKey, '[REDACTED]');
+          errorMessage = `Backend endpoint not found (404). The BACKEND_API_URL may be misconfigured. Requested: ${redactedUrl}. Expected backend route: /api/orders`;
+        } else if (response.status === 401) {
+          errorMessage = `Backend authentication failed (401). The BACKEND_SERVICE_KEY may be invalid or expired.`;
+        } else if (response.status === 403) {
+          errorMessage = `Backend access forbidden (403). The BACKEND_SERVICE_KEY may lack required permissions.`;
+        }
+
+        const error = new Error(errorMessage);
+        (error as Error & { status?: number; errorData?: Record<string, unknown> }).status = response.status;
+        (error as Error & { status?: number; errorData?: Record<string, unknown> }).errorData = errorData;
         throw error;
       }
 
@@ -67,6 +93,10 @@ export class BackendClient {
       clearTimeout(timeoutId);
       if (error instanceof Error && error.name === 'AbortError') {
         throw new Error('Request timed out');
+      }
+      // Re-throw with original error if it's already our enhanced error
+      if (error instanceof Error && 'status' in error) {
+        throw error;
       }
       throw error;
     }
@@ -138,5 +168,21 @@ export class BackendClient {
   // Health check
   async healthCheck() {
     return this.request('GET', '/api/health');
+  }
+
+  // Verify backend connectivity and configuration
+  async verifyBackendConnection(): Promise<{ healthy: boolean; message: string; details?: Record<string, unknown> }> {
+    try {
+      const response = await this.healthCheck();
+      if (response.status === 200) {
+        return { healthy: true, message: 'Backend connection verified', details: response.data as Record<string, unknown> };
+      }
+      return { healthy: false, message: `Backend health check returned ${response.status}` };
+    } catch (error) {
+      if (error instanceof Error && 'status' in error) {
+        return { healthy: false, message: error.message };
+      }
+      return { healthy: false, message: `Backend connection failed: ${error instanceof Error ? error.message : 'Unknown error'}` };
+    }
   }
 }

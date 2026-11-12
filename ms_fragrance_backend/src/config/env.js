@@ -45,6 +45,7 @@ const config = Object.freeze({
         jwtSecret: process.env.JWT_SECRET,
         jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
         customerJwtExpiresIn: process.env.CUSTOMER_JWT_EXPIRES_IN || '30d',
+        backendServiceKey: process.env.BACKEND_SERVICE_KEY,
         cookie: Object.freeze({
             name: 'jwt',
             httpOnly: true,
