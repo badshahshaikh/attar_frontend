@@ -29,6 +29,7 @@ import './unit/orders/invoice-share-frontend.test.js';
 import './integration/products/product-put-flow.test.js';
 import './unit/customer/customer-validator.test.js';
 import './unit/customer/customer-service.test.js';
+import './unit/customer/razorpay.client.test.js';
 import './unit/customer/guest-order-validator.test.js';
 import './unit/customer/guest-order-service.test.js';
 import './unit/customer/stock.util.test.js';
