@@ -89,9 +89,11 @@ function createProductRepository({ query }) {
             const result = await query(`INSERT INTO products (${PRODUCT_WRITE_COLUMNS.join(', ')}) VALUES (${placeholders}) RETURNING ${PRODUCT_COLUMNS}`, values);
             return result.rows[0];
         },
-        async update(id, values) {
-            const assignments = PRODUCT_WRITE_COLUMNS.map((column, index) => `${column} = $${index + 1}`).join(', ');
-            const sql = `UPDATE products SET ${assignments}, updated_at = NOW() WHERE id = $${values.length + 1} RETURNING ${PRODUCT_COLUMNS}`;
+        async update(id, updates) {
+            const columns = Object.keys(updates);
+            const values = Object.values(updates);
+            const assignments = columns.map((column, index) => `${column} = $${index + 1}`).join(', ');
+            const sql = `UPDATE products SET ${assignments}, updated_at = NOW() WHERE id = $${columns.length + 1} RETURNING ${PRODUCT_COLUMNS}`;
             const parameters = [...values, id];
             logger.info('[PUT_TRACE]', { stage: 'repository_update_start', productId: id, sql, parameters });
             try {
@@ -105,6 +107,13 @@ function createProductRepository({ query }) {
         },
         async delete(id) {
             const result = await query('DELETE FROM products WHERE id = $1 RETURNING id', [id]);
+            return result.rows[0] || null;
+        },
+        async updateStockStatus(id, inStock) {
+            const result = await query(
+                `UPDATE products SET in_stock = $1, updated_at = NOW() WHERE id = $2 RETURNING ${PRODUCT_COLUMNS}`,
+                [inStock, id]
+            );
             return result.rows[0] || null;
         },
         async findImagesByIds(ids, client) {

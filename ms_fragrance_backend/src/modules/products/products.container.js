@@ -10,6 +10,8 @@ import DeleteProductUseCase from './application/use-cases/DeleteProductUseCase.j
 import DeleteProductsUseCase from './application/use-cases/DeleteProductsUseCase.js';
 import BulkUpsertProductsUseCase from './application/use-cases/BulkUpsertProductsUseCase.js';
 import UploadProductImageUseCase from './application/use-cases/UploadProductImageUseCase.js';
+import ActivateProductUseCase from './application/use-cases/ActivateProductUseCase.js';
+import DeactivateProductUseCase from './application/use-cases/DeactivateProductUseCase.js';
 import AiFillProductUseCase from './application/use-cases/aiFillProductUseCase.js';
 import AiGenerateProductImageUseCase from './application/use-cases/AiGenerateProductImageUseCase.js';
 import ProductAiService from '../../shared/ai/product-ai.service.js';
@@ -61,6 +63,9 @@ function createProductsContainer(dependencies = {}) {
     const bulkUpsertProductsUseCase = new BulkUpsertProductsUseCase(productRepository);
     const uploadProductImageUseCase = new UploadProductImageUseCase(storage);
 
+    const activateProductUseCase = new ActivateProductUseCase(productRepository);
+    const deactivateProductUseCase = new DeactivateProductUseCase(productRepository);
+
     // Get catalog use cases from dependencies (injected from main container)
     const getBrandsUseCase = dependencies.getBrandsUseCase;
     const getCategoriesUseCase = dependencies.getCategoriesUseCase;
@@ -98,7 +103,9 @@ function createProductsContainer(dependencies = {}) {
         getBrandsUseCase,
         getCategoriesUseCase,
         aiFillProductUseCase,
-        aiGenerateProductImageUseCase
+        aiGenerateProductImageUseCase,
+        activateProductUseCase,
+        deactivateProductUseCase
     });
 
     const productRouter = createProductRouter(productController);
@@ -117,7 +124,9 @@ function createProductsContainer(dependencies = {}) {
         bulkUpsertProductsUseCase,
         uploadProductImageUseCase,
         aiFillProductUseCase,
-        aiGenerateProductImageUseCase
+        aiGenerateProductImageUseCase,
+        activateProductUseCase,
+        deactivateProductUseCase
     });
 }
 

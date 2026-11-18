@@ -1,19 +1,18 @@
-import { toProduct, toPersistenceValues } from '../../product.mapper.js';
-import { parseProductPayload, ensureSizeConsistency } from '../../product.validator.js';
+import { toProduct, toPartialPersistenceValues } from '../../product.mapper.js';
+import { parsePartialProductPayload } from '../../product.validator.js';
 import NotFoundError from '../../../../core/errors/NotFoundError.js';
 import { logger } from '../../../../shared/logging/logger.js';
 
 /**
  * UpdateProductUseCase - Business logic for updating an existing product
- * 
+ *
  * Responsibilities:
- * - Validate product input
- * - Normalize size pricing consistency
- * - Check product existence
- * - Coordinate repository update
- * - Handle image cleanup if needed
+ * - Validate only explicitly provided fields (partial update)
+ * - Check product existence before updating
+ * - Update only provided columns, preserving all omitted fields
+ * - Handle image cleanup if image URLs changed
  * - Transform to domain model
- * 
+ *
  * This use case is testable with a mocked repository.
  */
 
@@ -42,59 +41,43 @@ class UpdateProductUseCase {
             logger.info('[PUT_TRACE]', {
                 stage: 'use_case_start',
                 productId: id,
-                incomingSizePricing: productData.sizePricing,
-                incomingSizes: productData.sizes
+                incomingFields: Object.keys(productData || {})
             });
 
-            const validated = parseProductPayload(productData);
-
-            logger.info('[PUT_TRACE]', {
-                stage: 'after_parseProductPayload',
-                productId: id,
-                sizePricing: validated.sizePricing,
-                sizes: validated.sizes
-            });
-
-            const normalized = ensureSizeConsistency(validated);
-
-            logger.info('[PUT_TRACE]', {
-                stage: 'after_ensureSizeConsistency',
-                productId: id,
-                sizePricing: normalized.sizePricing,
-                sizes: normalized.sizes
-            });
-
-            const previous = await this.productRepository.findImageById(id);
-
-            // Slug handling on update:
-            // - If the caller supplied a slug, use it (allows renaming/custom slugs).
-            // - If no slug is supplied, preserve the existing slug so a manually
-            //   customized slug is never unexpectedly overwritten or wiped to NULL.
-            if (!normalized.slug) {
-                normalized.slug = previous?.slug ?? null;
+            // Verify product exists before attempting update
+            const existing = await this.productRepository.findById(id);
+            if (!existing) {
+                throw new NotFoundError(`Product with ID ${id} not found`);
             }
 
-            const persistenceValues = toPersistenceValues(normalized);
+            // Validate only explicitly provided fields; omitted fields are absent
+            const validated = parsePartialProductPayload(productData);
 
             logger.info('[PUT_TRACE]', {
-                stage: 'after_toPersistenceValues',
+                stage: 'after_parsePartialProductPayload',
                 productId: id,
-                sizePricing: persistenceValues[9],
-                sizes: persistenceValues[10]
+                validatedFields: Object.keys(validated)
             });
 
-            const row = await this.productRepository.update(
-                id,
-                persistenceValues
-            );
+            // Convert validated partial payload to column->value map.
+            // Only provided columns are included; omitted fields are not touched.
+            const updates = toPartialPersistenceValues(validated);
+
+            logger.info('[PUT_TRACE]', {
+                stage: 'after_toPartialPersistenceValues',
+                productId: id,
+                updateColumns: Object.keys(updates)
+            });
+
+            const row = await this.productRepository.update(id, updates);
 
             if (!row) {
                 throw new NotFoundError(`Product with ID ${id} not found`);
             }
 
             const previousUrls = [
-                previous?.image_url,
-                ...(Array.isArray(previous?.image_urls) ? previous.image_urls : [])
+                existing?.image_url,
+                ...(Array.isArray(existing?.image_urls) ? existing.image_urls : [])
             ].filter(Boolean);
             const nextUrls = new Set([
                 row.image_url,

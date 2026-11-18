@@ -15,7 +15,9 @@ function createProductController({
     getBrandsUseCase,
     getCategoriesUseCase,
     aiFillProductUseCase,
-    aiGenerateProductImageUseCase
+    aiGenerateProductImageUseCase,
+    activateProductUseCase,
+    deactivateProductUseCase
 }) {
     return {
         async list(req, res) {
@@ -130,6 +132,38 @@ function createProductController({
                 logger.error('[PRODUCT_DELETE_ERROR]', { productId: id, errorMessage: error.message });
                 const statusCode = error.statusCode || 500;
                 const message = error.isOperational ? error.message : 'Failed to delete product';
+                res.status(statusCode).json({ error: message });
+            }
+        },
+
+        async activate(req, res) {
+            const id = parseProductIdParam(req.params.id);
+            if (!id) {
+                return res.status(400).json({ error: 'Product ID must be a positive integer' });
+            }
+            try {
+                const product = await activateProductUseCase.execute(id);
+                res.json(product);
+            } catch (error) {
+                logger.error('[PRODUCT_ACTIVATE_ERROR]', { productId: id, errorMessage: error.message });
+                const statusCode = error.statusCode || 500;
+                const message = error.isOperational ? error.message : 'Failed to activate product';
+                res.status(statusCode).json({ error: message });
+            }
+        },
+
+        async deactivate(req, res) {
+            const id = parseProductIdParam(req.params.id);
+            if (!id) {
+                return res.status(400).json({ error: 'Product ID must be a positive integer' });
+            }
+            try {
+                const product = await deactivateProductUseCase.execute(id);
+                res.json(product);
+            } catch (error) {
+                logger.error('[PRODUCT_DEACTIVATE_ERROR]', { productId: id, errorMessage: error.message });
+                const statusCode = error.statusCode || 500;
+                const message = error.isOperational ? error.message : 'Failed to deactivate product';
                 res.status(statusCode).json({ error: message });
             }
         },

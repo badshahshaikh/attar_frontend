@@ -368,3 +368,143 @@ export function ensureSizeConsistency(product) {
     return normalized;
 }
 
+/**
+ * Validate and normalize a partial product payload for updates.
+ * Only fields explicitly present in `body` (not undefined) are validated
+ * and returned. Omitted fields are absent from the result so the caller
+ * can preserve existing values. Explicitly supplied null values are
+ * preserved as null (not treated as omitted).
+ *
+ * @param {Object} body - Raw partial product data from request
+ * @returns {Object} Normalized partial payload with only provided fields
+ * @throws {ValidationError} If no updatable field is provided
+ */
+export function parsePartialProductPayload(body) {
+    const payload = {};
+    let hasAnyField = false;
+
+    const setField = (key, value) => {
+        payload[key] = value;
+        hasAnyField = true;
+    };
+
+    // ── Required-on-create fields are optional here ──────────────────
+    if (body.name !== undefined) {
+        setField('name', requireText(body.name, 'Product name'));
+    }
+    if (body.brand !== undefined) {
+        setField('brand', requireText(body.brand, 'Brand'));
+    }
+    if (body.fragranceFamily !== undefined) {
+        setField('fragranceType', requireText(body.fragranceFamily, 'Fragrance family'));
+    } else if (body.fragranceType !== undefined) {
+        setField('fragranceType', requireText(body.fragranceType, 'Fragrance family'));
+    }
+    if (body.price !== undefined) {
+        setField('price', validateNonNegativeNumber(body.price, 'Price', { required: true }));
+    }
+
+    // ── Optional scalar fields ───────────────────────────────────────
+    const optionalTextToNull = (value) => (value === '' ? null : value);
+
+    if (body.category !== undefined) {
+        setField('category', optionalTextToNull(body.category));
+    }
+    if (body.description !== undefined) {
+        setField('description', optionalTextToNull(body.description));
+    }
+    if (body.fullDescription !== undefined) {
+        setField('fullDescription', optionalTextToNull(body.fullDescription));
+    }
+    if (body.longevity !== undefined) {
+        setField('longevity', optionalTextToNull(body.longevity));
+    }
+    if (body.originalPrice !== undefined) {
+        if (body.originalPrice === null || body.originalPrice === '') {
+            setField('originalPrice', null);
+        } else {
+            setField('originalPrice', validateNonNegativeNumber(body.originalPrice, 'Original price'));
+        }
+    }
+    if (body.rating !== undefined) {
+        if (body.rating === null || body.rating === '') {
+            setField('rating', null);
+        } else {
+            setField('rating', validateRange(body.rating, 'Rating', 0, 5));
+        }
+    }
+    if (body.reviews !== undefined) {
+        if (body.reviews === null || body.reviews === '') {
+            setField('reviews', null);
+        } else {
+            setField('reviews', validateNonNegativeInteger(body.reviews, 'Reviews'));
+        }
+    }
+    if (body.slug !== undefined) {
+        if (body.slug === null || body.slug === '') {
+            setField('slug', null);
+        } else {
+            setField('slug', String(body.slug).trim());
+        }
+    }
+    if (body.imageUrl !== undefined) {
+        setField('imageUrl', optionalTextToNull(body.imageUrl));
+    }
+
+    // ── Array fields ─────────────────────────────────────────────────
+    validateArrayFields(body, ['sizes', 'topNotes', 'heartNotes', 'baseNotes', 'imageUrls']);
+
+    if (body.sizes !== undefined) {
+        setField('sizes', body.sizes);
+    }
+    if (body.topNotes !== undefined) {
+        setField('topNotes', body.topNotes);
+    }
+    if (body.heartNotes !== undefined) {
+        setField('heartNotes', body.heartNotes);
+    }
+    if (body.baseNotes !== undefined) {
+        setField('baseNotes', body.baseNotes);
+    }
+    if (body.imageUrls !== undefined) {
+        setField('imageUrls', body.imageUrls);
+    }
+
+    // ── Size pricing (normalize; derive sizes from it if provided) ────
+    validateObjectField(body, 'sizePricing', 'sizePricing must be an object');
+    if (body.sizePricing !== undefined) {
+        setField('sizePricing', normalizeSizePricing(body.sizePricing));
+        if (Object.keys(payload.sizePricing || {}).length > 0) {
+            // Derive sizes from sizePricing only when sizePricing is explicitly provided
+            setField('sizes', Object.keys(payload.sizePricing));
+        }
+    } else if (body.sizes !== undefined && body.sizePricing === undefined) {
+        // sizes provided without sizePricing: keep sizes as-is, do not
+        // auto-generate sizePricing (that would touch an unprovided field)
+    }
+
+    // ── Boolean fields ───────────────────────────────────────────────
+    for (const field of [
+        'inStock',
+        'isNew',
+        'isBestSeller',
+        'isExclusive',
+        'featured'
+    ]) {
+        if (body[field] !== undefined) {
+            setField(field, parseBoolean(body[field], field));
+        }
+    }
+
+    // ── Stock quantity ───────────────────────────────────────────────
+    if (body.stockQuantity !== undefined) {
+        setField('stockQuantity', validateNonNegativeInteger(body.stockQuantity, 'Stock quantity'));
+    }
+
+    if (!hasAnyField) {
+        throw new ValidationError('At least one field must be provided to update a product');
+    }
+
+    return payload;
+}
+

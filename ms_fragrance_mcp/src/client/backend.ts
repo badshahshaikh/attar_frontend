@@ -165,6 +165,23 @@ export class BackendClient {
     return this.request('GET', `/api/products/${id}`);
   }
 
+  // Product management
+  async createProduct(productData: unknown) {
+    return this.request('POST', '/api/products', { body: productData });
+  }
+
+  async updateProduct(id: number, productData: unknown) {
+    return this.request('PUT', `/api/products/${id}`, { body: productData });
+  }
+
+  async activateProduct(id: number) {
+    return this.request('PATCH', `/api/products/${id}/activate`);
+  }
+
+  async deactivateProduct(id: number) {
+    return this.request('PATCH', `/api/products/${id}/deactivate`);
+  }
+
   // Health check
   async healthCheck() {
     return this.request('GET', '/api/health');

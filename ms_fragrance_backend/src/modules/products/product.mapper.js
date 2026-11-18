@@ -1,5 +1,33 @@
 const JSON_FIELDS = new Set(['size_pricing', 'sizes', 'top_notes', 'heart_notes', 'base_notes', 'image_urls']);
 
+const FIELD_TO_COLUMN = {
+    name: 'name',
+    category: 'category',
+    fragranceType: 'fragrance_type',
+    description: 'description',
+    fullDescription: 'full_description',
+    rating: 'rating',
+    reviews: 'reviews',
+    price: 'price',
+    originalPrice: 'original_price',
+    sizePricing: 'size_pricing',
+    sizes: 'sizes',
+    topNotes: 'top_notes',
+    heartNotes: 'heart_notes',
+    baseNotes: 'base_notes',
+    longevity: 'longevity',
+    inStock: 'in_stock',
+    isNew: 'is_new',
+    brand: 'brand',
+    isBestSeller: 'is_best_seller',
+    isExclusive: 'is_exclusive',
+    featured: 'featured',
+    stockQuantity: 'stock_quantity',
+    slug: 'slug',
+    imageUrl: 'image_url',
+    imageUrls: 'image_urls',
+};
+
 function toProduct(row) {
     return {
         id: Number(row.id), name: row.name, category: row.category || 'Attar',
@@ -97,6 +125,32 @@ function toPersistenceValues(payload) {
     return persistenceValues;
 }
 
+/**
+ * Convert a partial product payload (camelCase field names) to a
+ * column->value object suitable for a partial SQL UPDATE. Only provided
+ * fields are included. JSON fields are serialized; null values are
+ * preserved as null (not treated as omitted).
+ *
+ * @param {Object} partialPayload - Normalized partial payload from parsePartialProductPayload
+ * @returns {Object} Column->value map for only the provided fields
+ */
+function toPartialPersistenceValues(partialPayload) {
+    const updates = {};
+
+    for (const [field, value] of Object.entries(partialPayload)) {
+        const column = FIELD_TO_COLUMN[field];
+        if (!column) continue;
+
+        if (JSON_FIELDS.has(column) && value !== undefined && value !== null) {
+            updates[column] = JSON.stringify(value);
+        } else {
+            updates[column] = value;
+        }
+    }
+
+    return updates;
+}
+
 export {
-  toProduct, toPersistenceValues
+  toProduct, toPersistenceValues, toPartialPersistenceValues
 };

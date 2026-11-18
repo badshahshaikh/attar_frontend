@@ -23,8 +23,8 @@ test('controller passes the validated PUT body to the service and returns its ma
 
     assert.equal(received.id, 42);
     assert.equal(received.payload.name, 'Verification Attar');
-    assert.equal(received.payload.fragranceType, 'Oud');
-    assert.equal(received.payload.price, 99);
+    assert.equal(received.payload.fragranceFamily, 'Oud');
+    assert.equal(received.payload.price, '99');
     assert.deepEqual(received.payload.sizePricing, {});
     assert.equal(res.statusCode, 200);
     assert.deepEqual(res.body, { id: 42, name: 'Verification Attar' });
