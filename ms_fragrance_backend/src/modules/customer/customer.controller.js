@@ -33,7 +33,9 @@ function createCustomerController({ customerService }) {
         try {
             return run();
         } catch (error) {
-            return fail(res, error, fallback);
+            // [FIXED] Send error response and return null to prevent passing Express response object downstream
+            fail(res, error, fallback);
+            return null;
         }
     }
 
