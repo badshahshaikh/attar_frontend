@@ -63,7 +63,45 @@ function authenticateCustomer(req, res, next) {
     }
 }
 
+/**
+ * optionalCustomerAuth - Optional authentication for storefront routes.
+ *
+ * If a valid customer cookie (or Authorization header) is present, populates
+ * req.customer with the decoded customer. If missing or invalid, sets
+ * req.customer to null and proceeds without throwing 401 so guest requests can
+ * continue.
+ */
+function optionalCustomerAuth(req, res, next) {
+    let token = req.cookies?.[config.auth.customerCookie.name];
+
+    if (!token) {
+        const authHeader = req.headers?.authorization;
+        if (authHeader && typeof authHeader === 'string' && authHeader.startsWith('Bearer ')) {
+            token = authHeader.substring(7).trim();
+        }
+    }
+
+    if (!token) {
+        req.customer = null;
+        return next();
+    }
+
+    try {
+        const decoded = jwt.verify(token, config.auth.jwtSecret);
+        if (decoded.id && decoded.role === 'customer') {
+            req.customer = decoded;
+        } else {
+            req.customer = null;
+        }
+        return next();
+    } catch {
+        req.customer = null;
+        return next();
+    }
+}
+
 export {
   authenticate,
-  authenticateCustomer
+  authenticateCustomer,
+  optionalCustomerAuth
 };

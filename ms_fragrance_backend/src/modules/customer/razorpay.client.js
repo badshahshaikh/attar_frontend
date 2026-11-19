@@ -69,7 +69,7 @@ function createRazorpayClient({ keyId, keySecret, fetchImpl = fetch }) {
 function signaturesMatch(expectedHex, actual) {
     if (typeof actual !== 'string' || actual.length === 0) return false;
 
-    const expected = Buffer.from(expectedHex, 'hex');
+    const expected = Buffer.from(expectedHex, 'utf8');
     const candidate = Buffer.from(actual, 'utf8');
 
     if (expected.length !== candidate.length) return false;
