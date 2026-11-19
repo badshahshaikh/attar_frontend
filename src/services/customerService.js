@@ -1,16 +1,68 @@
 /**
  * customerService.js — Storefront customer account API
  *
- * Talks to the customer endpoints under /api/auth/customer/*.
- * Sessions live in the httpOnly `customer_jwt` cookie, so every call must
- * send credentials.
+ * Talks to the customer endpoints under /api/auth/customer/* and /api/customer/*.
+ * Supports both httpOnly `customer_jwt` cookie and `Authorization: Bearer <token>`
+ * fallback for cross-domain third-party cookie blocking (Safari ITP / Chrome Privacy Sandbox).
  */
 
 import { API_URL } from '../config/api';
 
+const TOKEN_STORAGE_KEY = 'customer_jwt_token';
+
+export function getCustomerToken() {
+    try {
+        if (typeof window !== 'undefined' && window.sessionStorage) {
+            return window.sessionStorage.getItem(TOKEN_STORAGE_KEY);
+        }
+    } catch {
+        // Safe absorption for restrictive storage contexts or SSR
+    }
+    return null;
+}
+
+export function setCustomerToken(token) {
+    try {
+        if (typeof window !== 'undefined' && window.sessionStorage) {
+            if (token) {
+                window.sessionStorage.setItem(TOKEN_STORAGE_KEY, token);
+            } else {
+                window.sessionStorage.removeItem(TOKEN_STORAGE_KEY);
+            }
+        }
+    } catch {
+        // Safe absorption
+    }
+}
+
+export function clearCustomerToken() {
+    try {
+        if (typeof window !== 'undefined' && window.sessionStorage) {
+            window.sessionStorage.removeItem(TOKEN_STORAGE_KEY);
+        }
+    } catch {
+        // Safe absorption
+    }
+}
+
+function getAuthHeaders(customHeaders = {}) {
+    const headers = {
+        'Content-Type': 'application/json',
+        ...customHeaders,
+    };
+    const token = getCustomerToken();
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+    return headers;
+}
+
 async function parseResponse(response) {
     const data = await response.json().catch(() => ({}));
     if (!response.ok) {
+        if (response.status === 401) {
+            clearCustomerToken();
+        }
         const error = new Error(data.message || 'The request could not be completed.');
         error.status = response.status;
         throw error;
@@ -18,10 +70,10 @@ async function parseResponse(response) {
     return data;
 }
 
-function send(path, { method = 'GET', body } = {}) {
+function send(path, { method = 'GET', body, headers } = {}) {
     return fetch(`${API_URL}/api/auth/customer${path}`, {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(headers),
         credentials: 'include',
         body: body ? JSON.stringify(body) : undefined,
     }).then(parseResponse);
@@ -29,11 +81,17 @@ function send(path, { method = 'GET', body } = {}) {
 
 export async function registerCustomer(payload) {
     const data = await send('/register', { method: 'POST', body: payload });
+    if (data.token) {
+        setCustomerToken(data.token);
+    }
     return data.user;
 }
 
 export async function loginCustomer(email, password) {
     const data = await send('/login', { method: 'POST', body: { email, password } });
+    if (data.token) {
+        setCustomerToken(data.token);
+    }
     return data.user;
 }
 
@@ -43,7 +101,11 @@ export async function fetchCustomer() {
 }
 
 export async function logoutCustomer() {
-    return send('/logout', { method: 'POST' });
+    try {
+        return await send('/logout', { method: 'POST' });
+    } finally {
+        clearCustomerToken();
+    }
 }
 
 export async function updateCustomerProfile(payload) {
@@ -52,20 +114,26 @@ export async function updateCustomerProfile(payload) {
 }
 
 export async function changeCustomerPassword(currentPassword, newPassword) {
-    return send('/me/password', {
-        method: 'POST',
-        body: { currentPassword, newPassword },
-    });
+    try {
+        const result = await send('/me/password', {
+            method: 'POST',
+            body: { currentPassword, newPassword },
+        });
+        clearCustomerToken();
+        return result;
+    } catch (error) {
+        throw error;
+    }
 }
 
 /**
  * Saved addresses + order history live under /api/customer (a different mount
- * point than the auth endpoints above), same cookie, same credential rule.
+ * point than the auth endpoints above), same cookie + Bearer header, same credential rule.
  */
-function sendAccount(path, { method = 'GET', body } = {}) {
+function sendAccount(path, { method = 'GET', body, headers } = {}) {
     return fetch(`${API_URL}/api/customer${path}`, {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(headers),
         credentials: 'include',
         body: body ? JSON.stringify(body) : undefined,
     }).then(parseResponse);

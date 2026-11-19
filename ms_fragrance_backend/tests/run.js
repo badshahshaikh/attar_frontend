@@ -15,6 +15,8 @@ import './unit/products/catalog-audit.test.js';
 import './unit/auth/require-role.test.js';
 import './unit/auth/customer-validator.test.js';
 import './unit/auth/customer-auth.test.js';
+import './unit/auth/customer-bearer-auth.test.js';
+import './unit/auth/trust-proxy-rate-limit.test.js';
 import './unit/orders/order-status-validator.test.js';
 import './unit/orders/order-status-usecase.test.js';
 import './unit/orders/order-status-controller.test.js';
