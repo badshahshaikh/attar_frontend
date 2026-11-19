@@ -3,11 +3,11 @@ import { config } from '../../config/env.js';
 
 function authenticate(req, res, next) {
     // Support both cookie-based auth (frontend) and Bearer token auth (MCP server, API clients)
-    let token = req.cookies[config.auth.cookie.name];
+    let token = req.cookies?.[config.auth.cookie.name];
 
     // Fall back to Authorization: Bearer <token> header if no cookie present
     if (!token) {
-        const authHeader = req.headers.authorization;
+        const authHeader = req.headers?.authorization;
         if (authHeader && typeof authHeader === 'string' && authHeader.startsWith('Bearer ')) {
             token = authHeader.substring(7).trim();
         }
@@ -49,7 +49,15 @@ function authenticate(req, res, next) {
  * authenticate an admin request, and vice versa.
  */
 function authenticateCustomer(req, res, next) {
-    const token = req.cookies[config.auth.customerCookie.name];
+    let token = req.cookies?.[config.auth.customerCookie.name];
+
+    if (!token) {
+        const authHeader = req.headers?.authorization;
+        if (authHeader && typeof authHeader === 'string' && authHeader.startsWith('Bearer ')) {
+            token = authHeader.substring(7).trim();
+        }
+    }
+
     if (!token) {
         return res.status(401).json({ success: false, message: 'Please sign in to continue' });
     }

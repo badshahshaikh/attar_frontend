@@ -87,7 +87,7 @@ function createAuthController({ authService }) {
                 const result = await authService.register(payload);
                 setCustomerCookie(res, result.token);
 
-                return res.status(201).json({ success: true, user: result.user });
+                return res.status(201).json({ success: true, user: result.user, token: result.token });
             } catch (error) {
                 if (error.statusCode === 409) {
                     return res.status(409).json({ success: false, message: error.message });
@@ -123,7 +123,7 @@ function createAuthController({ authService }) {
 
                 setCustomerCookie(res, result.token);
 
-                return res.json({ success: true, user: result.user });
+                return res.json({ success: true, user: result.user, token: result.token });
             } catch (error) {
                 logger.error('Customer login error:', { errorMessage: error.message });
 
