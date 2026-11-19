@@ -24,11 +24,11 @@ function buildOrderNumber(date = new Date()) {
     return `MSF-${stamp}-${suffix}`;
 }
 
-function createCustomerService({ addressRepository, orderRepository, razorpayKeyId, razorpayKeySecret }) {
+function createCustomerService({ addressRepository, orderRepository, razorpayKeyId, razorpayKeySecret, razorpayClient }) {
     // Key material is injected by the container; when it is missing the client
     // refuses to create orders (503 PAYMENTS_DISABLED) instead of failing
     // halfway through a checkout.
-    const razorpay = createRazorpayClient({ keyId: razorpayKeyId, keySecret: razorpayKeySecret });
+    const razorpay = razorpayClient || createRazorpayClient({ keyId: razorpayKeyId, keySecret: razorpayKeySecret });
 
     // Pricing always comes from the products table so a tampered client payload
     // cannot change what a customer is charged.
@@ -177,13 +177,73 @@ function createCustomerService({ addressRepository, orderRepository, razorpayKey
         throw new AppError('Unable to create your order right now', 500, 'ORDER_FAILED');
     }
 
+    function normalizePhone(raw) {
+        if (!raw) return '';
+        const digits = String(raw).replace(/\D/g, '');
+        return digits.length >= 10 ? digits.slice(-10) : digits;
+    }
+
     // Loads an order that belongs to this customer, or 404s exactly like the
     // GET /orders/:orderNumber handler does.
-    async function loadOrder(userId, orderNumber) {
-        const order = await orderRepository.findByOrderNumber(userId, orderNumber);
+    // Supports guest orders when userId is null; if contactPhone or contactEmail
+    // is provided in verification, verifies that it matches the order record.
+    async function loadOrder(userId, orderNumber, verification = {}) {
+        const cleanOrderNumber = String(orderNumber || '').trim();
+        const validUserId = typeof userId === 'number' && Number.isInteger(userId) && userId > 0
+            ? userId
+            : null;
+
+        let order = await orderRepository.findByOrderNumber(validUserId, cleanOrderNumber);
+
+        // Fallback: If not found under customer account, check if it is an unassigned guest order
+        // matching the verified contact details
+        if (!order && validUserId != null && (verification.contactPhone || verification.contactEmail)) {
+            const guestOrder = await orderRepository.findByOrderNumber(null, cleanOrderNumber);
+            if (guestOrder) {
+                let address = guestOrder.shipping_address;
+                if (typeof address === 'string') {
+                    try { address = JSON.parse(address); } catch { address = {}; }
+                }
+                const storedPhone = normalizePhone(guestOrder.contact_phone || address?.phone);
+                const inputPhone = normalizePhone(verification.contactPhone);
+                const phoneMatch = inputPhone ? storedPhone === inputPhone : false;
+
+                const storedEmail = (address?.email || '').trim().toLowerCase();
+                const inputEmail = (verification.contactEmail || '').trim().toLowerCase();
+                const emailMatch = inputEmail ? storedEmail === inputEmail : false;
+
+                if ((verification.contactPhone && phoneMatch) || (verification.contactEmail && emailMatch)) {
+                    order = guestOrder;
+                }
+            }
+        }
 
         if (!order) {
             throw new AppError('Order not found', 404, 'ORDER_NOT_FOUND');
+        }
+
+        if (order.user_id == null && (verification.contactPhone || verification.contactEmail)) {
+            let address = order.shipping_address;
+            if (typeof address === 'string') {
+                try { address = JSON.parse(address); } catch { address = {}; }
+            }
+            const storedPhone = normalizePhone(order.contact_phone || address?.phone);
+            const inputPhone = normalizePhone(verification.contactPhone);
+            const phoneMatch = inputPhone ? storedPhone === inputPhone : false;
+
+            const storedEmail = (address?.email || '').trim().toLowerCase();
+            const inputEmail = (verification.contactEmail || '').trim().toLowerCase();
+            const emailMatch = inputEmail ? storedEmail === inputEmail : false;
+
+            if (verification.contactPhone && verification.contactEmail) {
+                if (!phoneMatch && !emailMatch) {
+                    throw new AppError('Order not found', 404, 'ORDER_NOT_FOUND');
+                }
+            } else if (verification.contactPhone && !phoneMatch) {
+                throw new AppError('Order not found', 404, 'ORDER_NOT_FOUND');
+            } else if (verification.contactEmail && !emailMatch) {
+                throw new AppError('Order not found', 404, 'ORDER_NOT_FOUND');
+            }
         }
 
         return order;
@@ -305,8 +365,12 @@ function createCustomerService({ addressRepository, orderRepository, razorpayKey
             });
         },
 
-        async createPaymentSession(userId, orderNumber) {
-            const order = await loadOrder(userId, orderNumber);
+        async createPaymentSession(userId, orderNumber, verification = {}) {
+            const order = await loadOrder(userId, orderNumber, verification);
+
+            if (order.status === 'cancelled') {
+                throw new AppError('This order has been cancelled and cannot be paid', 400, 'ORDER_CANCELLED');
+            }
 
             if (order.payment_status === 'paid') {
                 throw new AppError('This order has already been paid', 400, 'ORDER_ALREADY_PAID');
@@ -315,6 +379,10 @@ function createCustomerService({ addressRepository, orderRepository, razorpayKey
             // Razorpay speaks paise; the orders table stores rupees.
             const amountPaise = rupeesToPaise(order.total);
 
+            if (amountPaise <= 0) {
+                throw new AppError('Invalid order total for online payment', 400, 'INVALID_ORDER_TOTAL');
+            }
+
             const razorpayOrder = await razorpay.createOrder({
                 amountPaise,
                 receipt: order.order_number,
@@ -322,7 +390,7 @@ function createCustomerService({ addressRepository, orderRepository, razorpayKey
 
             // Record which Razorpay order belongs to our order so the verify
             // endpoint and webhooks can match the payment back to it.
-            const linked = await orderRepository.linkRazorpayOrder(userId, orderNumber, razorpayOrder.id);
+            const linked = await orderRepository.linkRazorpayOrder(order.user_id, order.order_number, razorpayOrder.id);
 
             if (!linked) {
                 throw new AppError('Order not found', 404, 'ORDER_NOT_FOUND');
@@ -338,7 +406,10 @@ function createCustomerService({ addressRepository, orderRepository, razorpayKey
         },
 
         async verifyPayment(userId, proof) {
-            const order = await loadOrder(userId, proof.orderNumber);
+            const order = await loadOrder(userId, proof.orderNumber, {
+                contactPhone: proof.contactPhone,
+                contactEmail: proof.contactEmail,
+            });
 
             const signatureValid = verifyCheckoutSignature({
                 keySecret: razorpayKeySecret,

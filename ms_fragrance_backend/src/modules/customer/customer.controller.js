@@ -184,7 +184,13 @@ function createCustomerController({ customerService }) {
             }
 
             try {
-                const session = await customerService.createPaymentSession(req.customer.id, orderNumber);
+                const customerId = req.customer?.id || null;
+                const contactPhone = req.body?.contactPhone || req.body?.phone || req.query?.phone;
+                const contactEmail = req.body?.contactEmail || req.body?.email || req.query?.email;
+                const session = await customerService.createPaymentSession(customerId, orderNumber, {
+                    contactPhone,
+                    contactEmail,
+                });
                 res.json({ success: true, ...session });
             } catch (error) {
                 return fail(res, error, 'Unable to start payment session');
@@ -199,11 +205,16 @@ function createCustomerController({ customerService }) {
             }
 
             try {
-                const order = await customerService.verifyPayment(req.customer.id, {
+                const customerId = req.customer?.id || null;
+                const contactPhone = req.body?.contactPhone || req.body?.phone;
+                const contactEmail = req.body?.contactEmail || req.body?.email;
+                const order = await customerService.verifyPayment(customerId, {
                     orderNumber,
-                    razorpayOrderId: req.body.razorpay_order_id,
-                    razorpayPaymentId: req.body.razorpay_payment_id,
-                    razorpaySignature: req.body.razorpay_signature,
+                    razorpayOrderId: req.body?.razorpay_order_id,
+                    razorpayPaymentId: req.body?.razorpay_payment_id,
+                    razorpaySignature: req.body?.razorpay_signature,
+                    contactPhone,
+                    contactEmail,
                 });
                 res.json({ success: true, order });
             } catch (error) {
