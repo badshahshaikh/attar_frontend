@@ -12,6 +12,8 @@ import { createPaymentWebhookRouter } from './modules/customer/payment-webhook.r
 import { checkDatabaseConnection } from './shared/database/index.js';
 
 const app = express();
+// [FIXED] MSF-AUTH-04: Enable proxy trust for accurate client IP resolution behind reverse proxies (Vercel/Render)
+app.set('trust proxy', 1);
 const { productRouter, catalogRouter, authRouter, settingsRouter, seoRouter, customerRouter, usersRouter, ordersRouter, returnsRouter } = createContainer();
 const uploadDir = config.uploads.directory;
 
