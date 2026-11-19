@@ -7,7 +7,7 @@ function authenticate(req, res, next) {
 
     // Fall back to Authorization: Bearer <token> header if no cookie present
     if (!token) {
-        const authHeader = req.headers.authorization;
+        const authHeader = req.headers?.authorization;
         if (authHeader && typeof authHeader === 'string' && authHeader.startsWith('Bearer ')) {
             token = authHeader.substring(7).trim();
         }

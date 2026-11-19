@@ -22,6 +22,13 @@ function normalizeLoc(loc, siteUrl) {
 }
 
 async function main() {
+    if (!process.env.VITE_API_URL) {
+        console.warn(
+            '[sitemap] WARNING: VITE_API_URL is not set. Falling back to http://localhost:5000. ' +
+            'Sitemap generation will fail unless the backend is running locally. ' +
+            'Set VITE_API_URL (e.g. https://attar-backend-vert.vercel.app) in your build environment.'
+        );
+    }
     try {
         const res = await fetch(`${API_URL}/api/seo/public/sitemap`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);

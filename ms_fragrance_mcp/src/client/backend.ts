@@ -46,15 +46,20 @@ export class BackendClient {
     );
 
     try {
-      const response = await fetch(url.toString(), {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${this.config.backendServiceKey}`,
-        },
-        signal: controller.signal,
-        ...(options?.body ? { body: JSON.stringify(options.body) } : {}),
-      });
+    const isFormData = options?.body instanceof FormData;
+    const headers: Record<string, string> = {
+      Authorization: `Bearer ${this.config.backendServiceKey}`,
+    };
+    if (!isFormData) {
+      headers['Content-Type'] = 'application/json';
+    }
+
+    const response = await fetch(url.toString(), {
+      method,
+      headers,
+      signal: controller.signal,
+      ...(options?.body ? { body: isFormData ? (options.body as FormData) : JSON.stringify(options.body) } : {}),
+    });
 
       clearTimeout(timeoutId);
 

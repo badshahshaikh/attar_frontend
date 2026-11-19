@@ -19,13 +19,15 @@ describe('loadConfig', () => {
     process.env.AUTH0_ISSUER_BASE_URL = 'https://test.auth0.com';
     process.env.AUTH0_AUDIENCE = 'https://msfragrance.in/api/mcp';
     process.env.MCP_RESOURCE_SCOPES = 'mcp:read,mcp:write';
+    process.env.MCP_SERVER_URL = 'https://attarfrontend-msfragrancemcp.vercel.app';
 
     const { loadConfig } = await import('../../src/config.js');
     const config = loadConfig();
 
-    expect(config.auth0IssuerBaseUrl).toBe('https://test.auth0.com');
+    expect(config.auth0IssuerBaseUrl).toBe('https://test.auth0.com/');
     expect(config.auth0Audience).toBe('https://msfragrance.in/api/mcp');
     expect(config.mcpResourceScopes).toEqual(['mcp:read', 'mcp:write']);
+    expect(config.mcpServerUrl).toBe('https://attarfrontend-msfragrancemcp.vercel.app');
   });
 
   it('defaults MCP_RESOURCE_SCOPES to mcp:read', async () => {
@@ -34,6 +36,7 @@ describe('loadConfig', () => {
     process.env.MCP_ACCESS_KEY = 'test-mcp-key';
     process.env.AUTH0_ISSUER_BASE_URL = 'https://test.auth0.com';
     process.env.AUTH0_AUDIENCE = 'https://msfragrance.in/api/mcp';
+    process.env.MCP_SERVER_URL = 'https://attarfrontend-msfragrancemcp.vercel.app';
     delete process.env.MCP_RESOURCE_SCOPES;
 
     const { loadConfig } = await import('../../src/config.js');
@@ -47,6 +50,7 @@ describe('loadConfig', () => {
     process.env.BACKEND_SERVICE_KEY = 'test-service-key';
     process.env.MCP_ACCESS_KEY = 'test-mcp-key';
     process.env.AUTH0_AUDIENCE = 'https://msfragrance.in/api/mcp';
+    process.env.MCP_SERVER_URL = 'https://attarfrontend-msfragrancemcp.vercel.app';
     delete process.env.AUTH0_ISSUER_BASE_URL;
 
     const { loadConfig } = await import('../../src/config.js');
@@ -58,6 +62,7 @@ describe('loadConfig', () => {
     process.env.BACKEND_SERVICE_KEY = 'test-service-key';
     process.env.MCP_ACCESS_KEY = 'test-mcp-key';
     process.env.AUTH0_ISSUER_BASE_URL = 'https://test.auth0.com';
+    process.env.MCP_SERVER_URL = 'https://attarfrontend-msfragrancemcp.vercel.app';
     delete process.env.AUTH0_AUDIENCE;
 
     const { loadConfig } = await import('../../src/config.js');

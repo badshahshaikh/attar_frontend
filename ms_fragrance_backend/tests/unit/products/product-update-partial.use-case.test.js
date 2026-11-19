@@ -106,6 +106,102 @@ test('updating imageUrl to null sets null', async () => {
     assert.equal(updates.image_url, null);
 });
 
+test('updating only imageUrl persists the image_url column alone (image_urls preserved)', async () => {
+    const existing = {
+        id: 7,
+        name: 'Test',
+        category: 'Attar',
+        fragrance_type: 'Oud',
+        description: null,
+        full_description: null,
+        rating: 0,
+        reviews: 0,
+        price: 99,
+        original_price: null,
+        size_pricing: {},
+        sizes: [],
+        top_notes: [],
+        heart_notes: [],
+        base_notes: [],
+        longevity: '',
+        in_stock: true,
+        is_new: false,
+        brand: 'Surrati',
+        is_best_seller: false,
+        is_exclusive: false,
+        featured: false,
+        stock_quantity: 0,
+        slug: 'test-7',
+        image_url: 'https://example.com/old.jpg',
+        image_urls: ['https://example.com/old.jpg'],
+        created_at: '2026-01-01',
+        updated_at: '2026-01-01'
+    };
+    const updatedRow = { ...existing, image_url: 'https://example.com/new.jpg', updated_at: '2026-06-01' };
+    const repo = makeRepository(existing, updatedRow);
+    const storage = null;
+    const useCase = new UpdateProductUseCase(repo, storage);
+
+    const result = await useCase.execute(7, { imageUrl: 'https://example.com/new.jpg' });
+
+    const updates = repo.getReceivedUpdates();
+    assert.deepEqual(Object.keys(updates), ['image_url'], 'only image_url column should be updated');
+    assert.equal(updates.image_url, 'https://example.com/new.jpg', 'image_url carries the new URL');
+    // imageChanged is false because image_urls still contains the old URL, so no storage cleanup happens
+    assert.equal(result.imageChanged, false, 'imageChanged is false when image_urls preserves the old URL');
+});
+
+test('updating text and imageUrl together updates name and image_url columns', async () => {
+    const existing = {
+        id: 7,
+        name: 'Oud Royale',
+        category: 'Attar',
+        fragrance_type: 'Oud',
+        description: 'A rich oud fragrance',
+        full_description: null,
+        rating: 4,
+        reviews: 10,
+        price: 99,
+        original_price: null,
+        size_pricing: { '3ml': 99 },
+        sizes: ['3ml'],
+        top_notes: ['Rose'],
+        heart_notes: ['Oud'],
+        base_notes: ['Musk'],
+        longevity: 'Long',
+        in_stock: true,
+        is_new: false,
+        brand: 'Surrati',
+        is_best_seller: true,
+        is_exclusive: false,
+        featured: false,
+        stock_quantity: 5,
+        slug: 'oud-royale-7',
+        image_url: 'https://example.com/image.jpg',
+        image_urls: ['https://example.com/image.jpg'],
+        created_at: '2026-01-01',
+        updated_at: '2026-01-01'
+    };
+    const updatedRow = {
+        ...existing,
+        name: 'Renamed Oud',
+        image_url: 'https://example.com/new.jpg',
+        updated_at: '2026-06-01'
+    };
+    const repo = makeRepository(existing, updatedRow);
+    const useCase = new UpdateProductUseCase(repo, null);
+
+    const result = await useCase.execute(7, { name: 'Renamed Oud', imageUrl: 'https://example.com/new.jpg' });
+
+    const updates = repo.getReceivedUpdates();
+    assert.deepEqual(Object.keys(updates).sort(), ['image_url', 'name'], 'name and image_url should be updated');
+    assert.equal(updates.name, 'Renamed Oud');
+    assert.equal(updates.image_url, 'https://example.com/new.jpg');
+    assert.equal(result.product.name, 'Renamed Oud');
+    // imageChanged is false because image_urls still contains the old URL, so no storage cleanup happens
+    assert.equal(result.imageChanged, false, 'imageChanged is false when image_urls preserves the old URL');
+});
+
 test('omitted fields are not included in update payload', async () => {
     const existing = {
         id: 7,

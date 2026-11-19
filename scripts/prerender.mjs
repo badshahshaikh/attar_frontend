@@ -74,14 +74,16 @@ async function fetchJson(url) {
   return res.json();
 }
 
+const PRODUCTS_ENDPOINT = `${API_BASE}/api/products?limit=100`;
+
 async function getProducts() {
   try {
-    const data = await fetchJson(`${API_BASE}/api/products?limit=100`);
+    const data = await fetchJson(PRODUCTS_ENDPOINT);
     if (Array.isArray(data?.products)) return data.products;
     if (Array.isArray(data)) return data;
     return [];
   } catch (err) {
-    console.warn('[prerender] Failed to fetch products:', err.message);
+    console.warn(`[prerender] Failed to fetch products from ${PRODUCTS_ENDPOINT}: ${err.message}`);
     return [];
   }
 }
@@ -96,7 +98,7 @@ async function prerenderRoute(route, template) {
   try {
     data = await getSeo(route);
   } catch (err) {
-    console.warn(`[prerender] Skipping ${route}: ${err.message}`);
+    console.warn(`[prerender] Skipping ${route}: failed to fetch SEO from ${API_BASE}/api/seo/public/${encodeURIComponent(route)}: ${err.message}`);
     return false;
   }
   if (!data) return false;
@@ -121,6 +123,13 @@ async function prerenderRoute(route, template) {
 }
 
 async function main() {
+  if (!process.env.VITE_API_URL) {
+    console.warn(
+      '[prerender] WARNING: VITE_API_URL is not set. Falling back to http://localhost:5000. ' +
+      'Prerendering will fail unless the backend is running locally. ' +
+      'Set VITE_API_URL (e.g. https://attar-backend-vert.vercel.app) in your build environment.'
+    );
+  }
   if (!fs.existsSync(DIST_DIR)) {
     console.error('[prerender] dist/ not found. Run vite build first.');
     process.exit(1);
