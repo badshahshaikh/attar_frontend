@@ -48,10 +48,12 @@ function createCustomerOrderRepository({ query, withTransaction }) {
         },
 
         async findByOrderNumber(userId, orderNumber) {
-            const result = await query(
-                `SELECT ${ORDER_COLUMNS} FROM public.orders WHERE user_id = $1 AND order_number = $2`,
-                [userId, orderNumber]
-            );
+            const queryText = userId == null
+                ? `SELECT ${ORDER_COLUMNS} FROM public.orders WHERE user_id IS NULL AND order_number = $1`
+                : `SELECT ${ORDER_COLUMNS} FROM public.orders WHERE user_id = $1 AND order_number = $2`;
+            const params = userId == null ? [orderNumber] : [userId, orderNumber];
+
+            const result = await query(queryText, params);
             const order = result.rows[0];
 
             if (!order) return null;
@@ -67,15 +69,23 @@ function createCustomerOrderRepository({ query, withTransaction }) {
         // Records the Razorpay order id against our order when a payment is
         // initiated. Returns the updated row, or null when the order does not
         // belong to this user (the service turns that into a 404).
+        // Supports guest orders when userId is null (WHERE user_id IS NULL).
         async linkRazorpayOrder(userId, orderNumber, razorpayOrderId) {
             try {
-                const result = await query(
-                    `UPDATE public.orders
-                        SET razorpay_order_id = $3, updated_at = NOW()
-                      WHERE user_id = $1 AND order_number = $2
-                      RETURNING ${ORDER_COLUMNS}`,
-                    [userId, orderNumber, razorpayOrderId]
-                );
+                const queryText = userId == null
+                    ? `UPDATE public.orders
+                          SET razorpay_order_id = $2, updated_at = NOW()
+                        WHERE user_id IS NULL AND order_number = $1
+                        RETURNING ${ORDER_COLUMNS}`
+                    : `UPDATE public.orders
+                          SET razorpay_order_id = $3, updated_at = NOW()
+                        WHERE user_id = $1 AND order_number = $2
+                        RETURNING ${ORDER_COLUMNS}`;
+                const params = userId == null
+                    ? [orderNumber, razorpayOrderId]
+                    : [userId, orderNumber, razorpayOrderId];
+
+                const result = await query(queryText, params);
 
                 const order = result.rows[0];
 
@@ -152,6 +162,50 @@ function createCustomerOrderRepository({ query, withTransaction }) {
             } catch (error) {
                 logger.error('[CUSTOMER_ORDER_PAID_ERROR]', { orderId, errorMessage: error.message });
                 throw error;
+            }
+        },
+
+        // Claims unassigned guest orders (user_id IS NULL) matching this customer's
+        // phone number or email, and links them to the customer account.
+        // Orders already belonging to another account (user_id != null) are strictly untouched.
+        async claimGuestOrders(userId, { phone = '', email = '' } = {}) {
+            if (!userId) return 0;
+
+            const cleanPhone = String(phone || '').replace(/\D/g, '').slice(-10);
+            const cleanEmail = String(email || '').trim().toLowerCase();
+
+            if (!cleanPhone && !cleanEmail) return 0;
+
+            const conditions = [];
+            const values = [userId];
+
+            if (cleanPhone) {
+                values.push(`%${cleanPhone}`);
+                conditions.push(`(
+                    contact_phone LIKE $${values.length}
+                    OR shipping_address->>'phone' LIKE $${values.length}
+                )`);
+            }
+
+            if (cleanEmail) {
+                values.push(cleanEmail);
+                conditions.push(`LOWER(COALESCE(shipping_address->>'email', '')) = $${values.length}`);
+            }
+
+            const queryText = `
+                UPDATE public.orders
+                   SET user_id = $1, updated_at = NOW()
+                 WHERE user_id IS NULL
+                   AND (${conditions.join(' OR ')})
+                RETURNING id
+            `;
+
+            try {
+                const result = await query(queryText, values);
+                return result.rows.length;
+            } catch (error) {
+                logger.error('[CUSTOMER_CLAIM_GUEST_ORDERS_ERROR]', { userId, errorMessage: error.message });
+                return 0;
             }
         },
 

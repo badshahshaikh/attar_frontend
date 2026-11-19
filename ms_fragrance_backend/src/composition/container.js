@@ -30,8 +30,14 @@ function createContainer(dependencies = {}) {
         productAiService: dependencies.productAiService
     });
 
+    // Customer accounts module (addresses + orders)
+    const customerContainer = createCustomerContainer({ query });
+
     const userRepository = createUserRepository({ query });
-    const authService = createAuthService({ userRepository });
+    const authService = createAuthService({
+        userRepository,
+        orderRepository: customerContainer.orderRepository,
+    });
     const authController = createAuthController({ authService });
 
     // Settings module
@@ -39,9 +45,6 @@ function createContainer(dependencies = {}) {
 
     // SEO module
     const seoContainer = createSeoContainer({ query });
-
-    // Customer accounts module (addresses + orders)
-    const customerContainer = createCustomerContainer({ query });
 
     // Registered users (customers) admin module — reuses the auth user repository
     const usersContainer = createUsersContainer({ userRepository });

@@ -17,7 +17,7 @@ function toPublicUser(row) {
     };
 }
 
-function createAuthService({ userRepository }) {
+function createAuthService({ userRepository, orderRepository }) {
     function signCustomerToken(customer) {
         // Kept minimal on purpose: profile data is read fresh from the database
         // so a stale name in the token can never be trusted.
@@ -55,6 +55,15 @@ function createAuthService({ userRepository }) {
                 phone,
             });
 
+            // Automatically claim any unassigned past guest orders matching this customer's phone or email
+            if (orderRepository?.claimGuestOrders) {
+                try {
+                    await orderRepository.claimGuestOrders(customer.id, { phone, email });
+                } catch {
+                    // Safe error absorption so claim failure never blocks account creation
+                }
+            }
+
             return { user: toPublicUser(customer), token: signCustomerToken(customer) };
         },
 
@@ -67,6 +76,15 @@ function createAuthService({ userRepository }) {
             if (!(await bcrypt.compare(password, user.password_hash))) return null;
 
             await userRepository.touchLastLogin(user.id);
+
+            // Automatically claim any unassigned past guest orders placed between sessions
+            if (orderRepository?.claimGuestOrders) {
+                try {
+                    await orderRepository.claimGuestOrders(user.id, { phone: user.phone, email: user.email });
+                } catch {
+                    // Safe error absorption so claim failure never blocks customer login
+                }
+            }
 
             return { user: toPublicUser(user), token: signCustomerToken(user) };
         },

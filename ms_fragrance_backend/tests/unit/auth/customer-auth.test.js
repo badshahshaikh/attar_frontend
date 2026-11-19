@@ -162,3 +162,75 @@ test('changePassword requires the correct current password', async () => {
     await service.changePassword(7, { currentPassword: 'attar1234', newPassword: 'newpass123' });
     assert.equal(await bcrypt.compare('newpass123', updated.hash), true);
 });
+
+test('register automatically claims past guest orders matching phone or email', async () => {
+    let claimedUserId = null;
+    let claimedPayload = null;
+
+    const service = createAuthService({
+        userRepository: {
+            findByEmail: async () => null,
+            createCustomer: async (payload) => ({
+                id: 42,
+                email: payload.email,
+                full_name: payload.fullName,
+                phone: payload.phone,
+                role: 'customer',
+                created_at: '2026-01-01T00:00:00Z',
+            }),
+        },
+        orderRepository: {
+            claimGuestOrders: async (userId, payload) => {
+                claimedUserId = userId;
+                claimedPayload = payload;
+                return 2;
+            },
+        },
+    });
+
+    const result = await service.register({
+        fullName: 'Zoya Fatima',
+        email: 'zoya@example.com',
+        phone: '9876543210',
+        password: 'password123',
+    });
+
+    assert.ok(result.token);
+    assert.equal(claimedUserId, 42);
+    assert.deepEqual(claimedPayload, { phone: '9876543210', email: 'zoya@example.com' });
+});
+
+test('customerLogin automatically claims past guest orders matching phone or email', async () => {
+    const passwordHash = await bcrypt.hash('secret123', 10);
+    let claimedUserId = null;
+    let claimedPayload = null;
+
+    const service = createAuthService({
+        userRepository: {
+            findByEmail: async () => ({
+                id: 99,
+                email: 'customer@example.com',
+                phone: '9123456780',
+                role: 'customer',
+                password_hash: passwordHash,
+            }),
+            touchLastLogin: async () => {},
+        },
+        orderRepository: {
+            claimGuestOrders: async (userId, payload) => {
+                claimedUserId = userId;
+                claimedPayload = payload;
+                return 1;
+            },
+        },
+    });
+
+    const result = await service.customerLogin({
+        email: 'customer@example.com',
+        password: 'secret123',
+    });
+
+    assert.ok(result.token);
+    assert.equal(claimedUserId, 99);
+    assert.deepEqual(claimedPayload, { phone: '9123456780', email: 'customer@example.com' });
+});
