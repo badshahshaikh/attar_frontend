@@ -1,0 +1,1953 @@
+{
+  "excel_products_count": 107,
+  "db_surrati_count": 10,
+  "total_changes": 40,
+  "total_skipped": 101,
+  "changes": [
+    {
+      "product_id": 114,
+      "product_name": "Al Hajr",
+      "brand": "Surrati",
+      "size": "100ml",
+      "old_price": null,
+      "new_price": 1650,
+      "action": "add_missing_size",
+      "excel_name": "Al Hajr",
+      "note": "Size 100ml missing from DB sizes list"
+    },
+    {
+      "product_id": 114,
+      "product_name": "Al Hajr",
+      "brand": "Surrati",
+      "size": "50ml",
+      "old_price": null,
+      "new_price": 825,
+      "action": "add_missing_size",
+      "excel_name": "Al Hajr",
+      "note": "Size 50ml missing from DB sizes list"
+    },
+    {
+      "product_id": 114,
+      "product_name": "Al Hajr",
+      "brand": "Surrati",
+      "size": "12ml",
+      "old_price": 300,
+      "new_price": 350,
+      "action": "update_price",
+      "excel_name": "Al Hajr",
+      "note": "Price differs for existing size"
+    },
+    {
+      "product_id": 114,
+      "product_name": "Al Hajr",
+      "brand": "Surrati",
+      "size": "6ml",
+      "old_price": 200,
+      "new_price": 175,
+      "action": "update_price",
+      "excel_name": "Al Hajr",
+      "note": "Price differs for existing size"
+    },
+    {
+      "product_id": 114,
+      "product_name": "Al Hajr",
+      "brand": "Surrati",
+      "size": "3ml",
+      "old_price": 150,
+      "new_price": 100,
+      "action": "update_price",
+      "excel_name": "Al Hajr",
+      "note": "Price differs for existing size"
+    },
+    {
+      "product_id": 104,
+      "product_name": "Kalimat",
+      "brand": "Surrati",
+      "size": "100ml",
+      "old_price": null,
+      "new_price": 1550,
+      "action": "add_missing_size",
+      "excel_name": "Kalimat",
+      "note": "Size 100ml missing from DB sizes list"
+    },
+    {
+      "product_id": 104,
+      "product_name": "Kalimat",
+      "brand": "Surrati",
+      "size": "50ml",
+      "old_price": null,
+      "new_price": 775,
+      "action": "add_missing_size",
+      "excel_name": "Kalimat",
+      "note": "Size 50ml missing from DB sizes list"
+    },
+    {
+      "product_id": 104,
+      "product_name": "Kalimat",
+      "brand": "Surrati",
+      "size": "12ml",
+      "old_price": 1299,
+      "new_price": 350,
+      "action": "update_price",
+      "excel_name": "Kalimat",
+      "note": "Price differs for existing size"
+    },
+    {
+      "product_id": 104,
+      "product_name": "Kalimat",
+      "brand": "Surrati",
+      "size": "6ml",
+      "old_price": 979,
+      "new_price": 175,
+      "action": "update_price",
+      "excel_name": "Kalimat",
+      "note": "Price differs for existing size"
+    },
+    {
+      "product_id": 104,
+      "product_name": "Kalimat",
+      "brand": "Surrati",
+      "size": "3ml",
+      "old_price": 799,
+      "new_price": 100,
+      "action": "update_price",
+      "excel_name": "Kalimat",
+      "note": "Price differs for existing size"
+    },
+    {
+      "product_id": 109,
+      "product_name": "Musk Mutasalliq",
+      "brand": "Surrati",
+      "size": "100ml",
+      "old_price": null,
+      "new_price": 1700,
+      "action": "add_missing_size",
+      "excel_name": "Musk Mutasalliq",
+      "note": "Size 100ml missing from DB sizes list"
+    },
+    {
+      "product_id": 109,
+      "product_name": "Musk Mutasalliq",
+      "brand": "Surrati",
+      "size": "50ml",
+      "old_price": null,
+      "new_price": 850,
+      "action": "add_missing_size",
+      "excel_name": "Musk Mutasalliq",
+      "note": "Size 50ml missing from DB sizes list"
+    },
+    {
+      "product_id": 109,
+      "product_name": "Musk Mutasalliq",
+      "brand": "Surrati",
+      "size": "12ml",
+      "old_price": 1299,
+      "new_price": 350,
+      "action": "update_price",
+      "excel_name": "Musk Mutasalliq",
+      "note": "Price differs for existing size"
+    },
+    {
+      "product_id": 109,
+      "product_name": "Musk Mutasalliq",
+      "brand": "Surrati",
+      "size": "6ml",
+      "old_price": 979,
+      "new_price": 175,
+      "action": "update_price",
+      "excel_name": "Musk Mutasalliq",
+      "note": "Price differs for existing size"
+    },
+    {
+      "product_id": 109,
+      "product_name": "Musk Mutasalliq",
+      "brand": "Surrati",
+      "size": "3ml",
+      "old_price": 799,
+      "new_price": 100,
+      "action": "update_price",
+      "excel_name": "Musk Mutasalliq",
+      "note": "Price differs for existing size"
+    },
+    {
+      "product_id": 107,
+      "product_name": "Rooh Al Musk",
+      "brand": "Surrati",
+      "size": "100ml",
+      "old_price": null,
+      "new_price": 1850,
+      "action": "add_missing_size",
+      "excel_name": "Rooh Al Musk",
+      "note": "Size 100ml missing from DB sizes list"
+    },
+    {
+      "product_id": 107,
+      "product_name": "Rooh Al Musk",
+      "brand": "Surrati",
+      "size": "50ml",
+      "old_price": null,
+      "new_price": 925,
+      "action": "add_missing_size",
+      "excel_name": "Rooh Al Musk",
+      "note": "Size 50ml missing from DB sizes list"
+    },
+    {
+      "product_id": 107,
+      "product_name": "Rooh Al Musk",
+      "brand": "Surrati",
+      "size": "12ml",
+      "old_price": 1299,
+      "new_price": 400,
+      "action": "update_price",
+      "excel_name": "Rooh Al Musk",
+      "note": "Price differs for existing size"
+    },
+    {
+      "product_id": 107,
+      "product_name": "Rooh Al Musk",
+      "brand": "Surrati",
+      "size": "6ml",
+      "old_price": 979,
+      "new_price": 200,
+      "action": "update_price",
+      "excel_name": "Rooh Al Musk",
+      "note": "Price differs for existing size"
+    },
+    {
+      "product_id": 107,
+      "product_name": "Rooh Al Musk",
+      "brand": "Surrati",
+      "size": "3ml",
+      "old_price": 799,
+      "new_price": 100,
+      "action": "update_price",
+      "excel_name": "Rooh Al Musk",
+      "note": "Price differs for existing size"
+    },
+    {
+      "product_id": 108,
+      "product_name": "Oud Interloge",
+      "brand": "Surrati",
+      "size": "100ml",
+      "old_price": null,
+      "new_price": 1500,
+      "action": "add_missing_size",
+      "excel_name": "Oud Interloge",
+      "note": "Size 100ml missing from DB sizes list"
+    },
+    {
+      "product_id": 108,
+      "product_name": "Oud Interloge",
+      "brand": "Surrati",
+      "size": "50ml",
+      "old_price": null,
+      "new_price": 750,
+      "action": "add_missing_size",
+      "excel_name": "Oud Interloge",
+      "note": "Size 50ml missing from DB sizes list"
+    },
+    {
+      "product_id": 108,
+      "product_name": "Oud Interloge",
+      "brand": "Surrati",
+      "size": "12ml",
+      "old_price": 1299,
+      "new_price": 350,
+      "action": "update_price",
+      "excel_name": "Oud Interloge",
+      "note": "Price differs for existing size"
+    },
+    {
+      "product_id": 108,
+      "product_name": "Oud Interloge",
+      "brand": "Surrati",
+      "size": "6ml",
+      "old_price": 979,
+      "new_price": 175,
+      "action": "update_price",
+      "excel_name": "Oud Interloge",
+      "note": "Price differs for existing size"
+    },
+    {
+      "product_id": 108,
+      "product_name": "Oud Interloge",
+      "brand": "Surrati",
+      "size": "3ml",
+      "old_price": 799,
+      "new_price": 100,
+      "action": "update_price",
+      "excel_name": "Oud Interloge",
+      "note": "Price differs for existing size"
+    },
+    {
+      "product_id": 113,
+      "product_name": "Zam Zam",
+      "brand": "Surrati",
+      "size": "100ml",
+      "old_price": null,
+      "new_price": 1350,
+      "action": "add_missing_size",
+      "excel_name": "Zam Zam",
+      "note": "Size 100ml missing from DB sizes list"
+    },
+    {
+      "product_id": 113,
+      "product_name": "Zam Zam",
+      "brand": "Surrati",
+      "size": "50ml",
+      "old_price": null,
+      "new_price": 675,
+      "action": "add_missing_size",
+      "excel_name": "Zam Zam",
+      "note": "Size 50ml missing from DB sizes list"
+    },
+    {
+      "product_id": 113,
+      "product_name": "Zam Zam",
+      "brand": "Surrati",
+      "size": "12ml",
+      "old_price": 500,
+      "new_price": 300,
+      "action": "update_price",
+      "excel_name": "Zam Zam",
+      "note": "Price differs for existing size"
+    },
+    {
+      "product_id": 113,
+      "product_name": "Zam Zam",
+      "brand": "Surrati",
+      "size": "6ml",
+      "old_price": 400,
+      "new_price": 150,
+      "action": "update_price",
+      "excel_name": "Zam Zam",
+      "note": "Price differs for existing size"
+    },
+    {
+      "product_id": 113,
+      "product_name": "Zam Zam",
+      "brand": "Surrati",
+      "size": "3ml",
+      "old_price": 200,
+      "new_price": 75,
+      "action": "update_price",
+      "excel_name": "Zam Zam",
+      "note": "Price differs for existing size"
+    },
+    {
+      "product_id": 105,
+      "product_name": "Musky Rose",
+      "brand": "Surrati",
+      "size": "100ml",
+      "old_price": null,
+      "new_price": 2700,
+      "action": "add_missing_size",
+      "excel_name": "Musky Rose",
+      "note": "Size 100ml missing from DB sizes list"
+    },
+    {
+      "product_id": 105,
+      "product_name": "Musky Rose",
+      "brand": "Surrati",
+      "size": "50ml",
+      "old_price": null,
+      "new_price": 1350,
+      "action": "add_missing_size",
+      "excel_name": "Musky Rose",
+      "note": "Size 50ml missing from DB sizes list"
+    },
+    {
+      "product_id": 105,
+      "product_name": "Musky Rose",
+      "brand": "Surrati",
+      "size": "12ml",
+      "old_price": 1299,
+      "new_price": 450,
+      "action": "update_price",
+      "excel_name": "Musky Rose",
+      "note": "Price differs for existing size"
+    },
+    {
+      "product_id": 105,
+      "product_name": "Musky Rose",
+      "brand": "Surrati",
+      "size": "6ml",
+      "old_price": 979,
+      "new_price": 225,
+      "action": "update_price",
+      "excel_name": "Musky Rose",
+      "note": "Price differs for existing size"
+    },
+    {
+      "product_id": 105,
+      "product_name": "Musky Rose",
+      "brand": "Surrati",
+      "size": "3ml",
+      "old_price": 799,
+      "new_price": 120,
+      "action": "update_price",
+      "excel_name": "Musky Rose",
+      "note": "Price differs for existing size"
+    },
+    {
+      "product_id": 115,
+      "product_name": "Perfume DFL",
+      "brand": "Surrati",
+      "size": "100ml",
+      "old_price": null,
+      "new_price": 1650,
+      "action": "add_missing_size",
+      "excel_name": "Perfume DFL",
+      "note": "Size 100ml missing from DB sizes list"
+    },
+    {
+      "product_id": 115,
+      "product_name": "Perfume DFL",
+      "brand": "Surrati",
+      "size": "50ml",
+      "old_price": null,
+      "new_price": 825,
+      "action": "add_missing_size",
+      "excel_name": "Perfume DFL",
+      "note": "Size 50ml missing from DB sizes list"
+    },
+    {
+      "product_id": 115,
+      "product_name": "Perfume DFL",
+      "brand": "Surrati",
+      "size": "12ml",
+      "old_price": 500,
+      "new_price": 350,
+      "action": "update_price",
+      "excel_name": "Perfume DFL",
+      "note": "Price differs for existing size"
+    },
+    {
+      "product_id": 115,
+      "product_name": "Perfume DFL",
+      "brand": "Surrati",
+      "size": "6ml",
+      "old_price": 300,
+      "new_price": 175,
+      "action": "update_price",
+      "excel_name": "Perfume DFL",
+      "note": "Price differs for existing size"
+    },
+    {
+      "product_id": 115,
+      "product_name": "Perfume DFL",
+      "brand": "Surrati",
+      "size": "3ml",
+      "old_price": 200,
+      "new_price": 100,
+      "action": "update_price",
+      "excel_name": "Perfume DFL",
+      "note": "Price differs for existing size"
+    }
+  ],
+  "skipped": [
+    {
+      "excel_name": "Dehan Oud Malaysi Mumayyaz",
+      "excel_norm": "dehanoudmalaysimumayyaz",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Dehnal Oud Nukhba",
+      "excel_norm": "dehanoudnnukha",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Silky Musk",
+      "excel_norm": "silkymusk",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Ward BMC",
+      "excel_norm": "wardbmc",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Tom Oud",
+      "excel_norm": "tomoud",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Tom Tusken Leather",
+      "excel_norm": "tomtuskenleather",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Khalta Ajeeba",
+      "excel_norm": "khaltaajeeba",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Khalta Mabrooka",
+      "excel_norm": "khaltamabrooka",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Escape",
+      "excel_norm": "escape",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "MKT Al Badr Al Dahabi",
+      "excel_norm": "mktbadrdahabi",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Musk Bahry",
+      "excel_norm": "muskbahry",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Miss Surrati",
+      "excel_norm": "misssurrati",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Baccarat Rouge",
+      "excel_norm": "baccaratrouge",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Sandel Rose",
+      "excel_norm": "sandelrose",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Woody Oud",
+      "excel_norm": "woodyoud",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Musk Al Tahara",
+      "excel_norm": "musktahara",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Qasar Al Oud",
+      "excel_norm": "qasaroud",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Black Oud",
+      "excel_norm": "blackoud",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Crush",
+      "excel_norm": "crush",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Jadour",
+      "excel_norm": "jadour",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Alf Zahra",
+      "excel_norm": "alfzahra",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Amber Nomad",
+      "excel_norm": "ambernomad",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Ameeral Oud",
+      "excel_norm": "ameeroud",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Black Opium",
+      "excel_norm": "blackopium",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Burhan",
+      "excel_norm": "burhan",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Dawah",
+      "excel_norm": "dawah",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Dana",
+      "excel_norm": "dana",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Ehsas Al Arabia",
+      "excel_norm": "ehsasarabia",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Fawakeh",
+      "excel_norm": "fawakeh",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Golden Sand",
+      "excel_norm": "goldensand",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Imperial Oud",
+      "excel_norm": "imperioud",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Jood Al Layl",
+      "excel_norm": "joodlayl",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Erba Pura",
+      "excel_norm": "erbapura",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Mezyan",
+      "excel_norm": "mezyan",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Miskitawi",
+      "excel_norm": "miskitawi",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "MKT Faris",
+      "excel_norm": "mktfaris",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "MKT Al Arab",
+      "excel_norm": "mktarab",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Kashmiri Oud",
+      "excel_norm": "kashmirioud",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Oud Collection",
+      "excel_norm": "oudcollection",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Oud Bouquet",
+      "excel_norm": "oudbouquet",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Oud Al Malik",
+      "excel_norm": "oudmalik",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Oud For Greatness",
+      "excel_norm": "oudforgreatness",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Patchouli",
+      "excel_norm": "patchouli",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Patchouli Apple",
+      "excel_norm": "patchouliapple",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Pomegranate Raspberry",
+      "excel_norm": "pomegranateraspberry",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Burberry Grapes",
+      "excel_norm": "burberrygrapes",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Lychee Rose",
+      "excel_norm": "lycheerose",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Rose De Arabia",
+      "excel_norm": "rosedearabia",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Russian Leather",
+      "excel_norm": "russianleather",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Rakan",
+      "excel_norm": "rakan",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Rose 333",
+      "excel_norm": "rose333",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Royal Oud",
+      "excel_norm": "royoud",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Tea Rose",
+      "excel_norm": "tearose",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Yara",
+      "excel_norm": "yara",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Joker",
+      "excel_norm": "joker",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Golden Sand Oud",
+      "excel_norm": "goldensandoud",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Tobacco Vanilla - Tom Fard",
+      "excel_norm": "tobaccovanillatomfard",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Irish Leather",
+      "excel_norm": "irishleather",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Awsaaf Wardi",
+      "excel_norm": "awsaafwardi",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Rose Tobacco",
+      "excel_norm": "rosetobacco",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Body Musk",
+      "excel_norm": "bodymusk",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Baital Sandalya",
+      "excel_norm": "baitsandalya",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Sandalya Aroosa",
+      "excel_norm": "sandalyaaroosa",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Red Zafran",
+      "excel_norm": "redzafran",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "White Zafran",
+      "excel_norm": "whitezafran",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Oud Supreme",
+      "excel_norm": "oudsupreme",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Taif Rose",
+      "excel_norm": "taifrose",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Tea Rose",
+      "excel_norm": "tearose",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Shay Oud",
+      "excel_norm": "shayoud",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Dale Al Sabaya",
+      "excel_norm": "dalesabaya",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Amjad Al Oud Al Malaki",
+      "excel_norm": "amjadoudmalaki",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Amber Rose",
+      "excel_norm": "amberrose",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Ombre Nomad",
+      "excel_norm": "ombrenomad",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Rasheeqa",
+      "excel_norm": "rasheeqa",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Musk KL",
+      "excel_norm": "muskkl",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Faqat Lil Rij aal",
+      "excel_norm": "faqatlilrijaal",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Musk Al Haram",
+      "excel_norm": "muskharam",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Musk Al Madina",
+      "excel_norm": "muskmadina",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Bvlgari Tiger",
+      "excel_norm": "bvlgaritiger",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Rose Vanilla",
+      "excel_norm": "rosevanilla",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Escada Collection",
+      "excel_norm": "escadacollection",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "XXS",
+      "excel_norm": "xxs",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Turab Al Dahab",
+      "excel_norm": "turabdahab",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Tiger Oud",
+      "excel_norm": "tigeroud",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Pure Poison",
+      "excel_norm": "purepoison",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Mukhallat Dubai",
+      "excel_norm": "mukhaltadubai",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Aqua De Geo",
+      "excel_norm": "aquadegeo",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Aqua 121",
+      "excel_norm": "aqua121",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Hogo",
+      "excel_norm": "hogo",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Givenchy",
+      "excel_norm": "givenchy",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Bose",
+      "excel_norm": "bose",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Bvlgari",
+      "excel_norm": "bvlgari",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Blue",
+      "excel_norm": "blue",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Derre T Hermes",
+      "excel_norm": "derrethermes",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Black Horse",
+      "excel_norm": "blackhorse",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Fahrenheit",
+      "excel_norm": "fahrenheit",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Esse Miyake",
+      "excel_norm": "essemiyake",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Bose Edition",
+      "excel_norm": "boseedition",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": "Olympia",
+      "excel_norm": "olympia",
+      "db_product_id": null,
+      "db_product_name": null,
+      "reason": "no_match_or_ambiguous",
+      "note": "0 candidate(s) found",
+      "excel_sizes": [
+        "100ml",
+        "12ml",
+        "3ml",
+        "50ml",
+        "6ml"
+      ]
+    },
+    {
+      "excel_name": null,
+      "excel_norm": null,
+      "db_product_id": 103,
+      "db_product_name": "Imeprial Oud",
+      "reason": "db_only_no_excel_match",
+      "note": "Surrati DB product not found in Excel (will be preserved, untouched)",
+      "excel_sizes": []
+    },
+    {
+      "excel_name": null,
+      "excel_norm": null,
+      "db_product_id": 106,
+      "db_product_name": "Baccart Rouge",
+      "reason": "db_only_no_excel_match",
+      "note": "Surrati DB product not found in Excel (will be preserved, untouched)",
+      "excel_sizes": []
+    }
+  ]
+}

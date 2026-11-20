@@ -190,6 +190,11 @@
       "statusCode": 301
     },
     {
+      "source": "/product/142",
+      "destination": "/product/oud-marj-142",
+      "statusCode": 301
+    },
+    {
       "source": "/product/74",
       "destination": "/product/mukhallat-jahara-74",
       "statusCode": 301
@@ -210,6 +215,11 @@
       "statusCode": 301
     },
     {
+      "source": "/product/144",
+      "destination": "/product/musk-tahara-144",
+      "statusCode": 301
+    },
+    {
       "source": "/product/87",
       "destination": "/product/mexican-tobacco-87",
       "statusCode": 301
@@ -217,6 +227,11 @@
     {
       "source": "/product/88",
       "destination": "/product/cuban-tobacco-88",
+      "statusCode": 301
+    },
+    {
+      "source": "/product/145",
+      "destination": "/product/kesar-chandan-145",
       "statusCode": 301
     },
     {
