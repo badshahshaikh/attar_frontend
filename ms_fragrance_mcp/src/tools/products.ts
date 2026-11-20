@@ -4,6 +4,7 @@ import { BackendClient } from '../client/backend.js';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { lookup } from 'node:dns/promises';
 
 async function handleChatGPTImageDirect(imageData: string, productId: number, client: BackendClient) {
   // Validate and parse image data
@@ -64,6 +65,11 @@ async function handleChatGPTImageDirect(imageData: string, productId: number, cl
 
   // Update product
   await client.request('PUT', `/api/products/${productId}`, { body: { imageUrl: permanentImageUrl } });
+  const verifyResponse: any = await client.getProductById(productId);
+  const verifyProduct = verifyResponse?.data ?? verifyResponse;
+  if (verifyProduct?.imageUrl !== permanentImageUrl && verifyProduct?.image_url !== permanentImageUrl) {
+    throw new Error('Product image URL was not saved correctly');
+  }
 
   return {
     content: [
@@ -72,6 +78,130 @@ async function handleChatGPTImageDirect(imageData: string, productId: number, cl
         text: JSON.stringify({ productId, imageUrl: permanentImageUrl, success: true, message: 'Product image uploaded and saved successfully.' }, null, 2),
       },
     ],
+  };
+}
+
+function detectImageMime(buffer: Buffer): string {
+  if (buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4e && buffer[3] === 0x47) return 'image/png';
+  if (buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff) return 'image/jpeg';
+  if (buffer[0] === 0x52 && buffer[1] === 0x49 && buffer[2] === 0x46 && buffer[3] === 0x46 && buffer[8] === 0x57 && buffer[9] === 0x45 && buffer[10] === 0x42 && buffer[11] === 0x50) return 'image/webp';
+  return '';
+}
+
+function isPrivateIp(ip: string): boolean {
+  const v = ip.toLowerCase();
+  if (v === '::1' || v === '0:0:0:0:0:0:0:1') return true;
+  if (v.startsWith('fe80') || v.startsWith('fc') || v.startsWith('fd')) return true;
+  // IPv4-mapped IPv6
+  const mapped = v.match(/^::ffff:(.+)$/);
+  const target = mapped ? mapped[1] : v;
+  if (/^(\d{1,3}\.){3}\d{1,3}$/.test(target)) {
+    const parts = target.split('.').map(Number);
+    if (parts[0] === 10) return true;
+    if (parts[0] === 127) return true;
+    if (parts[0] === 169 && parts[1] === 254) return true;
+    if (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) return true;
+    if (parts[0] === 192 && parts[1] === 168) return true;
+    if (parts[0] === 0) return true;
+  }
+  if (target === '169.254.169.254') return true;
+  return false;
+}
+
+async function resolveAndCheckHost(hostname: string): Promise<void> {
+  if (isBlockedHost(hostname)) throw new Error('Blocked host');
+  const records = await lookup(hostname, { all: true });
+  for (const r of records) {
+    if (isPrivateIp(r.address)) throw new Error('Resolved to private/internal IP');
+  }
+}
+
+function isBlockedHost(hostname: string): boolean {
+  const h = hostname.toLowerCase();
+  if (h === 'localhost' || h === '127.0.0.1' || h === '::1' || h === '0.0.0.0' || h === '169.254.169.254' || h === 'metadata.google.internal') return true;
+  if (/^(10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|169\.254\.|127\.)/.test(h)) return true;
+  return false;
+}
+
+async function downloadImageFromUrl(imageUrl: string): Promise<{ buffer: Buffer; mime: string }> {
+  let current = new URL(imageUrl);
+  if (current.username || current.password) throw new Error('URL must not contain credentials');
+
+  for (let redirectCount = 0; redirectCount < 5; redirectCount++) {
+    await resolveAndCheckHost(current.hostname);
+    if (current.protocol !== 'http:' && current.protocol !== 'https:') throw new Error('Unsupported URL protocol');
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
+    let response: Response;
+    let reader: ReadableStreamDefaultReader<Uint8Array> | null = null;
+    try {
+      response = await fetch(current.toString(), { redirect: 'manual', signal: controller.signal });
+      if (response.status >= 300 && response.status < 400) {
+        const location = response.headers.get('location');
+        if (!location) throw new Error('Redirect without location');
+        const next = new URL(location, current);
+        if (next.username || next.password) throw new Error('Redirect URL must not contain credentials');
+        await resolveAndCheckHost(next.hostname);
+        current = next;
+        continue;
+      }
+      if (!response.ok) throw new Error(`Failed to download image: HTTP ${response.status}`);
+
+      const contentLength = response.headers.get('content-length');
+      if (contentLength && Number(contentLength) > 5 * 1024 * 1024) throw new Error('Image size exceeds 5 MB limit');
+
+      reader = response.body?.getReader() ?? null;
+      if (!reader) throw new Error('No response body');
+      const chunks: Uint8Array[] = [];
+      let total = 0;
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          total += value.length;
+          if (total > 5 * 1024 * 1024) throw new Error('Image size exceeds 5 MB limit');
+          chunks.push(value);
+        }
+      } finally {
+        try { await reader.cancel(); } catch {}
+      }
+      const buffer = Buffer.concat(chunks.map((c) => Buffer.from(c)));
+      const mime = detectImageMime(buffer);
+      if (!mime) throw new Error('Unsupported or invalid image format');
+      return { buffer, mime };
+    } catch (error) {
+      if (reader) { try { await reader.cancel(); } catch {} }
+      throw error;
+    } finally {
+      clearTimeout(timeoutId);
+    }
+  }
+  throw new Error('Too many redirects');
+}
+
+async function handleImageUrlUpload(imageUrl: string, productId: number, client: BackendClient) {
+  const { buffer, mime } = await downloadImageFromUrl(imageUrl);
+  const ext = mime === 'image/png' ? 'png' : mime === 'image/jpeg' ? 'jpg' : 'webp';
+  const blob = new Blob([new Uint8Array(buffer)], { type: mime });
+  const formData = new FormData();
+  formData.append('image', blob, `product-${productId}.${ext}`);
+  formData.append('productId', String(productId));
+
+  const uploadResponse: any = await client.request('POST', '/api/products/upload-image', { body: formData });
+  const data = uploadResponse?.data ?? uploadResponse;
+  const permanentImageUrl = data?.imageUrl ?? data?.url ?? data?.image_url;
+  if (!permanentImageUrl || typeof permanentImageUrl !== 'string') throw new Error('Image upload did not return a valid URL.');
+
+  await client.request('PUT', `/api/products/${productId}`, { body: { imageUrl: permanentImageUrl } });
+  const productResponse: any = await client.getProductById(productId);
+  const product = productResponse?.data ?? productResponse;
+  if (product?.imageUrl !== permanentImageUrl && product?.image_url !== permanentImageUrl) {
+    throw new Error('Product image URL was not saved correctly');
+  }
+
+  return {
+    content: [{ type: 'text' as const, text: JSON.stringify({ productId, imageUrl: permanentImageUrl, success: true, message: 'Product image uploaded and saved successfully.' }, null, 2) }],
   };
 }
 
@@ -396,12 +526,17 @@ export function registerProductTools(server: McpServer, client: BackendClient) {
         .describe('Product name used as context for AI image generation. If omitted, the existing product name is used.'),
       imageData: z
         .string()
-        .min(1)
+        .optional()
         .describe('Base64 image data or a Base64 data URL generated by ChatGPT'),
+      imageUrl: z
+        .string()
+        .url()
+        .optional()
+        .describe('HTTP/HTTPS URL of a generated image to download and upload'),
     },
     async (args) => {
       try {
-        const { productId, imageData } = args;
+        const { productId, imageData, imageUrl } = args;
 
         if (!productId || typeof productId !== 'number' || !Number.isInteger(productId) || productId < 1) {
           return {
@@ -410,7 +545,19 @@ export function registerProductTools(server: McpServer, client: BackendClient) {
           };
         }
 
-        return await handleChatGPTImageDirect(imageData, productId, client);
+        const hasData = typeof imageData === 'string' && imageData.trim().length > 0;
+        const hasUrl = typeof imageUrl === 'string' && imageUrl.trim().length > 0;
+        if (hasData === hasUrl) {
+          return {
+            content: [{ type: 'text' as const, text: 'Error: Provide exactly one of imageData or imageUrl.' }],
+            isError: true,
+          };
+        }
+
+        if (hasData) {
+          return await handleChatGPTImageDirect(imageData as string, productId, client);
+        }
+        return await handleImageUrlUpload(imageUrl as string, productId, client);
       } catch (error) {
         return {
           content: [
