@@ -513,7 +513,7 @@ export function registerProductTools(server: McpServer, client: BackendClient) {
   // generate_and_save_product_image
   server.tool(
     'generate_and_save_product_image',
-    'Generate a product image using AI, upload it to Supabase Storage, and update the product with the permanent public URL. Only the image URL is persisted; other product fields are unchanged.',
+    'Generate or receive a product image, then upload it to Supabase Storage and update the product with the permanent public URL. Accepts either imageData (Base64/data URL) or imageUrl (HTTP/HTTPS). Downloads imageUrl if provided, validates format/size, uploads via multipart, updates product.image_url, and verifies the saved URL.',
     {
       productId: z
         .number()

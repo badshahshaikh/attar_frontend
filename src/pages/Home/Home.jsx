@@ -9,26 +9,26 @@ import './Home.css';
 const heroSlides = [
     {
         eyebrow: 'THE ART OF FRAGRANCE',
-        headline: 'Timeless attars, rooted in tradition.',
-        description: 'Pure Indian perfumery for evenings, rituals and everyday wear.',
+        // headline: 'Timeless attars, rooted in tradition.',
+        // description: 'Pure Indian perfumery for evenings, rituals and everyday wear.',
         cta: 'Explore Collection',
         secondary: 'Shop Attars',
-        image: '/hero-1.webp',
+        image: '/Eight Royal Oud Attar Label Designs.png',
         target: '/shop'
     },
     {
         eyebrow: 'SIGNATURE SCENTS',
-        headline: 'Rose, musk and sandalwood in every drop.',
-        description: 'Warm, intimate fragrances inspired by Indian gardens and sacred evenings.',
+        // headline: 'Rose, musk and sandalwood in every drop.',
+        // description: 'Warm, intimate fragrances inspired by Indian gardens and sacred evenings.',
         cta: 'Browse Bestsellers',
         secondary: 'Shop Attars',
-        image: 'https://images.unsplash.com/photo-1585386959984-a4155224a1ad?q=80&w=1600&auto=format&fit=crop',
+        image: '/Citrus Oud Perfume in Rippling Blue Water.png',
         target: '/shop'
     },
     {
         eyebrow: 'CRAFTED WITH CARE',
         headline: 'Fragrance that lingers beautifully.',
-        description: 'Non-alcoholic attars blended to feel soft, elegant and personal.',
+        // description: 'Non-alcoholic attars blended to feel soft, elegant and personal.',
         cta: 'Discover More',
         secondary: 'Explore Collections',
         image: 'https://images.unsplash.com/photo-1528740561666-dc2479dc08ab?q=80&w=1600&auto=format&fit=crop',
