@@ -3,6 +3,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { BackendClient } from '../client/backend.js';
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 async function handleChatGPTImageDirect(imageData: string, productId: number, client: BackendClient) {
   // Validate and parse image data
@@ -430,6 +431,8 @@ export function registerProductTools(server: McpServer, client: BackendClient) {
     'Return the existing MS Fragrance product image prompt/style instructions and the master bottle reference image as MCP image content.',
     {},
     async () => {
+      const __filename = fileURLToPath(import.meta.url);
+      const __dirname = path.dirname(__filename);
       const masterPath = path.resolve(__dirname, '../../../ms_fragrance_backend/src/assets/ms-fragrance-master.png');
       const imageBuffer = fs.readFileSync(masterPath);
       const base64 = imageBuffer.toString('base64');
