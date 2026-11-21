@@ -24,7 +24,7 @@ const Footer = () => {
                     <div className="footer-grid">
                         <div className="footer-brand">
                             <Link to="/" className="footer-logo">
-                                <img src="/ms-fragrance-logo" alt="MS Fragrance" loading="lazy" decoding="async" />
+                                <img src="/ms-fragrance-logo.png" alt="MS Fragrance" loading="lazy" decoding="async" />
                             </Link>
                             <p className="brand-description">
                                 The art of pure, non-alcoholic perfumery. We source the finest natural ingredients to craft timeless fragrance experiences for the modern connoisseur.
