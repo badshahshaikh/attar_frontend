@@ -199,15 +199,6 @@ const Home = () => {
                     ))}
                 </div>
                 <div className="container hero-controls" aria-label="Hero controls">
-                    <button
-                        type="button"
-                        className="hero-arrow"
-                        onClick={() => handleSlideChange('prev')}
-                        aria-label="Previous slide"
-                    >
-                        <ChevronLeft size={20} />
-                    </button>
-
                     <div className="hero-dots" role="tablist" aria-label="Choose a slide">
                         {heroSlides.map((slide, index) => (
                             <button
@@ -220,15 +211,6 @@ const Home = () => {
                             />
                         ))}
                     </div>
-
-                    <button
-                        type="button"
-                        className="hero-arrow"
-                        onClick={() => handleSlideChange('next')}
-                        aria-label="Next slide"
-                    >
-                        <ChevronRight size={20} />
-                    </button>
                 </div>
             </section>
 
