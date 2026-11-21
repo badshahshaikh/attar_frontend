@@ -30,6 +30,9 @@ const heroSlides = [
 const Home = () => {
     const { products, loading, error } = useProducts();
     const [currentSlide, setCurrentSlide] = useState(0);
+    const [prevSlide, setPrevSlide] = useState(null);
+    const [isAnimating, setIsAnimating] = useState(false);
+    const [direction, setDirection] = useState('next');
     const [isPaused, setIsPaused] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
     const [cursorVisible, setCursorVisible] = useState(false);
@@ -40,16 +43,16 @@ const Home = () => {
 
     useEffect(() => {
         const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-        if (mediaQuery.matches || isPaused) {
+        if (mediaQuery.matches || isPaused || isDragging) {
             return undefined;
         }
 
         const timer = window.setTimeout(() => {
-            setCurrentSlide(prev => (prev + 1) % heroSlides.length);
+            handleSlideChange('next');
         }, 2000);
 
         return () => window.clearTimeout(timer);
-    }, [currentSlide, isPaused]);
+    }, [currentSlide, isPaused, isDragging]);
 
     const categories = useMemo(() => {
         const uniqueCategories = [...new Set(products.map(product => product.fragranceType))];
@@ -112,13 +115,16 @@ const Home = () => {
         }
     };
 
-    const handleSlideChange = (direction) => {
+    const handleSlideChange = (dir) => {
+        if (isAnimating) return;
+        setDirection(dir);
+        setPrevSlide(currentSlide);
+        setIsAnimating(true);
         setCurrentSlide(prev => {
-            if (direction === 'next') {
-                return (prev + 1) % heroSlides.length;
-            }
+            if (dir === 'next') return (prev + 1) % heroSlides.length;
             return (prev - 1 + heroSlides.length) % heroSlides.length;
         });
+        window.setTimeout(() => setIsAnimating(false), 700);
     };
 
     if (loading) {
@@ -164,7 +170,7 @@ const Home = () => {
                     {heroSlides.map((slide, index) => (
                         <div
                             key={slide.headline}
-                            className={`hero-slide ${index === currentSlide ? 'active' : ''}`}
+                            className={`hero-slide ${index === currentSlide ? 'active' : ''} ${isAnimating && index === prevSlide ? 'leaving' : ''}`}
                             aria-hidden={index !== currentSlide}
                         >
                             <img
