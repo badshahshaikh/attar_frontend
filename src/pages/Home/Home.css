@@ -379,16 +379,57 @@
 }
 
 .video-section {
-  padding-top: 60px;
-  padding-bottom: 60px;
+  position: relative;
+  overflow: hidden;
+  padding: 56px 0;
+  background: linear-gradient(180deg, #302820 0%, #241F1A 100%);
+  color: #F5EFE5;
+  border-top: 1px solid rgba(199, 168, 106, 0.28);
+  border-bottom: 1px solid rgba(199, 168, 106, 0.28);
 }
 
+.home-section.video-section.container {
+  max-width: none;
+  margin-left: 0;
+  margin-right: 0;
+  padding: 2%;
+}
+
+.video-section .section-header h2 {
+  color: #F5EFE5;
+  font-family: var(--font-serif);
+  font-size: clamp(1.8rem, 3.2vw, 2.6rem);
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+.video-section .section-eyebrow {
+  color: #C5A46D;
+}
+
+.video-section::before {
+  content: 'FRAGRANCE';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-serif);
+  font-size: clamp(6rem, 18vw, 14rem);
+  letter-spacing: 0.18em;
+  color: rgba(244, 239, 231, 0.04);
+  pointer-events: none;
+  z-index: 0;
+  white-space: nowrap;
+}
+.video-section .section-eyebrow {
+  color: #C5A46D;
+}
 .video-subtitle {
-  color: var(--color-text-secondary);
+  color: #C9BDAE;
   margin-top: 8px;
   max-width: 640px;
 }
-
 .video-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -396,12 +437,31 @@
   margin-top: 24px;
 }
 
+.video-section::after {
+  content: '◆';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #C5A46D;
+  font-size: 0.75rem;
+  pointer-events: none;
+  z-index: 1;
+}
 .video-card {
   text-align: left;
   background: transparent;
-  border: none;
+  border: 1px solid rgba(244, 239, 231, 0.12);
   padding: 0;
   cursor: pointer;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: transform 0.25s ease, border-color 0.25s ease;
+}
+
+.video-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(199, 168, 106, 0.45);
 }
 
 .video-thumb {
@@ -436,7 +496,7 @@
   font-family: var(--font-serif);
   font-size: 1.1rem;
   font-weight: 500;
-  color: var(--color-text-primary);
+  color: #F5EFE5;
 }
 
 .video-modal {
