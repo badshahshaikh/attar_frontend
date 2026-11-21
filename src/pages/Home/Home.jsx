@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import PageLoader from '../../components/PageLoader/PageLoader';
@@ -8,7 +8,7 @@ import './Home.css';
 
 const heroSlides = [
     {
-        eyebrow: 'THE ART OF FRAGRANCE',
+        // eyebrow: 'THE ART OF FRAGRANCE',
         // headline: 'Timeless attars, rooted in tradition.',
         // description: 'Pure Indian perfumery for evenings, rituals and everyday wear.',
         cta: 'Explore Collection',
@@ -17,21 +17,12 @@ const heroSlides = [
         target: '/shop'
     },
     {
-        eyebrow: 'SIGNATURE SCENTS',
+        // eyebrow: 'SIGNATURE SCENTS',
         // headline: 'Rose, musk and sandalwood in every drop.',
         // description: 'Warm, intimate fragrances inspired by Indian gardens and sacred evenings.',
         cta: 'Browse Bestsellers',
         secondary: 'Shop Attars',
         image: '/Citrus Oud Perfume in Rippling Blue Water.png',
-        target: '/shop'
-    },
-    {
-        eyebrow: 'CRAFTED WITH CARE',
-        headline: 'Fragrance that lingers beautifully.',
-        // description: 'Non-alcoholic attars blended to feel soft, elegant and personal.',
-        cta: 'Discover More',
-        secondary: 'Explore Collections',
-        image: 'https://images.unsplash.com/photo-1528740561666-dc2479dc08ab?q=80&w=1600&auto=format&fit=crop',
         target: '/shop'
     }
 ];
@@ -40,6 +31,12 @@ const Home = () => {
     const { products, loading, error } = useProducts();
     const [currentSlide, setCurrentSlide] = useState(0);
     const [isPaused, setIsPaused] = useState(false);
+    const [isDragging, setIsDragging] = useState(false);
+    const [cursorVisible, setCursorVisible] = useState(false);
+    const dragStartX = useRef(0);
+    const dragDelta = useRef(0);
+    const cursorRef = useRef(null);
+    const sliderRef = useRef(null);
 
     useEffect(() => {
         const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -49,7 +46,7 @@ const Home = () => {
 
         const timer = window.setTimeout(() => {
             setCurrentSlide(prev => (prev + 1) % heroSlides.length);
-        }, 6000);
+        }, 2000);
 
         return () => window.clearTimeout(timer);
     }, [currentSlide, isPaused]);
@@ -64,6 +61,56 @@ const Home = () => {
             .sort((a, b) => Number(b.featured) - Number(a.featured) || Number(b.isNew) - Number(a.isNew) || b.reviews - a.reviews)
             .slice(0, 4);
     }, [products]);
+
+    const handlePointerDown = (e) => {
+        if (e.target.closest('button, a')) return;
+        setIsDragging(true);
+        setIsPaused(true);
+        dragStartX.current = e.clientX;
+        dragDelta.current = 0;
+        sliderRef.current?.setPointerCapture(e.pointerId);
+    };
+
+    const handlePointerMove = (e) => {
+        if (isDragging) {
+            dragDelta.current = e.clientX - dragStartX.current;
+        }
+        if (cursorRef.current) {
+            const rect = sliderRef.current?.getBoundingClientRect();
+            if (rect) {
+                cursorRef.current.style.transform = `translate(${e.clientX - rect.left}px, ${e.clientY - rect.top}px) translate(-50%, -50%)`;
+            }
+        }
+    };
+
+    const handlePointerUp = (e) => {
+        if (!isDragging) return;
+        const delta = dragDelta.current;
+        if (Math.abs(delta) > 50) {
+            handleSlideChange(delta < 0 ? 'next' : 'prev');
+        }
+        setIsDragging(false);
+        dragDelta.current = 0;
+        setTimeout(() => setIsPaused(false), 500);
+    };
+
+    const handlePointerLeave = () => {
+        setCursorVisible(false);
+        if (isDragging) {
+            setIsDragging(false);
+            dragDelta.current = 0;
+        }
+        setIsPaused(false);
+    };
+
+    const handleMouseEnter = (e) => {
+        setCursorVisible(true);
+        setIsPaused(true);
+        if (cursorRef.current && sliderRef.current) {
+            const rect = sliderRef.current.getBoundingClientRect();
+            cursorRef.current.style.transform = `translate(${e.clientX - rect.left}px, ${e.clientY - rect.top}px) translate(-50%, -50%)`;
+        }
+    };
 
     const handleSlideChange = (direction) => {
         setCurrentSlide(prev => {
@@ -102,7 +149,18 @@ const Home = () => {
                 onFocus={() => setIsPaused(true)}
                 onBlur={() => setIsPaused(false)}
             >
-                <div className="hero-slider">
+                <div
+                    className="hero-slider"
+                    ref={sliderRef}
+                    onPointerDown={handlePointerDown}
+                    onPointerMove={handlePointerMove}
+                    onPointerUp={handlePointerUp}
+                    onPointerCancel={handlePointerUp}
+                    onPointerLeave={handlePointerLeave}
+                    onMouseEnter={handleMouseEnter}
+                    onMouseMove={handlePointerMove}
+                    style={{ touchAction: 'pan-y' }}
+                >
                     {heroSlides.map((slide, index) => (
                         <div
                             key={slide.headline}
@@ -117,7 +175,14 @@ const Home = () => {
                                 loading={index === 0 ? 'eager' : 'lazy'}
                                 fetchPriority={index === 0 ? 'high' : undefined}
                                 decoding="async"
+                                draggable={false}
                             />
+                            <div
+                                ref={cursorRef}
+                                className={`hero-cursor ${cursorVisible ? 'visible' : ''}`}
+                            >
+                                DRAG
+                            </div>
                             <div className="container hero-inner">
                                 <div className="hero-content">
                                     <span className="eyebrow">{slide.eyebrow}</span>
@@ -133,7 +198,6 @@ const Home = () => {
                         </div>
                     ))}
                 </div>
-                {/* 
                 <div className="container hero-controls" aria-label="Hero controls">
                     <button
                         type="button"
@@ -165,7 +229,7 @@ const Home = () => {
                     >
                         <ChevronRight size={20} />
                     </button>
-                </div> */}
+                </div>
             </section>
 
             <section className="home-section container">
