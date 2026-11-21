@@ -27,6 +27,13 @@ const heroSlides = [
     }
 ];
 
+const youtubeVideos = [
+    // TODO: Replace these placeholders with verified YouTube video IDs/titles from https://www.youtube.com/@SaadAttarwala-f3c
+    { id: 'b0OdWHWBb2o', title: 'Surrati New Stock 2026' },
+    { id: '2LWpoJeOmqE', title: '66 New Cobra Brand Attars' },
+    { id: '1n1L07ZrrZU', title: 'NEW STOCK AUGUST 2026' }
+];
+
 const Home = () => {
     const { products, loading, error } = useProducts();
     const [currentSlide, setCurrentSlide] = useState(0);
@@ -36,6 +43,7 @@ const Home = () => {
     const [isPaused, setIsPaused] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
     const [cursorVisible, setCursorVisible] = useState(false);
+    const [activeVideo, setActiveVideo] = useState(null);
     const dragStartX = useRef(0);
     const dragDelta = useRef(0);
     const cursorRef = useRef(null);
@@ -287,6 +295,52 @@ const Home = () => {
                     <Link to="/about" className="btn btn-outline">Discover Our Story</Link>
                 </div>
             </section> */}
+
+            <section className="home-section video-section container">
+                <div className="section-header">
+                    <div>
+                        <span className="eyebrow section-eyebrow">Discover</span>
+                        <h2>Discover the World of Fragrance</h2>
+                        <p className="video-subtitle">Stories, insights and experiences from the world of attars.</p>
+                    </div>
+                </div>
+                <div className="video-grid">
+                    {youtubeVideos.map((video) => (
+                        <button
+                            key={video.id}
+                            type="button"
+                            className="video-card"
+                            onClick={() => setActiveVideo(video)}
+                        >
+                            <div className="video-thumb">
+                                <img
+                                    src={`https://img.youtube.com/vi/${video.id}/hqdefault.jpg`}
+                                    alt={video.title}
+                                    loading="lazy"
+                                    decoding="async"
+                                />
+                                <span className="video-play">▶</span>
+                            </div>
+                            <h3 className="video-title">{video.title}</h3>
+                        </button>
+                    ))}
+                </div>
+            </section>
+
+            {activeVideo && (
+                <div className="video-modal" onClick={() => setActiveVideo(null)}>
+                    <div className="video-modal-content" onClick={(e) => e.stopPropagation()}>
+                        <button type="button" className="video-modal-close" onClick={() => setActiveVideo(null)}>×</button>
+                        <iframe
+                            src={`https://www.youtube.com/embed/${activeVideo.id}?autoplay=1`}
+                            title={activeVideo.title}
+                            loading="lazy"
+                            allow="autoplay; encrypted-media"
+                            allowFullScreen
+                        />
+                    </div>
+                </div>
+            )}
 
             <section className="home-cta container">
                 <div>
